@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Trivo.Aplicacion\Trivo.Aplicacion.csproj" />
       <ProjectReference Include="..\Trivo.Dominio\Trivo.Dominio.csproj" />
     </ItemGroup>
 
