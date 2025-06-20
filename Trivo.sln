@@ -10,6 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{241CBC60-DDD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trivo.Infraestructura.Persistencia", "Trivo.Infraestructura.Persistencia\Trivo.Infraestructura.Persistencia.csproj", "{0E2EC0F7-280D-4BE7-AE87-EC31E8E78AB4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentacion", "Presentacion", "{38B7FC0C-32E6-4FEE-9049-460249F6FB66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trivo.Presentacion.API", "Trivo.Presentacion.API\Trivo.Presentacion.API.csproj", "{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +24,8 @@ Global
 		{CC096CCF-3B19-42A0-8FC5-C713F3802448} = {241CBC60-DDDE-46A2-9DAB-21D727E85DF3}
 		{744D25B2-C939-4171-9C58-DDFA6A40F283} = {241CBC60-DDDE-46A2-9DAB-21D727E85DF3}
 		{0E2EC0F7-280D-4BE7-AE87-EC31E8E78AB4} = {744D25B2-C939-4171-9C58-DDFA6A40F283}
+		{38B7FC0C-32E6-4FEE-9049-460249F6FB66} = {241CBC60-DDDE-46A2-9DAB-21D727E85DF3}
+		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6} = {38B7FC0C-32E6-4FEE-9049-460249F6FB66}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AEB846AA-0A23-4824-960A-48803843796D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,5 +36,9 @@ Global
 		{0E2EC0F7-280D-4BE7-AE87-EC31E8E78AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2EC0F7-280D-4BE7-AE87-EC31E8E78AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2EC0F7-280D-4BE7-AE87-EC31E8E78AB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

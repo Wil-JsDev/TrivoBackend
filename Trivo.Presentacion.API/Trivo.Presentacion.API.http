@@ -1,0 +1,6 @@
+@Trivo.Presentacion.API_HostAddress = http://localhost:5026
+
+GET {{Trivo.Presentacion.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
