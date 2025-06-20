@@ -400,6 +400,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.Property(a => a.Id)
+                    .HasColumnName("PkUsuarioId")
                     .IsRequired();
                 
                 entity.Property(c => c.Nombre)
@@ -470,6 +471,7 @@ public class TrivoContexto : DbContext
             {
                 
                 entity.Property(a => a.Id)
+                    .HasColumnName("PkAdministradorId")
                     .IsRequired();
                 
                 entity.Property(a => a.Nombre)
@@ -529,6 +531,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Emparejamiento>(entity =>
             {
                 entity.Property(a => a.Id)
+                    .HasColumnName("PkEmparejamientoId")
                     .IsRequired();
                 
                 entity.Property(a => a.FechaRegistro)
@@ -561,6 +564,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Reporte>(entity =>
             {
                 entity.Property(re => re.ReporteId)
+                    .HasColumnName("PkReporteId")
                     .IsRequired();
                 
                 entity.Property(re => re.Nota)
@@ -581,6 +585,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Reclutador>(entity =>
             {
                 entity.Property(e => e.Id)
+                    .HasColumnName("PkReclutadorId")
                     .IsRequired();
                 
                 entity.Property(e => e.NombreEmpresa)
@@ -601,6 +606,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Experto>(entity =>
             {
                 entity.Property(e => e.Id)
+                    .HasColumnName("PkExpertoId")
                     .IsRequired();
                 
                 entity.Property(e => e.DisponibleParaProyectos)
@@ -623,6 +629,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Habilidad>(entity =>
             {
                 entity.Property(e => e.HabilidadId)
+                    .HasColumnName("PkHabilidadId")
                     .IsRequired();
                 
                 entity.Property(e => e.Nombre)
@@ -653,6 +660,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<CategoriaInteres>(entity =>
             {
                 entity.Property(e => e.CategoriaId)
+                    .HasColumnName("PkCategoriaId")
                     .IsRequired();
                 
                 entity.Property(e => e.Nombre)
@@ -667,6 +675,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Interes>(entity =>
             {
                 entity.Property(e => e.Id)
+                    .HasColumnName("PkInteresId")
                     .IsRequired();
 
                 entity.Property(e => e.Nombre)
@@ -686,6 +695,10 @@ public class TrivoContexto : DbContext
         
             modelBuilder.Entity<Codigo>(entity =>
             {
+                entity.Property(e => e.CodigoId)
+                    .HasColumnName("PkCodigoId")
+                    .IsRequired();
+                
                 entity.Property(e => e.Valor)
                     .IsRequired()
                     .HasColumnType("text");
@@ -713,6 +726,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Chat>(entity =>
             {
                 entity.Property(e => e.Id)
+                    .HasColumnName("PkChatId")
                     .IsRequired();
                 
                 entity.Property(e => e.TipoChat)
@@ -753,6 +767,10 @@ public class TrivoContexto : DbContext
         
             modelBuilder.Entity<Mensaje>(entity =>
             {
+                entity.Property(e => e.ChatId)
+                    .HasColumnName("PkChatId")
+                    .IsRequired();
+                
                 entity.Property(e => e.Contenido)
                     .IsRequired()
                     .HasColumnType("text");
@@ -775,6 +793,11 @@ public class TrivoContexto : DbContext
         
             modelBuilder.Entity<Notificacion>(entity =>
             {
+                
+                entity.Property(e => e.NotificacionId)
+                    .HasColumnName("PkNotificacionId")
+                    .IsRequired();
+                
                 entity.Property(e => e.Tipo)
                     .IsRequired()
                     .HasConversion<string>()
