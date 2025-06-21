@@ -29,6 +29,7 @@ public static class InyeccionDeDependencia
         #region ID
 
         servicio.AddTransient(typeof(IRepositorioGenerico<>), typeof(RepositorioGenerico<>));
+        servicio.AddTransient<IRepositorioAdministrador, RepositorioAdministrador>();
 
         #endregion
         

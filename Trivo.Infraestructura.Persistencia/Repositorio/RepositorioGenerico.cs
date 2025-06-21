@@ -6,13 +6,13 @@ using Trivo.Infraestructura.Persistencia.Contexto;
 
 namespace Trivo.Infraestructura.Persistencia.Repositorio;
 
-public class RepositorioGenerico<TEntidad>: IRepositorioGenerico<TEntidad> where TEntidad : class
+public class RepositorioGenerico<TEntidad>(TrivoContexto trivoContexto) : IRepositorioGenerico<TEntidad>
+    where TEntidad : class
 {
-    protected readonly TrivoContexto _trivoContexto;
-    
+    protected readonly TrivoContexto _trivoContexto = trivoContexto;
 
     public async Task<TEntidad> ObtenerByIdAsync(Guid id, CancellationToken cancellationToken) =>
-    await _trivoContexto.Set<TEntidad>().FindAsync(id, cancellationToken);
+    (await _trivoContexto.Set<TEntidad>().FindAsync(id, cancellationToken))!;
 
     public async Task<ResultadoPaginado<TEntidad>> ObtenerPaginadoAsync(int numeroPagina, int tamanioPagina, CancellationToken cancellationToken)
     {
@@ -50,7 +50,6 @@ public class RepositorioGenerico<TEntidad>: IRepositorioGenerico<TEntidad> where
             .AsNoTracking()
             .AnyAsync(predicate, cancellationToken);
     
-
     public async Task GuardarAsync(CancellationToken cancellationToken) =>
     await _trivoContexto.SaveChangesAsync(cancellationToken);
 }
