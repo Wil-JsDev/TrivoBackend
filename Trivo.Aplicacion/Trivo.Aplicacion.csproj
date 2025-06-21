@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Trivo.Dominio\Trivo.Dominio.csproj" />
+    </ItemGroup>
+
 </Project>
