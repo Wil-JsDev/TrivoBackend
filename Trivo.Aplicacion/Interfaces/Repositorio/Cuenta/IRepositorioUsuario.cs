@@ -14,7 +14,10 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     Task<IEnumerable<Usuario>> FiltrarPorInteresesAsync(List<Guid> interesesIds, CancellationToken cancellationToken);
     Task<List<Guid>> ObtenerHabilidadesUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
     Task<List<Guid>> ObtenerInteresesUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
-
+    Task EmailEnUsoAsync(string email, Guid ExcluirUsuarioId, CancellationToken cancellationToken);
+    Task ActualizarContrasenaAsync(Usuario usuario, string newHashedPassword, CancellationToken cancellationToken);
+    Task ExisteEmailAsync(string email, CancellationToken cancellationToken);
+    Task ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken);
 
 
 }

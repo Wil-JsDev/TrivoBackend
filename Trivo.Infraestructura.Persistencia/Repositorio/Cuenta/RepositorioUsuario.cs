@@ -48,7 +48,23 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Where(uh => uh.UsuarioId == usuarioId)
             .Select(uh => uh.InteresId!.Value)
             .ToListAsync(cancellationToken);
-    
+
+    public async Task EmailEnUsoAsync(string email, Guid ExcluirUsuarioId, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Email == email && us.Id != ExcluirUsuarioId, cancellationToken);
+
+    public async Task ActualizarContrasenaAsync(Usuario usuario, string nuevaContrasena, CancellationToken cancellationToken)
+    {
+       usuario.ContrasenaHash = nuevaContrasena;
+        _trivoContexto.Set<Usuario>().Update(usuario);
+        await _trivoContexto.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ExisteEmailAsync(string email, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Email == email, cancellationToken);
+
+    public async Task ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Nombre == nombreUsuario, cancellationToken);
+
 
     public async Task<IEnumerable<Usuario>> FiltrarPorHabilidadesAsync(List<Guid> habilidadesIds, CancellationToken cancellationToken)
     {
