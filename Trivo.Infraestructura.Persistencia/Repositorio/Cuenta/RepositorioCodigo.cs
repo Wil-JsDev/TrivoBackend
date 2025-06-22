@@ -31,28 +31,25 @@ public class RepositorioCodigo(TrivoContexto contexto): RepositorioGenerico<Codi
     }
 
     public async Task<bool> ExisteElCodigoAsync(string codigo, CancellationToken cancellationToken) =>
-        await _trivoContexto.Set<Codigo>()
-            .AsNoTracking()
-            .AnyAsync(c => c.Valor == codigo, cancellationToken);
-
-    public async Task<bool> IsCodeValidAsync(string codigo, CancellationToken cancellationToken) =>
         await ValidarAsync(c => c.Valor == codigo, cancellationToken);
+    public async Task<bool> ElCodigoEsValidoAsync(string codigo, CancellationToken cancellationToken) =>
+        await ValidarAsync(c => c.Valor == codigo &&
+                                c.Expiracion > DateTime.UtcNow &&
+                                !c.Usado.Value, cancellationToken);
 
     public async Task MarcarCodigoComoUsado(string codigo, CancellationToken cancellationToken)
     {
-       var usuarioCodigo = await _trivoContexto.Set<Codigo>()
-           .FirstOrDefaultAsync(c => c.Valor == codigo, cancellationToken);
+        var usuarioCodigo = await _trivoContexto.Set<Codigo>()
+            .FirstOrDefaultAsync(c => c.Valor == codigo, cancellationToken);
 
-       if (usuarioCodigo != null)
-       {
-           usuarioCodigo.Usado = true;
-           await _trivoContexto.SaveChangesAsync(cancellationToken);
-       }
+        if (usuarioCodigo != null)
+        {
+            usuarioCodigo.Usado = true;
+            await _trivoContexto.SaveChangesAsync(cancellationToken);
+        }    
     }
 
     public async Task<bool> CodigoNoUsadoAsync(string codigo, CancellationToken cancellationToken) =>
-        await _trivoContexto.Set<Codigo>()
-            .AsNoTracking()
-            .AnyAsync(c => c.Valor == codigo && c.Usado == false, cancellationToken);
+        await ValidarAsync(c => c.Valor == codigo && c.Usado.Value, cancellationToken);
 
 }
