@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Infraestructura.Persistencia.Contexto;
 using Trivo.Infraestructura.Persistencia.Repositorio;
+using Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
 
 namespace Trivo.Infraestructura.Persistencia;
 
@@ -30,9 +32,8 @@ public static class InyeccionDeDependencia
 
         servicio.AddTransient(typeof(IRepositorioGenerico<>), typeof(RepositorioGenerico<>));
         servicio.AddTransient<IRepositorioAdministrador, RepositorioAdministrador>();
-        servicio.AddTransient<IRepositorioExperto, RepositorioExperto>();
 
         #endregion
-        
+
     }
 }
