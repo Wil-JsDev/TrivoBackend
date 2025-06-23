@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Dominio.Enum;
 using Trivo.Dominio.Modelos;
 using Trivo.Infraestructura.Persistencia.Contexto;
 
-namespace Trivo.Infraestructura.Persistencia.Repositorio;
+namespace Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
 
 public class RepositorioAdministrador(TrivoContexto trivoContexto) : 
     RepositorioGenerico<Administrador>(trivoContexto), 

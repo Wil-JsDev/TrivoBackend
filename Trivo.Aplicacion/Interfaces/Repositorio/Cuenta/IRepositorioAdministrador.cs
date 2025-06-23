@@ -1,6 +1,6 @@
 using Trivo.Dominio.Modelos;
 
-namespace Trivo.Aplicacion.Interfaces.Repositorio;
+namespace Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 
 public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
 {
