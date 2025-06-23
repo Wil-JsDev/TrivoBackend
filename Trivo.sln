@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aplicacion", "Aplicacion", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trivo.Aplicacion", "Trivo.Aplicacion\Trivo.Aplicacion.csproj", "{5B33B3D1-7E7B-4877-A40A-2BDDBE49571C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trivo.Infraestructura.Compartido", "Trivo.Infraestructura.Compartido\Trivo.Infraestructura.Compartido.csproj", "{7F049A1E-A47E-4587-BB93-CF4BD46CDC94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,7 @@ Global
 		{894FC0F4-4635-41A8-942B-2C3E4C1DC2B6} = {38B7FC0C-32E6-4FEE-9049-460249F6FB66}
 		{FC10C466-6F45-4F8B-A6C1-B4B629FD81D1} = {241CBC60-DDDE-46A2-9DAB-21D727E85DF3}
 		{5B33B3D1-7E7B-4877-A40A-2BDDBE49571C} = {FC10C466-6F45-4F8B-A6C1-B4B629FD81D1}
+		{7F049A1E-A47E-4587-BB93-CF4BD46CDC94} = {744D25B2-C939-4171-9C58-DDFA6A40F283}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AEB846AA-0A23-4824-960A-48803843796D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -50,5 +53,9 @@ Global
 		{5B33B3D1-7E7B-4877-A40A-2BDDBE49571C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B33B3D1-7E7B-4877-A40A-2BDDBE49571C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B33B3D1-7E7B-4877-A40A-2BDDBE49571C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F049A1E-A47E-4587-BB93-CF4BD46CDC94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F049A1E-A47E-4587-BB93-CF4BD46CDC94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F049A1E-A47E-4587-BB93-CF4BD46CDC94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F049A1E-A47E-4587-BB93-CF4BD46CDC94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
