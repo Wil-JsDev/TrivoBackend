@@ -14,20 +14,20 @@ public class RepositorioCodigo(TrivoContexto contexto): RepositorioGenerico<Codi
     }
 
     public async Task<Codigo> ObtenerCodigoPorIdAsync(Guid id, CancellationToken cancellationToken) =>
-        await _trivoContexto.Set<Codigo>()
+        (await _trivoContexto.Set<Codigo>()
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.CodigoId == id,cancellationToken);
+            .FirstOrDefaultAsync(c => c.CodigoId == id,cancellationToken))!;
     
 
     public async Task<Codigo> BuscarCodigoAsync(string codigo, CancellationToken cancellationToken) =>
-        await _trivoContexto.Set<Codigo>()
+        (await _trivoContexto.Set<Codigo>()
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Valor == codigo, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Valor == codigo, cancellationToken))!;
 
     public async Task EliminarCodigoAsync(Codigo codigo, CancellationToken cancellationToken)
     {
         _trivoContexto.Set<Codigo>().Remove(codigo);
-        await _trivoContexto.SaveChangesAsync(cancellationToken);
+        await GuardarAsync(cancellationToken);
     }
 
     public async Task<bool> ExisteElCodigoAsync(string codigo, CancellationToken cancellationToken) =>
@@ -35,7 +35,7 @@ public class RepositorioCodigo(TrivoContexto contexto): RepositorioGenerico<Codi
     public async Task<bool> ElCodigoEsValidoAsync(string codigo, CancellationToken cancellationToken) =>
         await ValidarAsync(c => c.Valor == codigo &&
                                 c.Expiracion > DateTime.UtcNow &&
-                                !c.Usado.Value, cancellationToken);
+                                !c.Usado!.Value, cancellationToken);
 
     public async Task MarcarCodigoComoUsado(string codigo, CancellationToken cancellationToken)
     {
@@ -45,11 +45,11 @@ public class RepositorioCodigo(TrivoContexto contexto): RepositorioGenerico<Codi
         if (usuarioCodigo != null)
         {
             usuarioCodigo.Usado = true;
-            await _trivoContexto.SaveChangesAsync(cancellationToken);
+            await GuardarAsync(cancellationToken);
         }    
     }
 
     public async Task<bool> CodigoNoUsadoAsync(string codigo, CancellationToken cancellationToken) =>
-        await ValidarAsync(c => c.Valor == codigo && c.Usado.Value, cancellationToken);
+        await ValidarAsync(c => c.Valor == codigo && c.Usado!.Value, cancellationToken);
 
 }
