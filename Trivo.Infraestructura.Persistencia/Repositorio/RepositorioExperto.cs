@@ -19,6 +19,7 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
                 .ThenInclude(u => u!.UsuarioHabilidades)
             .Include(e => e.Usuario)
                 .ThenInclude(u => u!.Interes)
+            .AsSplitQuery()
             .Where(e => 
                 e.Usuario != null && 
                 (habilidadesIds.Count == 0 || 
