@@ -18,7 +18,7 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
 
     public async Task<EstadoUsuario?> ObtenerEstadoUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken) =>
-        await trivoContexto.Set<Usuario>()
+        await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Where(usuario => usuario.Id == usuarioId)
             .Select(usuario => usuario.EstadoUsuario)
@@ -26,16 +26,16 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             
 
     public async Task<Usuario> BuscarPorEmailUsuarioAsync(string email, CancellationToken cancellationToken) =>
-        await trivoContexto.Set<Usuario>()
+        (await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Where(usuario => usuario.Email == email)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken))!;
 
     public async Task<Usuario> BuscarPorNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken) =>
-        await trivoContexto.Set<Usuario>()
+        (await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Where(usuario => usuario.Nombre == nombreUsuario)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken))!;
     
     public async Task<List<Guid>> ObtenerHabilidadesUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken)=>
         await _trivoContexto.Set<UsuarioHabilidad>()
@@ -49,8 +49,8 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Select(uh => uh.InteresId!.Value)
             .ToListAsync(cancellationToken);
 
-    public async Task EmailEnUsoAsync(string email, Guid ExcluirUsuarioId, CancellationToken cancellationToken) =>
-        await ValidarAsync(us => us.Email == email && us.Id != ExcluirUsuarioId, cancellationToken);
+    public async Task<bool> EmailEnUsoAsync(string email, Guid excluirUsuarioId, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Email == email && us.Id != excluirUsuarioId, cancellationToken);
 
     public async Task ActualizarContrasenaAsync(Usuario usuario, string nuevaContrasena, CancellationToken cancellationToken)
     {
@@ -59,10 +59,10 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
         await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ExisteEmailAsync(string email, CancellationToken cancellationToken) =>
+    public async Task<bool> ExisteEmailAsync(string email, CancellationToken cancellationToken) =>
         await ValidarAsync(us => us.Email == email, cancellationToken);
 
-    public async Task ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken) =>
+    public async Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken) =>
         await ValidarAsync(us => us.Nombre == nombreUsuario, cancellationToken);
 
 

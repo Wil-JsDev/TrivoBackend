@@ -82,9 +82,9 @@ Task<List<Guid>> ObtenerInteresesUsuarioAsync(Guid usuarioId, CancellationToken 
 /// Verifica si un email esta en uso, excluyendo un usuario especifico.
 /// </summary>
 /// <param name="email">Email a verificar.</param>
-/// <param name="ExcluirUsuarioId">Id del usuario a excluir.</param>
+/// <param name="excluirUsuarioId">Id del usuario a excluir.</param>
 /// <param name="cancellationToken">Token para cancelar la operacion.</param>
-Task EmailEnUsoAsync(string email, Guid ExcluirUsuarioId, CancellationToken cancellationToken);
+Task<bool> EmailEnUsoAsync(string email, Guid excluirUsuarioId, CancellationToken cancellationToken);
 
 /// <summary>
 /// Actualiza la contrasena de un usuario.
@@ -99,15 +99,13 @@ Task ActualizarContrasenaAsync(Usuario usuario, string newHashedPassword, Cancel
 /// </summary>
 /// <param name="email">Email a verificar.</param>
 /// <param name="cancellationToken">Token para cancelar la operacion.</param>
-Task ExisteEmailAsync(string email, CancellationToken cancellationToken);
+Task<bool> ExisteEmailAsync(string email, CancellationToken cancellationToken);
 
 /// <summary>
 /// Verifica si un nombre de usuario existe en la base de datos.
 /// </summary>
 /// <param name="nombreUsuario">Nombre de usuario a verificar.</param>
 /// <param name="cancellationToken">Token para cancelar la operacion.</param>
-Task ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken);
-
-
+Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken);
 
 }
