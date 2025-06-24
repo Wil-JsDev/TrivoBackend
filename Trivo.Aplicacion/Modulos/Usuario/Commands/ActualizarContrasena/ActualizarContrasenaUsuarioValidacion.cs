@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarContrasena;
 
-public class ActualizarContrasenaUsuarioValidacion : AbstractValidator<ActualizarContrsenaUsuarioCommand>
+public class ActualizarContrasenaUsuarioValidacion : AbstractValidator<ActualizarContrasenaUsuarioCommand>
 {
     public ActualizarContrasenaUsuarioValidacion()
     {

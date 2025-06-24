@@ -2,7 +2,7 @@ using Trivo.Aplicacion.Abstracciones.Mensajes;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarContrasena;
 
-public sealed record ActualizarContrsenaUsuarioCommand
+public sealed record ActualizarContrasenaUsuarioCommand
 (
     Guid? UsuarioId,
     string Codigo,

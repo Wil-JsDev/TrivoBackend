@@ -6,14 +6,14 @@ using Trivo.Aplicacion.Utilidades;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarContrasena;
 
-internal sealed class ActualizarContrsenaUsuarioCommandHandler(
+internal sealed class ActualizarContrasenaUsuarioCommandHandler(
     IRepositorioUsuario repositorioUsuario,
-    ILogger<ActualizarContrsenaUsuarioCommandHandler> logger,
+    ILogger<ActualizarContrasenaUsuarioCommandHandler> logger,
     ICodigoServicio codigoServicio
-    ) : ICommandHandler<ActualizarContrsenaUsuarioCommand, string>
+    ) : ICommandHandler<ActualizarContrasenaUsuarioCommand, string>
 {
     public async Task<ResultadoT<string>> Handle(
-        ActualizarContrsenaUsuarioCommand request, 
+        ActualizarContrasenaUsuarioCommand request, 
         CancellationToken cancellationToken)
     {
 
