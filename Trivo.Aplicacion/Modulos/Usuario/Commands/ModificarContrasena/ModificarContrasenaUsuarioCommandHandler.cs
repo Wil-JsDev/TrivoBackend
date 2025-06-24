@@ -17,25 +17,25 @@ internal sealed class ModificarContrasenaUsuarioCommandHandler(
     {
         if (request == null)
         {
-            logger.LogWarning("");
+            logger.LogWarning("La solicitud para actualizar la contraseña es nula.");
             
             return ResultadoT<string>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
         }
-        
+
         var usuario = await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken);
         if (usuario == null)
         {
-            logger.LogWarning("No se encontró el usuario con ID '{RequestUsuarioId}'", request.UsuarioId);
-
+            logger.LogWarning("No se encontró el usuario con ID '{RequestUsuarioId}'.", request.UsuarioId);
+            
             return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "El usuario no fue encontrado."));
         }
-        
+
         var nuevaContrasena = BCrypt.Net.BCrypt.HashPassword(request.ConfirmacionDeContrsena);
-        
-        await repositorioUsuario.ActualizarContrasenaAsync(usuario, nuevaContrasena ,cancellationToken);
-        
-        logger.LogInformation("");
-        
-        return ResultadoT<string>.Exito("");
+
+        await repositorioUsuario.ActualizarContrasenaAsync(usuario, nuevaContrasena, cancellationToken);
+
+        logger.LogInformation("La contraseña del usuario con ID '{UsuarioId}' fue actualizada exitosamente.", usuario.Id);
+
+        return ResultadoT<string>.Exito("La contraseña ha sido actualizada correctamente.");
     }
 }
