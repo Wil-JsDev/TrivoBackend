@@ -1,5 +1,6 @@
 using Serilog;
 using Trivo.Infraestructura.Persistencia;
+using Trivo.Presentacion.API.ServiciosDeExtensiones;
 
 try 
 { 
@@ -18,11 +19,16 @@ try
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AgregarExcepciones();
 
     builder.Services.AgregarPesistencia(builder.Configuration);
 
     var app = builder.Build();
-
+    
+    app.UseExceptionHandler(_ => { });
+    
+    app.UseSerilogRequestLogging();
+    
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -32,6 +38,7 @@ try
 
     app.UseHttpsRedirection();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();

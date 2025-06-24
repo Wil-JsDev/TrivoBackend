@@ -13,13 +13,15 @@ public static class InyeccionDeDependencia
         #region Configuraciones
 
             servicio.Configure<EmailConfiguraciones>(configuraciones.GetSection("EmailConfiguraciones"));        
-
+            servicio.Configure<CloudinaryConfiguraciones>(configuraciones.GetSection("CloudinaryConfiguraciones"));        
+            
         #endregion
         
         #region Servicios
             
             servicio.AddScoped<IEmailServicio, EmailServicio>();
-        
+            servicio.AddScoped<ICloudinaryServicio, CloudinaryServicio>();
+            
         #endregion        
     }
     
