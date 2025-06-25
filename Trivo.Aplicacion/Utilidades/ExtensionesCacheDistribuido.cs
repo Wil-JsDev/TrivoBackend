@@ -5,7 +5,7 @@ namespace Trivo.Aplicacion.Utilidades;
 
 public static class ExtensionesCacheDistribuido
 {
-    public static DistributedCacheEntryOptions ExpiracionPorDefecto => new()
+    private static DistributedCacheEntryOptions ExpiracionPorDefecto => new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
     };
