@@ -23,8 +23,7 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Where(usuario => usuario.Id == usuarioId)
             .Select(usuario => usuario.EstadoUsuario)
             .FirstOrDefaultAsync(cancellationToken);
-            
-
+    
     public async Task<Usuario> BuscarPorEmailUsuarioAsync(string email, CancellationToken cancellationToken) =>
         (await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
@@ -64,6 +63,44 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
 
     public async Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken) =>
         await ValidarAsync(us => us.Nombre == nombreUsuario, cancellationToken);
+
+    public async Task<Usuario> ObtenerDetallesUsuarioPorIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return (await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Where(u => u.Id == usuarioId)
+            .Include(u => u.UsuarioHabilidades)!
+                .ThenInclude(uh => uh.Habilidad)
+            .Include(u => u.UsuarioInteres)!
+                .ThenInclude(ui => ui.Interes)
+            .Select(u => new Usuario
+            {
+                Id = u.Id,
+                Nombre = u.Nombre,
+                Apellido = u.Apellido,
+                Ubicacion = u.Ubicacion,
+                Biografia = u.Biografia,
+                FotoPerfil = u.FotoPerfil,
+                UsuarioHabilidades = u.UsuarioHabilidades!
+                    .Select(uh => new UsuarioHabilidad
+                    {
+                        Habilidad = new Habilidad
+                        {
+                            Nombre = uh.Habilidad!.Nombre
+                        }
+                    }).ToList(),
+                UsuarioInteres = u.UsuarioInteres!
+                    .Select(ui => new UsuarioInteres
+                    {
+                        Interes = new Interes
+                        {
+                            Nombre = ui.Interes!.Nombre
+                        }
+                    }).ToList()
+            })
+            .AsSingleQuery()
+            .FirstOrDefaultAsync(cancellationToken))!;
+    }
 
 
     public async Task<IEnumerable<Usuario>> FiltrarPorHabilidadesAsync(List<Guid> habilidadesIds, CancellationToken cancellationToken)

@@ -3,23 +3,19 @@ using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Dominio.Modelos;
 using Trivo.Infraestructura.Persistencia.Contexto;
 
-namespace Trivo.Infraestructura.Persistencia.Repositorio;
+namespace Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
 
-public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGenerico<Experto>(trivoContexto), IRepositorioExperto
+public class RepositorioReclutador(TrivoContexto trivoContexto) : RepositorioGenerico<Reclutador>(trivoContexto), IRepositorioReclutador
 {
-    public async Task<IEnumerable<Experto>> FiltrarExpertoAsync(
-        List<Guid> habilidadesIds, 
-        List<Guid> interesesIds, 
-        CancellationToken cancellationToken
-    )
+    public async Task<IEnumerable<Reclutador>> FiltrarReclutadorAsync(List<Guid> habilidadesIds,
+        List<Guid> interesesIds, CancellationToken cancellationToken)
     {
-        return await _trivoContexto.Set<Experto>()
+        return await _trivoContexto.Set<Reclutador>()
             .AsNoTracking()
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioHabilidades)
+            .ThenInclude(u => u!.UsuarioHabilidades)
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.Interes)
-            .AsSplitQuery()
+            .ThenInclude(u => u!.Interes)
             .Where(e => 
                 e.Usuario != null && 
                 (habilidadesIds.Count == 0 || 
