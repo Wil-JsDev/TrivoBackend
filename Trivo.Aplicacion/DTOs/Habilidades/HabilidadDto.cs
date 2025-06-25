@@ -1,4 +1,4 @@
-namespace Trivo.Aplicacion.DTOs.Cuentas.Habilidades;
+namespace Trivo.Aplicacion.DTOs.Habilidades;
 
 public sealed record HabilidadDto
 (

@@ -1,5 +1,5 @@
-using Trivo.Aplicacion.DTOs.Cuentas.Habilidades;
-using Trivo.Aplicacion.DTOs.Cuentas.Intereses;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
 
 namespace Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 
