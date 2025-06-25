@@ -16,6 +16,14 @@ public static class InyeccionDeDependencia
         IConfiguration conguracion)
     {
 
+        #region Redis
+            string conexionString = conguracion.GetConnectionString("Redis")!;
+            servicio.AddStackExchangeRedisCache(opciones =>
+            {
+                opciones.Configuration = conexionString;
+            });
+        #endregion
+        
         #region DbContexto
 
             servicio.AddDbContext<TrivoContexto>(postgres =>
