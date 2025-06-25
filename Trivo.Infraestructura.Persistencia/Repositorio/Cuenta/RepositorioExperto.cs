@@ -3,7 +3,7 @@ using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Dominio.Modelos;
 using Trivo.Infraestructura.Persistencia.Contexto;
 
-namespace Trivo.Infraestructura.Persistencia.Repositorio;
+namespace Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
 
 public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGenerico<Experto>(trivoContexto), IRepositorioExperto
 {
