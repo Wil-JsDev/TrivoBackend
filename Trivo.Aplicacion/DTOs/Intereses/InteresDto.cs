@@ -1,4 +1,4 @@
-namespace Trivo.Aplicacion.DTOs.Cuentas.Intereses;
+namespace Trivo.Aplicacion.DTOs.Intereses;
 
 public sealed record InteresDto
 (
