@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Cuentas.Habilidades;
@@ -10,7 +11,8 @@ namespace Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerDetalles;
 
 internal sealed class ObtenerDetallesUsuarioQueryHandler(
     IRepositorioUsuario repositorioUsuario,
-    ILogger<ObtenerDetallesUsuarioQueryHandler> logger
+    ILogger<ObtenerDetallesUsuarioQueryHandler> logger,
+    IDistributedCache cache
     ) : IQueryHandler<ObtenerDetallesUsuarioQuery,  UsuarioDetallesDto>
 {
     public async Task<ResultadoT<UsuarioDetallesDto>> Handle(
@@ -31,8 +33,12 @@ internal sealed class ObtenerDetallesUsuarioQueryHandler(
             
             return ResultadoT<UsuarioDetallesDto>.Fallo(Error.NoEncontrado("404", "El usuario no fue encontrado."));
         }
-
-        Dominio.Modelos.Usuario usuarioDetalles = await repositorioUsuario.ObtenerDetallesUsuarioPorIdAsync(request.UsuarioId, cancellationToken);
+        
+        var usuarioDetalles = await cache.ObtenerOCrearAsync(
+            $"obtener-detalles-usuario-{request.UsuarioId.ToString().ToLower()}",
+            async () => await repositorioUsuario.ObtenerDetallesUsuarioPorIdAsync(request.UsuarioId, cancellationToken),
+            cancellationToken: cancellationToken
+        );
         
         UsuarioDetallesDto usuarioDetallesDto = new
         (
