@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
-using Trivo.Aplicacion.DTOs.Cuentas.Habilidades;
-using Trivo.Aplicacion.DTOs.Cuentas.Intereses;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Utilidades;
 
