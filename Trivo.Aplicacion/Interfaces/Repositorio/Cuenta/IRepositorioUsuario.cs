@@ -28,7 +28,7 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <param name="usuarioId">Id del usuario.</param>
     /// <param name="cancellationToken">Token para cancelar la operacion.</param>
     /// <returns>Estado del usuario o null si no existe.</returns>
-    Task<EstadoUsuario?> ObtenerEstadoUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
+    Task<string?> ObtenerEstadoUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Busca un usuario por su email.

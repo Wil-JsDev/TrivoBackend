@@ -11,7 +11,7 @@ public interface IRepositorioHabilidad
     /// <param name="habilidades">Lista de habilidades a crear.</param>
     /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
     /// <returns>Una tarea que representa la operación asincrónica.</returns>
-    Task CrearHabilidadAsync(IEnumerable<Habilidad> habilidades, CancellationToken cancellationToken);
+    Task CrearHabilidadAsync(Habilidad habilidades, CancellationToken cancellationToken);
 
     /// <summary>
     /// Actualiza la lista de habilidades asociadas a un usuario específico.

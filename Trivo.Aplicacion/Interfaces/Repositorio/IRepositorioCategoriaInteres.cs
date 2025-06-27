@@ -14,7 +14,7 @@ public interface IRepositorioCategoriaInteres
     /// <param name="categorias">Lista de categorías de interés a crear.</param>
     /// <param name="cancellationToken">Token para cancelar la operación asincrónica si es necesario.</param>
     /// <returns>Una tarea que representa la operación asincrónica.</returns>
-    Task CrearCategoriaInteresAsync(IEnumerable<CategoriaInteres> categorias, CancellationToken cancellationToken);
+    Task CrearCategoriaInteresAsync(CategoriaInteres categorias, CancellationToken cancellationToken);
 
     /// <summary>
     /// Obtiene una categoría de interés específica por su identificador único.

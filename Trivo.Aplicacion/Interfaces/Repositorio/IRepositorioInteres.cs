@@ -14,7 +14,7 @@ public interface IRepositorioInteres
     /// <param name="interes">Colección de intereses a crear.</param>
     /// <param name="cancellationToken">Token para cancelar la operación de manera asíncrona si es necesario.</param>
     /// <returns>Una tarea que representa la operación asincrónica.</returns>
-    Task CrearInteresAsync(IEnumerable<Interes> interes, CancellationToken cancellationToken);
+    Task CrearInteresAsync(Interes interes, CancellationToken cancellationToken);
 
     /// <summary>
     /// Actualiza los intereses asociados a un usuario específico.
@@ -31,9 +31,36 @@ public interface IRepositorioInteres
     /// <param name="numeroPagina">Número de la página a consultar (comenzando en 1).</param>
     /// <param name="tamanoPagina">Cantidad de elementos por página.</param>
     /// <param name="cancellationToken">Token de cancelación para la operación asincrónica.</param>
-    /// <returns>Una tarea que retorna un resultado paginado con los intereses.</returns>
-    Task<ResultadoPaginado<Interes>> ObtenerInteresesPaginadoAsync(int numeroPagina, int tamanoPagina, CancellationToken cancellationToken);
+    /// <returns>
+    /// Una tarea que representa la operación asincrónica. El resultado contiene un objeto 
+    /// <see cref="ResultadoPaginado{Interes}"/> con los intereses correspondientes a la página solicitada.
+    /// </returns>
+    Task<ResultadoPaginado<Interes>> ObtenerInteresesPaginadosAsync(int numeroPagina, int tamanoPagina, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Obtiene una lista de usuarios que están asociados a intereses pertenecientes a una categoría específica.
+    /// </summary>
+    /// <param name="categoriaId">Identificador único de la categoría de interés.</param>
+    /// <param name="cancellationToken">Token de cancelación para la operación asincrónica.</param>
+    /// <returns>
+    /// Una tarea que representa la operación asincrónica. El resultado contiene una colección de usuarios
+    /// relacionados con al menos un interés dentro de la categoría especificada.
+    /// </returns>
+    Task<IEnumerable<Usuario>> ObtenerUsuariosPorCategoriaDeInteresAsync(Guid categoriaId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Obtiene una lista paginada de intereses filtrados por una categoría específica.
+    /// </summary>
+    /// <param name="categoriaId">Identificador único de la categoría a la que pertenecen los intereses.</param>
+    /// <param name="numeroPagina">Número de la página a consultar (comenzando en 1).</param>
+    /// <param name="tamanoPagina">Cantidad de elementos por página.</param>
+    /// <param name="cancellationToken">Token de cancelación para la operación asincrónica.</param>
+    /// <returns>
+    /// Una tarea que representa la operación asincrónica. El resultado contiene un objeto
+    /// <see cref="ResultadoPaginado{Interes}"/> con los intereses asociados a la categoría indicada.
+    /// </returns>
+    Task<ResultadoPaginado<Interes>> ObtenerInteresesPorCategoriaPaginadosAsync(IEnumerable<Guid> categoriaId, int numeroPagina, int tamanoPagina, CancellationToken cancellationToken);
+    
     /// <summary>
     /// Obtiene un interés específico por su identificador único.
     /// </summary>
@@ -49,4 +76,18 @@ public interface IRepositorioInteres
     /// <param name="cancellationToken">Token para cancelar la operación asincrónica si es necesario.</param>
     /// <returns>Una tarea que retorna una colección de usuarios asociados a los intereses proporcionados.</returns>
     Task<IEnumerable<Usuario>> ObtenerUsuariosPorInteresesAsync(IEnumerable<Guid> interesesId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Obtiene una colección de intereses que pertenecen a una o varias categorías específicas.
+    /// </summary>
+    /// <param name="numeroPagina"></param>
+    /// <param name="tamanoPagina"></param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <param name="categoriaIds"></param>
+    /// <returns>Una tarea que representa la operación asincrónica y contiene una colección de intereses.</returns>
+    Task<ResultadoPaginado<Interes>> ObtenerInteresPorICategoriaIdAsync(
+        IEnumerable<Guid> categoriaIds,
+        int numeroPagina,
+        int tamanoPagina,
+        CancellationToken cancellationToken);
 }
