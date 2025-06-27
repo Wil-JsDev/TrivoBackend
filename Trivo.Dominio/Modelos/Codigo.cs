@@ -15,8 +15,8 @@ public sealed class Codigo
     public DateTime? Expiracion { get; set; }
     
     public DateTime? Creado { get; set; } = DateTime.UtcNow;
-    
-    public bool? Revocado  { get; set; }
+
+    public bool? Revocado { get; set; } = false;
     
     public bool? RefrescarCodigo  { get; set; }
 }

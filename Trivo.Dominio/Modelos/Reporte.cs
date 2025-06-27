@@ -10,7 +10,7 @@ public sealed class Reporte
     
     public Guid? MensajeId { get; set; }
     
-    public EstadoReporte? EstadoReporte { get; set; }
+    public string? EstadoReporte { get; set; }
     
     public string? Nota { get; set; }
     

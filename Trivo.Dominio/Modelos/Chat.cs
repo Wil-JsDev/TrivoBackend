@@ -6,7 +6,7 @@ public sealed class Chat : EntidadBase
 {
     public Guid? ChatId { get; set; }
     
-    public TipoChat? TipoChat { get; set; }
+    public string? TipoChat { get; set; }
     
     public string? Nombre { get; set; }
     
