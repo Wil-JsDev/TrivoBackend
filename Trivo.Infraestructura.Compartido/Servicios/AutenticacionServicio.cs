@@ -21,13 +21,13 @@ public class AutenticacionServicio: IAutenticacionServicio
         _configuraciones = configuraciones.Value;
     }
     
-    public async Task<string> GenerarToken(Usuario usuario)
+    public string GenerarToken(Usuario usuario)
     {
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+            new Claim(JwtRegisteredClaimNames.Email, usuario.Email!),
             new Claim("nombreUsuario", usuario.NombreUsuario!)
         };
         
@@ -40,7 +40,7 @@ public class AutenticacionServicio: IAutenticacionServicio
         claims.Add(new Claim("roles", Roles.Administrador.ToString()));
         
         
-        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave));
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
         var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -54,7 +54,7 @@ public class AutenticacionServicio: IAutenticacionServicio
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public async Task<TokenRefrescadoDTO> GenerarTokenRefrescado() 
+    public TokenRefrescadoDTO GenerarTokenRefrescado() 
     {
         return new TokenRefrescadoDTO()
         {
