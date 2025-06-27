@@ -14,7 +14,7 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
     {
         var usuario = await _trivoContexto.Set<Usuario>().FirstOrDefaultAsync(x => x.Id == usuarioId, cancellationToken);
         
-        usuario!.EstadoUsuario = EstadoUsuario.Baneado;
+        usuario!.EstadoUsuario = nameof(EstadoUsuario.Baneado);
         
         _trivoContexto.Set<Usuario>().Update(usuario);
         
@@ -25,7 +25,7 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
     {
         var usuario = await _trivoContexto.Set<Usuario>().FirstOrDefaultAsync(x => x.Id == usuarioId, cancellationToken);
         
-        usuario!.EstadoUsuario = EstadoUsuario.Activo;
+        usuario!.EstadoUsuario = nameof(EstadoUsuario.Activo);
         
         _trivoContexto.Set<Usuario>().Update(usuario);
         
@@ -36,7 +36,7 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
     {
         return await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
-            .Where(usuario =>  usuario.EstadoUsuario == EstadoUsuario.Baneado)
+            .Where(usuario =>  usuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
             .ToListAsync(cancellationToken);
     }
 }

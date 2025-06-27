@@ -8,9 +8,9 @@ namespace Trivo.Infraestructura.Persistencia.Repositorio;
 
 public class RepositorioHabilidad(TrivoContexto trivoContexto) : IRepositorioHabilidad
 {
-    public async Task CrearHabilidadAsync(IEnumerable<Habilidad> habilidades, CancellationToken cancellationToken)
+    public async Task CrearHabilidadAsync(Habilidad habilidades, CancellationToken cancellationToken)
     {
-        await trivoContexto.Set<Habilidad>().AddRangeAsync(habilidades, cancellationToken);
+        await trivoContexto.Set<Habilidad>().AddAsync(habilidades, cancellationToken);
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
