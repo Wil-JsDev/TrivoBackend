@@ -8,11 +8,11 @@ public class Emparejamiento : EntidadBase
     
     public Guid? ExpertoId { get; set; }
     
-    public ExpertoEstado? ExpertoEstado { get; set; }
+    public string? ExpertoEstado { get; set; }
     
-    public ReclutadorEstado? ReclutadorEstado { get; set; }
+    public string? ReclutadorEstado { get; set; }
     
-    public EmparejamientoEstado? EmparejamientoEstado { get; set; }
+    public string? EmparejamientoEstado { get; set; }
     
     public Reclutador? Reclutador { get; set; }
     

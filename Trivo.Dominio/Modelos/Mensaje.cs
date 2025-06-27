@@ -12,7 +12,7 @@ public sealed class Mensaje
     
     public string? Contenido { get; set; }
     
-    public EstadoMensaje? Estado { get; set; }
+    public string? Estado { get; set; }
     
     public DateTime? FechaEnvio { get; set; }
     

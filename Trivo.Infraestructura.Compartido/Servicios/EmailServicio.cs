@@ -10,14 +10,14 @@ namespace Trivo.Infraestructura.Compartido.Servicios;
 public class EmailServicio(IOptions<EmailConfiguraciones> emailOpciones) : IEmailServicio
 {
     private EmailConfiguraciones _emailConfiguraciones { get; } = emailOpciones.Value;
-    
+
     public async Task EnviarEmailAsync(EmailRespuestaDto emailRespuesta)
     {
         try
         {
             MimeMessage email = new();
-            email.Sender = MailboxAddress.Parse (_emailConfiguraciones.EmailFrom);
-            email.To.Add(MailboxAddress.Parse(emailRespuesta.Usuario)); 
+            email.Sender = MailboxAddress.Parse(_emailConfiguraciones.EmailFrom);
+            email.To.Add(MailboxAddress.Parse(emailRespuesta.Usuario));
             email.Subject = emailRespuesta.Tema;
             BodyBuilder builder = new()
             {
@@ -33,7 +33,7 @@ public class EmailServicio(IOptions<EmailConfiguraciones> emailOpciones) : IEmai
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // ignored
         }

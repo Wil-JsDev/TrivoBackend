@@ -24,7 +24,7 @@ public sealed class Usuario : EntidadBase
     
     public string Linkedin  { get; set; }
 
-    public EstadoUsuario? EstadoUsuario { get; set; }
+    public string? EstadoUsuario { get; set; }
     
     // Relaciones
     public ICollection<Codigo>? Codigos { get; set; }

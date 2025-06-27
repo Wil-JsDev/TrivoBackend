@@ -49,7 +49,7 @@ public class RepositorioUsuarioHabilidad(TrivoContexto trivoContexto) : IReposit
         var usuarioHabilidad = await trivoContexto.Set<UsuarioHabilidad>()
             .FirstOrDefaultAsync(uh => uh.UsuarioId == usuarioId && uh.HabilidadId == habilidadId, cancellationToken);
 
-        usuarioHabilidad!.Nivel = nivel;
+        usuarioHabilidad!.Nivel = nivel.ToString();
         
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }

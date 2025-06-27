@@ -5,7 +5,7 @@ using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Utilidades;
 
-namespace Trivo.Aplicacion.Modulos.Reclutador.Commands.Actualizar;
+namespace Trivo.Aplicacion.Modulos.Reclutador.Commands.Crear;
 
 internal sealed class CrearReclutadorCommandHandler(
     IRepositorioReclutador repositorioReclutador, 
@@ -13,35 +13,35 @@ internal sealed class CrearReclutadorCommandHandler(
     ILogger<CrearReclutadorCommandHandler> logger
 ) : ICommandHandler<CrearReclutadorCommand, ReclutadorDto>
 {
-    public async Task<ResultadoT<ReclutadorDto>> Handle(CrearReclutadorCommand solicitud, CancellationToken cancellationToken)
+    public async Task<ResultadoT<ReclutadorDto>> Handle(CrearReclutadorCommand request, CancellationToken cancellationToken)
     {
-        if (solicitud == null)
+        if (request == null)
         {
             logger.LogWarning("Se recibió un CrearReclutadorCommand nulo.");
             return ResultadoT<ReclutadorDto>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
         }
 
-        var usuario = await repositorioUsuario.ObtenerByIdAsync(solicitud.UsuarioId, cancellationToken);
+        var usuario = await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken);
         if (usuario is null)
         {
-            logger.LogError("El usuario con id {UsuarioId} no existe.", solicitud.UsuarioId);
+            logger.LogError("El usuario con id {UsuarioId} no existe.", request.UsuarioId);
             return ResultadoT<ReclutadorDto>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
         }
 
         var reclutador = new Dominio.Modelos.Reclutador
         {
             Id = Guid.NewGuid(),
-            NombreEmpresa = solicitud.NombreEmpresa,
-            UsuarioId = solicitud.UsuarioId,
+            NombreEmpresa = request.NombreEmpresa,
+            UsuarioId = request.UsuarioId,
         };
 
         await repositorioReclutador.CrearAsync(reclutador, cancellationToken);
-        logger.LogInformation("Reclutador '{ReclutadorId}' creado correctamente para el usuario '{UsuarioId}'.", reclutador.Id, solicitud.UsuarioId);
+        logger.LogInformation("Reclutador '{ReclutadorId}' creado correctamente para el usuario '{UsuarioId}'.", reclutador.Id, request.UsuarioId);
 
         var dto = new ReclutadorDto(
             Id: reclutador.Id!.Value,
-            NombreEmpresa: solicitud.NombreEmpresa,
-            UsuarioId: solicitud.UsuarioId
+            NombreEmpresa: request.NombreEmpresa,
+            UsuarioId: request.UsuarioId
         );
 
         return ResultadoT<ReclutadorDto>.Exito(dto);

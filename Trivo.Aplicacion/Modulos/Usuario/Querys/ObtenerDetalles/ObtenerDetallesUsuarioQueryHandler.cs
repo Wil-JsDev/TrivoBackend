@@ -48,7 +48,7 @@ internal sealed class ObtenerDetallesUsuarioQueryHandler(
             Biografia: usuarioDetalles.Biografia,
             FotoPerfil: usuarioDetalles.FotoPerfil,
             Habilidad: usuarioDetalles.UsuarioHabilidades?
-                           .Select(x => new HabilidadDto(Nombre: x.Habilidad?.Nombre ?? string.Empty))
+                           .Select(x => new HabilidadNombreDto(Nombre: x.Habilidad?.Nombre ?? string.Empty))
                        ?? [],
             Interes: usuarioDetalles.UsuarioInteres?
                          .Select(x => new InteresDto(Nombre: x.Interes?.Nombre ?? string.Empty))

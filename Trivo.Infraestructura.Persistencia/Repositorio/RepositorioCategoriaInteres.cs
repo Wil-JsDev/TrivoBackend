@@ -8,9 +8,9 @@ namespace Trivo.Infraestructura.Persistencia.Repositorio;
 
 public class RepositorioCategoriaInteres(TrivoContexto trivoContexto) : IRepositorioCategoriaInteres
 {
-    public async Task CrearCategoriaInteresAsync(IEnumerable<CategoriaInteres> categorias, CancellationToken cancellationToken)
+    public async Task CrearCategoriaInteresAsync(CategoriaInteres categorias, CancellationToken cancellationToken)
     {
-        await trivoContexto.Set<CategoriaInteres>().AddRangeAsync(categorias, cancellationToken);
+        await trivoContexto.Set<CategoriaInteres>().AddAsync(categorias, cancellationToken);
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
@@ -23,7 +23,7 @@ public class RepositorioCategoriaInteres(TrivoContexto trivoContexto) : IReposit
 
     public async Task<ResultadoPaginado<CategoriaInteres>> ObtenerCategoriaInteresPaginadoAsync(int numeroPagina, int tamanoPagina, CancellationToken cancellationToken)
     {
-        var total = await trivoContexto.Set<Habilidad>().AsNoTracking().CountAsync(cancellationToken);
+        var total = await trivoContexto.Set<CategoriaInteres>().AsNoTracking().CountAsync(cancellationToken);
             
         var categoriaInteres = await trivoContexto.Set<CategoriaInteres>().AsNoTracking()
             .Skip((numeroPagina - 1) * tamanoPagina)

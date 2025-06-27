@@ -12,6 +12,6 @@ public sealed record UsuarioDto
     string? NombreUsuario,
     string? Ubicacion,
     string? FotoPerfil,
-    EstadoUsuario? EstadoUsuario,
+    string? EstadoUsuario,
     DateTime? FechaRegistro
 );

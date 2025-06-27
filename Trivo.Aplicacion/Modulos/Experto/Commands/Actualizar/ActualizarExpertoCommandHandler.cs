@@ -13,26 +13,26 @@ public sealed class ActualizarExpertoCommandHandler(
     ILogger<ActualizarExpertoCommandHandler> logger
     ): ICommandHandler<ActualizarExpertoCommand, ExpertoDto>
 {
-    public async Task<ResultadoT<ExpertoDto>> Handle(ActualizarExpertoCommand solicitud, CancellationToken cancellationToken)
+    public async Task<ResultadoT<ExpertoDto>> Handle(ActualizarExpertoCommand request, CancellationToken cancellationToken)
     {
-        if (solicitud is null)
+        if (request is null)
         {
             logger.LogWarning("Se recibio un ActualizarExpertoCommand nulo.");
             return ResultadoT<ExpertoDto>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
         }
 
-        logger.LogInformation("Iniciando actualización del experto con Id {ExpertoId}.", solicitud.ExpertoId);
+        logger.LogInformation("Iniciando actualización del experto con Id {ExpertoId}.", request.ExpertoId);
 
-        var experto = await repositorioExperto.ObtenerByIdAsync(solicitud.ExpertoId, cancellationToken);
+        var experto = await repositorioExperto.ObtenerByIdAsync(request.ExpertoId, cancellationToken);
 
         if (experto is null)
         {
-            logger.LogWarning("No se encontro el experto con Id {ExpertoId}.", solicitud.ExpertoId);
+            logger.LogWarning("No se encontro el experto con Id {ExpertoId}.", request.ExpertoId);
             return ResultadoT<ExpertoDto>.Fallo(Error.NoEncontrado("404", "El experto no se pudo encontrar"));
         }
 
-        experto.DisponibleParaProyectos = solicitud.DisponibleParaProyectos;
-        experto.Contratado = solicitud.Contratado;
+        experto.DisponibleParaProyectos = request.DisponibleParaProyectos;
+        experto.Contratado = request.Contratado;
 
         await repositorioExperto.ActualizarAsync(experto, cancellationToken);
 

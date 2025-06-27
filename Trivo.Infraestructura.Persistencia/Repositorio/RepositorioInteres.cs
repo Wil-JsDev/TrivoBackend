@@ -8,9 +8,9 @@ namespace Trivo.Infraestructura.Persistencia.Repositorio;
 
 public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInteres
 {
-    public async Task CrearInteresAsync(IEnumerable<Interes> interes, CancellationToken cancellationToken)
+    public async Task CrearInteresAsync(Interes interes, CancellationToken cancellationToken)
     {
-        await trivoContexto.Set<Interes>().AddRangeAsync(interes, cancellationToken);
+        await trivoContexto.Set<Interes>().AddAsync(interes, cancellationToken);
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
@@ -42,18 +42,60 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }
     
-    public async Task<ResultadoPaginado<Interes>> ObtenerInteresesPaginadoAsync(int numeroPagina, int tamanoPagina, CancellationToken cancellationToken)
+    public async Task<ResultadoPaginado<Interes>> ObtenerInteresesPaginadosAsync(
+        int numeroPagina,
+        int tamanoPagina,
+        CancellationToken cancellationToken)
     {
         var total = await trivoContexto.Set<Interes>().AsNoTracking().CountAsync(cancellationToken);
-            
-        var interes = await trivoContexto.Set<Interes>().AsNoTracking()
+    
+        var intereses = await trivoContexto.Set<Interes>().AsNoTracking()
             .Skip((numeroPagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
             .ToListAsync(cancellationToken);
 
-        return new ResultadoPaginado<Interes>(interes, total, numeroPagina, tamanoPagina);
+        return new ResultadoPaginado<Interes>(intereses, total, numeroPagina, tamanoPagina);
     }
 
+    public async Task<ResultadoPaginado<Interes>> ObtenerInteresesPorCategoriaPaginadosAsync(
+        IEnumerable<Guid> categoriaId,
+        int numeroPagina,
+        int tamanoPagina,
+        CancellationToken cancellationToken
+        )
+    {
+        var query = trivoContexto.Set<Interes>().AsNoTracking();
+
+        IEnumerable<Guid> enumerable = categoriaId.ToList();
+        if (enumerable.Any())
+        {
+            query = query.Where(i => enumerable.Contains(i.CategoriaId!.Value));
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var intereses = await query
+            .Skip((numeroPagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync(cancellationToken);
+
+        return new ResultadoPaginado<Interes>(intereses, total, numeroPagina, tamanoPagina);
+    }
+    
+    public async Task<IEnumerable<Usuario>> ObtenerUsuariosPorCategoriaDeInteresAsync(Guid categoriaId, CancellationToken cancellationToken)
+    {
+        return await trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Where(u => u.UsuarioInteres!
+                .Any(ui => ui.Interes!.CategoriaId == categoriaId))
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+    }
+    
     public async Task<Interes> ObtenerPorIdAsync(Guid interesId, CancellationToken cancellationToken)
     {
         return (await trivoContexto.Set<Interes>()
@@ -72,5 +114,30 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
             .Where(u => u.UsuarioInteres!.Any(uh => interesesId.Contains(uh.InteresId!.Value)))
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ResultadoPaginado<Interes>> ObtenerInteresPorICategoriaIdAsync(
+        IEnumerable<Guid> categoriaIds,
+        int numeroPagina,
+        int tamanoPagina,
+        CancellationToken cancellationToken)
+    {
+        var query = trivoContexto.Set<Interes>()
+            .AsNoTracking()
+            .Where(i => i.CategoriaId.HasValue && categoriaIds.Contains(i.CategoriaId!.Value));
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var intereses = await query
+            .Skip((numeroPagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .Select(n => new Interes
+            {
+                Id = n.Id,
+                Nombre = n.Nombre
+            })
+            .ToListAsync(cancellationToken);
+
+        return new ResultadoPaginado<Interes>(intereses, total, numeroPagina, tamanoPagina);
     }
 }
