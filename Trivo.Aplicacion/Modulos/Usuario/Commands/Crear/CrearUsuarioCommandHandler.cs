@@ -63,7 +63,7 @@ internal sealed class CrearUsuarioCommandHandler(
                 NombreUsuario = request.NombreUsuario,
                 Ubicacion = request.Ubicacion,
                 FotoPerfil = imageUrl,
-                EstadoUsuario = EstadoUsuario.Activo
+                EstadoUsuario = nameof(EstadoUsuario.Activo)
             };
 
             await repositorioUsuario.CrearAsync(usuario, cancellationToken);
@@ -73,7 +73,7 @@ internal sealed class CrearUsuarioCommandHandler(
             await emailServicio.EnviarEmailAsync(
                 new EmailRespuestaDto(
                     Usuario: request.Email!,
-                    Cuerpo: EmailTemas.RegistroDeUsuario(usuario.NombreUsuario!,codigo.Valor),
+                    Cuerpo: EmailTemas.RegistroDeUsuario(usuario.NombreUsuario!, codigo.Valor),
                     Tema: "Confirmar cuenta"
                 )
             );
