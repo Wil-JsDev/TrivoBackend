@@ -11,17 +11,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:Enum:emparejamiento_estado", "pendiente,completado")
-                .Annotation("Npgsql:Enum:estado_mensaje", "enviado,entregado,visto,eliminado,actualizado")
-                .Annotation("Npgsql:Enum:estado_reporte", "resuelto,pendiente")
-                .Annotation("Npgsql:Enum:estado_usuario", "baneado,activo,inactivo")
-                .Annotation("Npgsql:Enum:experto_estado", "match,pendiente,rechazado")
-                .Annotation("Npgsql:Enum:nivel", "basico,intermedio,avanzado")
-                .Annotation("Npgsql:Enum:reclutador_estado", "match,pendiente,rechazado")
-                .Annotation("Npgsql:Enum:tipo", "mensaje,match,alerta,recordatorio")
-                .Annotation("Npgsql:Enum:tipo_chat", "privado,grupo");
-
             migrationBuilder.CreateTable(
                 name: "Administrador",
                 columns: table => new
@@ -72,7 +61,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     Ubicacion = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     FotoPerfil = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     Linkedin = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    EstadoUsuario = table.Column<string>(type: "estado_usuario", nullable: false),
+                    EstadoUsuario = table.Column<string>(type: "varchar(50)", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -133,7 +122,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 {
                     PkNotificacionId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Tipo = table.Column<string>(type: "tipo", nullable: false),
+                    Tipo = table.Column<string>(type: "varchar(50)", nullable: false),
                     Contenido = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Leida = table.Column<bool>(type: "boolean", nullable: false),
@@ -177,7 +166,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 {
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkHabilidadId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Nivel = table.Column<string>(type: "nivel", nullable: false)
+                    Nivel = table.Column<string>(type: "varchar(50)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -203,9 +192,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     PkEmparejamientoId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkReclutadorId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkExpertoId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ExpertoEstado = table.Column<string>(type: "experto_estado", nullable: false),
-                    ReclutadorEstado = table.Column<string>(type: "reclutador_estado", nullable: false),
-                    EmparejamientoEstado = table.Column<string>(type: "emparejamiento_estado", nullable: false),
+                    ExpertoEstado = table.Column<string>(type: "varchar(50)", nullable: false),
+                    ReclutadorEstado = table.Column<string>(type: "varchar(50)", nullable: false),
+                    EmparejamientoEstado = table.Column<string>(type: "varchar(50)", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -297,7 +286,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 {
                     PkChatId = table.Column<Guid>(type: "uuid", nullable: false),
                     ChatId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TipoChat = table.Column<string>(type: "tipo_chat", nullable: false),
+                    TipoChat = table.Column<string>(type: "varchar(50)", nullable: false),
                     Nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -342,7 +331,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     PkChatId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkEmisorId = table.Column<Guid>(type: "uuid", nullable: false),
                     Contenido = table.Column<string>(type: "text", nullable: false),
-                    Estado = table.Column<string>(type: "estado_mensaje", nullable: false),
+                    Estado = table.Column<string>(type: "varchar(50)", nullable: false),
                     FechaEnvio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -370,7 +359,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     PkReporteId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkReportadoPorId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkMensajeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EstadoReporte = table.Column<string>(type: "estado_reporte", nullable: false),
+                    EstadoReporte = table.Column<string>(type: "varchar(50)", nullable: false),
                     Nota = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>

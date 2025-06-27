@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Trivo.Infraestructura.Persistencia.Contexto;
@@ -11,9 +12,11 @@ using Trivo.Infraestructura.Persistencia.Contexto;
 namespace Trivo.Infraestructura.Persistencia.Migrations
 {
     [DbContext(typeof(TrivoContexto))]
-    partial class TrivoContextoModelSnapshot : ModelSnapshot
+    [Migration("20250627210850_PrimeraMigracion")]
+    partial class PrimeraMigracion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,6 +55,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -130,6 +134,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -192,21 +197,15 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool?>("RefrescarCodigo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<bool?>("Revocado")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<bool?>("Usado")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("UsuarioId")
                         .IsRequired()
@@ -246,6 +245,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("FkExpertoId");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -287,6 +287,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -346,6 +347,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("FkCreadoPorId");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -458,6 +460,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("PkReclutadorId");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -552,6 +555,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<DateTime?>("FechaActualizacion")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
