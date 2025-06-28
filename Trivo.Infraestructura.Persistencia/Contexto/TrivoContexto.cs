@@ -373,28 +373,6 @@ public class TrivoContexto : DbContext
              
              #endregion
 
-        #region Enumeraciones
-
-        modelBuilder.HasPostgresEnum<EmparejamientoEstado>();
-        
-        modelBuilder.HasPostgresEnum<EstadoMensaje>();
-        
-        modelBuilder.HasPostgresEnum<EstadoReporte>();
-        
-        modelBuilder.HasPostgresEnum<EstadoUsuario>();
-        
-        modelBuilder.HasPostgresEnum<ExpertoEstado>();
-        
-        modelBuilder.HasPostgresEnum<Nivel>();
-        
-        modelBuilder.HasPostgresEnum<ReclutadorEstado>();
-        
-        modelBuilder.HasPostgresEnum<Tipo>();
-
-        modelBuilder.HasPostgresEnum<TipoChat>();
-
-        #endregion
-
         #region Usuario
 
             modelBuilder.Entity<Usuario>(entity =>
@@ -454,12 +432,11 @@ public class TrivoContexto : DbContext
                     .IsRequired();
 
                 entity.Property(u => u.FechaActualizacion)
-                    .IsRequired();
-                
+                    .IsRequired(false);
+
                 entity.Property(u => u.EstadoUsuario)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("estado_usuario");
+                    .HasColumnType("varchar(50)");
             });
             
 
@@ -517,8 +494,8 @@ public class TrivoContexto : DbContext
                 entity.Property(a => a.FechaRegistro)
                     .IsRequired();
 
-                entity.Property(a => a.FechaActualizacion)
-                    .IsRequired();
+                entity.Property(e => e.FechaActualizacion)
+                    .IsRequired(false);
 
                 entity.Property(a => a.Activo)
                     .IsRequired();
@@ -537,24 +514,23 @@ public class TrivoContexto : DbContext
                 entity.Property(a => a.FechaRegistro)
                     .IsRequired();
                 
-                entity.Property(a => a.FechaActualizacion)
-                    .IsRequired();
+                entity.Property(e => e.FechaActualizacion)
+                    .IsRequired(false);
                 
                 entity.Property(u => u.EmparejamientoEstado)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("emparejamiento_estado");
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
                 
                 entity.Property(u => u.ExpertoEstado)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("experto_estado");
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
                 
                 entity.Property(u => u.ReclutadorEstado)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("reclutador_estado");
-                
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
             });
 
         #endregion
@@ -573,8 +549,8 @@ public class TrivoContexto : DbContext
                 
                 entity.Property(u => u.EstadoReporte)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("estado_reporte");
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
                 
             });
 
@@ -594,9 +570,9 @@ public class TrivoContexto : DbContext
 
                 entity.Property(e => e.FechaRegistro)
                     .IsRequired();
-
+                
                 entity.Property(e => e.FechaActualizacion)
-                    .IsRequired();
+                    .IsRequired(false);
             });
 
         #endregion
@@ -619,7 +595,7 @@ public class TrivoContexto : DbContext
                     .IsRequired();
 
                 entity.Property(e => e.FechaActualizacion)
-                    .IsRequired();
+                    .IsRequired(false);
             });
             
         #endregion
@@ -648,8 +624,8 @@ public class TrivoContexto : DbContext
         {
             entity.Property(u => u.Nivel)
                 .IsRequired()
-                .HasConversion<string>()
-                .HasColumnType("nivel");
+                .IsRequired()
+                .HasColumnType("varchar(50)");
 
         });
         
@@ -686,7 +662,7 @@ public class TrivoContexto : DbContext
                     .IsRequired();
 
                 entity.Property(e => e.FechaActualizacion)
-                    .IsRequired();
+                    .IsRequired(false);
             });
         
         #endregion
@@ -704,7 +680,8 @@ public class TrivoContexto : DbContext
                     .HasColumnType("text");
 
                 entity.Property(e => e.Usado)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasDefaultValue(false);
 
                 entity.Property(e => e.Expiracion)
                     .IsRequired();
@@ -713,10 +690,12 @@ public class TrivoContexto : DbContext
                     .IsRequired();
 
                 entity.Property(e => e.Revocado)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasDefaultValue(false);
 
                 entity.Property(e => e.RefrescarCodigo)
-                    .IsRequired(false); 
+                    .IsRequired(false)
+                    .HasDefaultValue(false);
             });
             
         #endregion
@@ -731,8 +710,8 @@ public class TrivoContexto : DbContext
                 
                 entity.Property(e => e.TipoChat)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("tipo_chat"); 
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
 
                 entity.Property(e => e.Nombre)
                     .HasMaxLength(100)
@@ -745,7 +724,7 @@ public class TrivoContexto : DbContext
                     .IsRequired();
 
                 entity.Property(e => e.FechaActualizacion)
-                    .IsRequired();
+                    .IsRequired(false);
             });
             
         #endregion
@@ -780,8 +759,8 @@ public class TrivoContexto : DbContext
 
                 entity.Property(e => e.Estado)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("estado_mensaje");  
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
 
                 entity.Property(e => e.FechaRegistro)
                     .IsRequired();
@@ -800,8 +779,8 @@ public class TrivoContexto : DbContext
                 
                 entity.Property(e => e.Tipo)
                     .IsRequired()
-                    .HasConversion<string>()
-                    .HasColumnType("tipo");  
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
 
                 entity.Property(e => e.Contenido)
                     .IsRequired()

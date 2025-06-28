@@ -8,7 +8,7 @@ public sealed class UsuarioHabilidad
     
     public Guid? HabilidadId { get; set; }
     
-    public Nivel? Nivel { get; set; }
+    public string? Nivel { get; set; }
 
     public Usuario? Usuario { get; set; }
     

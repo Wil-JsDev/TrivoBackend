@@ -17,7 +17,7 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
     public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken)=>
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
 
-    public async Task<EstadoUsuario?> ObtenerEstadoUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken) =>
+    public async Task<string?> ObtenerEstadoUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken) =>
         await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Where(usuario => usuario.Id == usuarioId)

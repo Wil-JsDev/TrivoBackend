@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Trivo.Infraestructura.Compartido\Trivo.Infraestructura.Compartido.csproj" />
       <ProjectReference Include="..\Trivo.Infraestructura.Persistencia\Trivo.Infraestructura.Persistencia.csproj" />
     </ItemGroup>
 

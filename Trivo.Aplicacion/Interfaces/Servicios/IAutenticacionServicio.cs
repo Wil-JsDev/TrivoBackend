@@ -5,6 +5,6 @@ namespace Trivo.Aplicacion.Interfaces.Servicios;
 
 public interface IAutenticacionServicio
 {
-    Task<string> GenerarToken(Usuario usuario);
-    Task<TokenRefrescadoDTO> GenerarTokenRefrescado();
+    string GenerarToken(Usuario usuario);
+    TokenRefrescadoDTO GenerarTokenRefrescado();
 }

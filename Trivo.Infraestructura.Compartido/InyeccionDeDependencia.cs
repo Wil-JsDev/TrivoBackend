@@ -83,6 +83,7 @@ public static class InyeccionDeDependencia
             
             servicio.AddScoped<IEmailServicio, EmailServicio>();
             servicio.AddScoped<ICloudinaryServicio, CloudinaryServicio>();
+            servicio.AddScoped<IAutenticacionServicio, AutenticacionServicio>();
             
         #endregion        
     }

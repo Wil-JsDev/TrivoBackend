@@ -1,4 +1,6 @@
 using Serilog;
+using Trivo.Aplicacion;
+using Trivo.Infraestructura.Compartido;
 using Trivo.Infraestructura.Persistencia;
 using Trivo.Presentacion.API.ServiciosDeExtensiones;
 
@@ -22,6 +24,11 @@ try
     builder.Services.AgregarExcepciones();
 
     builder.Services.AgregarPesistencia(builder.Configuration);
+    builder.Services.AgregarCapaAplicacion();
+    builder.Services.AgregarCapaCompartida(builder.Configuration);
+    builder.Services.AgregarExcepciones();
+    builder.Services.AgregarVersionado();    
+    
 
     var app = builder.Build();
     

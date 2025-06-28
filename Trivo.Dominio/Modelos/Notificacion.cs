@@ -1,4 +1,3 @@
-using Trivo.Dominio.Enum;
 
 namespace Trivo.Dominio.Modelos;
 
@@ -10,7 +9,7 @@ public sealed class Notificacion
     
     public Usuario? Usuario { get; set; }
     
-    public Tipo? Tipo { get; set; }
+    public string? Tipo { get; set; }
     
     public string? Contenido { get; set; }
     

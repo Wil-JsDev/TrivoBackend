@@ -20,15 +20,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "emparejamiento_estado", new[] { "pendiente", "completado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "estado_mensaje", new[] { "enviado", "entregado", "visto", "eliminado", "actualizado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "estado_reporte", new[] { "resuelto", "pendiente" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "estado_usuario", new[] { "baneado", "activo", "inactivo" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "experto_estado", new[] { "match", "pendiente", "rechazado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "nivel", new[] { "basico", "intermedio", "avanzado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "reclutador_estado", new[] { "match", "pendiente", "rechazado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "tipo", new[] { "mensaje", "match", "alerta", "recordatorio" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "tipo_chat", new[] { "privado", "grupo" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Trivo.Dominio.Modelos.Administrador", b =>
@@ -61,7 +52,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -140,7 +130,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -153,7 +142,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("TipoChat")
                         .IsRequired()
-                        .HasColumnType("tipo_chat");
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("Id")
                         .HasName("PkChatId");
@@ -203,15 +192,21 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool?>("RefrescarCodigo")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool?>("Revocado")
                         .IsRequired()
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool?>("Usado")
                         .IsRequired()
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid?>("UsuarioId")
                         .IsRequired()
@@ -239,11 +234,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("EmparejamientoEstado")
                         .IsRequired()
-                        .HasColumnType("emparejamiento_estado");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("ExpertoEstado")
                         .IsRequired()
-                        .HasColumnType("experto_estado");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<Guid?>("ExpertoId")
                         .IsRequired()
@@ -251,7 +246,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("FkExpertoId");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -260,7 +254,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("ReclutadorEstado")
                         .IsRequired()
-                        .HasColumnType("reclutador_estado");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<Guid?>("ReclutadorId")
                         .IsRequired()
@@ -293,7 +287,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -353,7 +346,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("FkCreadoPorId");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -397,7 +389,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasColumnType("estado_mensaje");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime?>("FechaEnvio")
                         .IsRequired()
@@ -443,7 +435,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("Tipo")
                         .IsRequired()
-                        .HasColumnType("tipo");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<Guid?>("UsuarioId")
                         .IsRequired()
@@ -466,7 +458,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnName("PkReclutadorId");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -500,7 +491,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("EstadoReporte")
                         .IsRequired()
-                        .HasColumnType("estado_reporte");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<Guid?>("MensajeId")
                         .IsRequired()
@@ -558,10 +549,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("EstadoUsuario")
                         .IsRequired()
-                        .HasColumnType("estado_usuario");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaRegistro")
@@ -616,7 +606,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<string>("Nivel")
                         .IsRequired()
-                        .HasColumnType("nivel");
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("UsuarioId", "HabilidadId");
 
