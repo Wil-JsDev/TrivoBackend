@@ -1,3 +1,4 @@
+using Trivo.Aplicacion.Interfaces.Base;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Dominio.Modelos;
 
@@ -6,7 +7,7 @@ namespace Trivo.Aplicacion.Interfaces.Repositorio;
 /// <summary>
 /// Define las operaciones para gestionar intereses dentro del sistema.
 /// </summary>
-public interface IRepositorioInteres
+public interface IRepositorioInteres : IValidacion<Interes>
 {
     /// <summary>
     /// Crea una lista de intereses en la base de datos.
@@ -90,4 +91,25 @@ public interface IRepositorioInteres
         int numeroPagina,
         int tamanoPagina,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Verifica si ya existe un interés con el nombre especificado, sin importar la categoría.
+    /// </summary>
+    /// <param name="nombre">Nombre del interés a validar.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación.</param>
+    /// <returns>
+    /// <c>true</c> si ya existe un interés con ese nombre; de lo contrario, <c>false</c>.
+    /// </returns>
+    Task<bool> NombreExisteAsync(string nombre, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Verifica si ya existe un interés con el nombre especificado dentro de una categoría específica.
+    /// </summary>
+    /// <param name="nombre">Nombre del interés a validar.</param>
+    /// <param name="categoriaId">ID de la categoría donde se validará la existencia del interés.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación.</param>
+    /// <returns>
+    /// <c>true</c> si ya existe un interés con ese nombre en la categoría especificada; de lo contrario, <c>false</c>.
+    /// </returns>
+    Task<bool> NombreCategoriaExisteAsync(string nombre, Guid categoriaId, CancellationToken cancellationToken);
 }
