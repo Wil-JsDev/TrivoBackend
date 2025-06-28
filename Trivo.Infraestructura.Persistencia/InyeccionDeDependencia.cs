@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Trivo.Aplicacion.Interfaces.Base;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Infraestructura.Persistencia.Base;
 using Trivo.Infraestructura.Persistencia.Contexto;
 using Trivo.Infraestructura.Persistencia.Repositorio;
 using Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
@@ -39,6 +41,7 @@ public static class InyeccionDeDependencia
         #region ID
 
         servicio.AddTransient(typeof(IRepositorioGenerico<>), typeof(RepositorioGenerico<>));
+        servicio.AddTransient(typeof(IValidacion<>), typeof(Validacion<>));
         servicio.AddTransient<IRepositorioAdministrador, RepositorioAdministrador>();
         servicio.AddTransient<IRepositorioExperto, RepositorioExperto>();
         servicio.AddTransient<IRepositorioReclutador, RepositorioReclutador>();

@@ -1,22 +1,25 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Trivo.Aplicacion.Interfaces.Base;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Dominio.Modelos;
+using Trivo.Infraestructura.Persistencia.Base;
 using Trivo.Infraestructura.Persistencia.Contexto;
 
 namespace Trivo.Infraestructura.Persistencia.Repositorio;
 
-public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInteres
+public class RepositorioInteres(TrivoContexto trivoContexto) : Validacion<Interes>(trivoContexto), IRepositorioInteres
 {
     public async Task CrearInteresAsync(Interes interes, CancellationToken cancellationToken)
     {
-        await trivoContexto.Set<Interes>().AddAsync(interes, cancellationToken);
-        await trivoContexto.SaveChangesAsync(cancellationToken);
+        await _trivoContexto.Set<Interes>().AddAsync(interes, cancellationToken);
+        await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
     public async Task ActualizarInteresesDeUsuarioAsync(Guid usuarioId, List<Guid> interesIds, CancellationToken cancellationToken)
     {
-        var interesesActualesIds = await trivoContexto.Set<UsuarioInteres>()
+        var interesesActualesIds = await _trivoContexto.Set<UsuarioInteres>()
             .Where(ui => ui.UsuarioId == usuarioId)
             .Select(ui => ui.InteresId!.Value)
             .ToListAsync(cancellationToken);
@@ -25,11 +28,11 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
         var interesesNuevos = interesIds.Except(interesesActualesIds);
 
         // Eliminar solo los que ya no están
-        var relacionesAEliminar = await trivoContexto.Set<UsuarioInteres>()
+        var relacionesAEliminar = await _trivoContexto.Set<UsuarioInteres>()
             .Where(ui => ui.UsuarioId == usuarioId && interesesAEliminar.Contains(ui.InteresId!.Value))
             .ToListAsync(cancellationToken);
 
-        trivoContexto.Set<UsuarioInteres>().RemoveRange(relacionesAEliminar);
+        _trivoContexto.Set<UsuarioInteres>().RemoveRange(relacionesAEliminar);
 
         var relacionesANuevas = interesesNuevos.Select(id => new UsuarioInteres
         {
@@ -37,9 +40,9 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
             InteresId = id
         });
 
-        await trivoContexto.Set<UsuarioInteres>().AddRangeAsync(relacionesANuevas, cancellationToken);
+        await _trivoContexto.Set<UsuarioInteres>().AddRangeAsync(relacionesANuevas, cancellationToken);
         
-        await trivoContexto.SaveChangesAsync(cancellationToken);
+        await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
     
     public async Task<ResultadoPaginado<Interes>> ObtenerInteresesPaginadosAsync(
@@ -47,9 +50,9 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
         int tamanoPagina,
         CancellationToken cancellationToken)
     {
-        var total = await trivoContexto.Set<Interes>().AsNoTracking().CountAsync(cancellationToken);
+        var total = await _trivoContexto.Set<Interes>().AsNoTracking().CountAsync(cancellationToken);
     
-        var intereses = await trivoContexto.Set<Interes>().AsNoTracking()
+        var intereses = await _trivoContexto.Set<Interes>().AsNoTracking()
             .Skip((numeroPagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
             .ToListAsync(cancellationToken);
@@ -64,7 +67,7 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
         CancellationToken cancellationToken
         )
     {
-        var query = trivoContexto.Set<Interes>().AsNoTracking();
+        var query = _trivoContexto.Set<Interes>().AsNoTracking();
 
         IEnumerable<Guid> enumerable = categoriaId.ToList();
         if (enumerable.Any())
@@ -84,7 +87,7 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
     
     public async Task<IEnumerable<Usuario>> ObtenerUsuariosPorCategoriaDeInteresAsync(Guid categoriaId, CancellationToken cancellationToken)
     {
-        return await trivoContexto.Set<Usuario>()
+        return await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Include(u => u.UsuarioInteres)!
             .ThenInclude(ui => ui.Interes)
@@ -98,14 +101,14 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
     
     public async Task<Interes> ObtenerPorIdAsync(Guid interesId, CancellationToken cancellationToken)
     {
-        return (await trivoContexto.Set<Interes>()
+        return (await _trivoContexto.Set<Interes>()
             .AsNoTracking()
             .FirstOrDefaultAsync(interes => interes.Id == interesId, cancellationToken))!;
     }
 
     public async Task<IEnumerable<Usuario>> ObtenerUsuariosPorInteresesAsync(IEnumerable<Guid> interesesId, CancellationToken cancellationToken)
     {
-        return await trivoContexto.Set<Usuario>()
+        return await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Include(u => u.UsuarioInteres)!
             .ThenInclude(us => us.Interes)
@@ -122,7 +125,7 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
         int tamanoPagina,
         CancellationToken cancellationToken)
     {
-        var query = trivoContexto.Set<Interes>()
+        var query = _trivoContexto.Set<Interes>()
             .AsNoTracking()
             .Where(i => i.CategoriaId.HasValue && categoriaIds.Contains(i.CategoriaId!.Value));
 
@@ -139,5 +142,15 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : IRepositorioInter
             .ToListAsync(cancellationToken);
 
         return new ResultadoPaginado<Interes>(intereses, total, numeroPagina, tamanoPagina);
+    }
+
+    public async Task<bool> NombreExisteAsync(string nombre, CancellationToken cancellationToken)
+    {
+        return await Validar(x => x.Nombre == nombre, cancellationToken);
+    }
+
+    public async Task<bool> NombreCategoriaExisteAsync(string nombre, Guid categoriaId, CancellationToken cancellationToken)
+    {
+        return await Validar(x => x.Nombre == nombre && x.CategoriaId == categoriaId, cancellationToken);
     }
 }
