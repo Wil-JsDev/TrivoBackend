@@ -85,7 +85,6 @@ public class AutenticacionServicio(
         {
             TokenAcceso = nuevoTokenAcceso,
             TokenRefresco = nuevoRefreshToken,
-            Expira = DateTime.UtcNow.AddMinutes(_configuraciones.DuracionEnMinutos)
         });
     }
         public string GenerarRefreshToken(Usuario usuario)

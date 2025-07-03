@@ -6,5 +6,4 @@ public class TokenRespuestaDto
     
     public string? TokenRefresco { get; set; }
     
-    public DateTime Expira { get; set; }
 }
