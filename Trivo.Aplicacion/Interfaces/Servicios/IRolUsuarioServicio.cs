@@ -5,5 +5,5 @@ namespace Trivo.Aplicacion.Interfaces.Servicios;
 
 public interface IRolUsuarioServicio
 {
-    Task<IList<Roles>> ObtenerRolesAsync(Usuario usuario, CancellationToken cancellationToken);
+    Task<IList<Roles>> ObtenerRolesAsync(Guid usuarioId, CancellationToken cancellationToken);
 }

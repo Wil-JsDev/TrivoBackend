@@ -33,7 +33,7 @@ public class AutenticacionServicio(
             new Claim("tipo","access")
         };
         
-        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario, cancellationToken);
+        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario.Id ?? Guid.Empty, cancellationToken);
 
         claims.AddRange(roles.Select(rol => new Claim("roles", rol.ToString())));
 
