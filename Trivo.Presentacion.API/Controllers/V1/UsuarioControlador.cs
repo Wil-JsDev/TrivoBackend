@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ConfirmarUsuario;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerDetalles;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -42,6 +43,17 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         return NotFound(resultado.Error);
     }
 
+    [HttpGet("profile/{usuarioId}")]
+    public async Task<IActionResult> ObtenerDetallesPorIdUsuarioAsync([FromRoute] Guid usuarioId, CancellationToken cancellationToken)
+    {
+        ObtenerDetallesUsuarioQuery query = new(usuarioId);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado);
+        
+        return BadRequest(resultado.Error);
+    }
+    
     [HttpPost("auth")]
     public async Task<IActionResult> InicioSesionAsync([FromBody] InicioSesionUsuarioCommand command,
         CancellationToken cancellationToken)
