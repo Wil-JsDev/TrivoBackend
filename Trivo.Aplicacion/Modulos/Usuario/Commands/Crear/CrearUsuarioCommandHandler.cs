@@ -2,10 +2,12 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Email;
+using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
+using Trivo.Dominio.Modelos;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
 
@@ -14,7 +16,10 @@ internal sealed class CrearUsuarioCommandHandler(
     IEmailServicio emailServicio,
     ICodigoServicio codigoServicio,
     ICloudinaryServicio cloudinaryServicio,
-    ILogger<CrearUsuarioCommandHandler> logger
+    ILogger<CrearUsuarioCommandHandler> logger,
+    IRepositorioCategoriaInteres categoriaInteresRepositorio,
+    IRepositorioUsuarioInteres repositorioUsuarioInteres
+    
     ) : ICommandHandler<CrearUsuarioCommand, UsuarioDto>
 {
     public async Task<ResultadoT<UsuarioDto>> Handle(
@@ -23,10 +28,10 @@ internal sealed class CrearUsuarioCommandHandler(
     )
     {
 
-        if (request != null)
+        if (request is null)
         {
             // Validar email duplicado
-            if (await repositorioUsuario.ExisteEmailAsync(request.Email!, cancellationToken))
+            if (await repositorioUsuario.ExisteEmailAsync(request!.Email!, cancellationToken))
             {
                 logger.LogWarning("El email '{Email}' ya está en uso.", request.Email);
 
@@ -80,6 +85,24 @@ internal sealed class CrearUsuarioCommandHandler(
             
             logger.LogInformation("Usuario '{UsuarioId}' creado correctamente.", usuario.Id);
 
+
+            if (!request.Intereses!.Any())
+            {
+                logger.LogWarning("El usuario debe seleccionar al menos un interés. La lista de intereses está vacía.");
+
+                return ResultadoT<UsuarioDto>.Fallo(
+                    Error.Fallo("400", "Debe seleccionar al menos un interés para continuar con el registro.")
+                );
+            }
+            
+            var relacionesInteres = request.Intereses!.Select(interesId => new UsuarioInteres
+            {
+                UsuarioId = usuario.Id,
+                InteresId = interesId
+            }).ToList();
+            
+            await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
+            
             UsuarioDto usuarioDto = new
             (
                 UsuarioId: usuario.Id,

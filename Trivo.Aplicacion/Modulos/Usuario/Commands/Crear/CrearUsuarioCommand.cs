@@ -4,14 +4,16 @@ using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
 
-public sealed record CrearUsuarioCommand
-(
-    string? Nombre, 
-    string? Apellido, 
-    string? Biografia,
-    string? Email,
-    string? Contrasena,
-    string? NombreUsuario,
-    string? Ubicacion,
-    IFormFile? Foto
-) : ICommand<UsuarioDto>;
+public sealed class CrearUsuarioCommand : ICommand<UsuarioDto>
+{
+    public string? Nombre { get; set; }
+    public string? Apellido { get; set; }
+    public string? Biografia { get; set; }
+    public string? Email { get; set; }
+    public string? Contrasena { get; set; }
+    public string? NombreUsuario { get; set; }
+    public string? Ubicacion { get; set; }
+    
+    public List<Guid>? Intereses { get; set; }
+    public IFormFile? Foto { get; set; }
+}
