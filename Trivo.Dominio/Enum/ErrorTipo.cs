@@ -4,5 +4,6 @@ public enum ErrorTipo
 {
     Fallo,
     NoEncontrado,
-    Conflicto
+    Conflicto,
+    NoAutorizado
 }

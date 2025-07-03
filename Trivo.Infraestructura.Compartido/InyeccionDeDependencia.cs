@@ -19,7 +19,8 @@ public static class InyeccionDeDependencia
         #region Configuraciones
 
             servicio.Configure<EmailConfiguraciones>(configuraciones.GetSection("EmailConfiguraciones"));        
-            servicio.Configure<CloudinaryConfiguraciones>(configuraciones.GetSection("CloudinaryConfiguraciones"));        
+            servicio.Configure<CloudinaryConfiguraciones>(configuraciones.GetSection("CloudinaryConfiguraciones"));
+            servicio.Configure<JWTConfiguraciones>(configuraciones.GetSection("JWTConfiguraciones"));
             
         #endregion
         
@@ -42,9 +43,9 @@ public static class InyeccionDeDependencia
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
-                    ValidIssuer = configuraciones["JWTConfiguraciones:Issuer"],
-                    ValidAudience = configuraciones["JWTConfiguraciones:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuraciones["JWTConfiguraciones:Key"]))
+                    ValidIssuer = configuraciones["JWTConfiguraciones:Emisor"],
+                    ValidAudience = configuraciones["JWTConfiguraciones:Audiencia"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuraciones["JWTConfiguraciones:Clave"] ?? string.Empty))
                 };
                 options.Events = new JwtBearerEvents()
                 {
@@ -52,7 +53,7 @@ public static class InyeccionDeDependencia
                     {
                         c.NoResult();
                         c.Response.StatusCode = 500;
-                        c.Response.ContentType = "text/plain";
+                        c.Response.ContentType = "application/json";
                         return c.Response.WriteAsync(c.Exception.ToString());
                     },
 

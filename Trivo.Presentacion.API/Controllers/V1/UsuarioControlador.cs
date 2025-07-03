@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ConfirmarUsuario;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
+using Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -39,6 +40,17 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
             return Ok(resultado);
 
         return NotFound(resultado.Error);
+    }
+
+    [HttpPost("auth")]
+    public async Task<IActionResult> InicioSesionAsync([FromBody] InicioSesionUsuarioCommand command,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado);
+        
+        return BadRequest(resultado.Error);
     }
     
 }

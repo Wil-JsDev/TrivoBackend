@@ -2,15 +2,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Trivo.Presentacion.API.ManejadorExcepciones;
-public class ManejadorExcepcionesGlobal : IExceptionHandler
+public class ManejadorExcepcionesFluentValidation(ILogger<ManejadorExcepcionesFluentValidation> logger)
+    : IExceptionHandler
 {
-    private readonly ILogger<ManejadorExcepcionesGlobal> _logger;
-
-    public ManejadorExcepcionesGlobal(ILogger<ManejadorExcepcionesGlobal> logger)
-    {
-        _logger = logger;
-    }
-
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
@@ -37,12 +31,8 @@ public class ManejadorExcepcionesGlobal : IExceptionHandler
 
             detallesProblema.Extensions.Add("Errores", erroresValidacion);
         }
-        else
-        {
-            detallesProblema.Title = exception.Message;
-        }
 
-        _logger.LogError("Error procesado: {Titulo}", detallesProblema.Title);
+        logger.LogError("Error procesado: {Titulo}", detallesProblema.Title);
 
         detallesProblema.Status = httpContext.Response.StatusCode;
 

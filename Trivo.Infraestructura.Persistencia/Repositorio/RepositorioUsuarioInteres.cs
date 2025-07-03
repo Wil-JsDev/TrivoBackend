@@ -13,6 +13,12 @@ public class RepositorioUsuarioInteres(TrivoContexto trivoContexto) : IRepositor
         await trivoContexto.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task CrearMultiplesUsuarioInteresAsync(List<UsuarioInteres> relaciones, CancellationToken cancellationToken)
+    {
+        await trivoContexto.Set<UsuarioInteres>().AddRangeAsync(relaciones, cancellationToken);
+        await trivoContexto.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<List<UsuarioInteres>> AsociarInteresesAlUsuarioAsync(Guid usuarioId, List<Guid> interesesIds, CancellationToken cancellationToken)
     {
         // Obtener los intereses ya asociados por ese usuario
