@@ -4,10 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Trivo.Aplicacion.Interfaces.Base;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Infraestructura.Persistencia.Base;
 using Trivo.Infraestructura.Persistencia.Contexto;
 using Trivo.Infraestructura.Persistencia.Repositorio;
 using Trivo.Infraestructura.Persistencia.Repositorio.Cuenta;
+using Trivo.Infraestructura.Persistencia.Servicios;
 
 namespace Trivo.Infraestructura.Persistencia;
 
@@ -52,6 +54,8 @@ public static class InyeccionDeDependencia
         servicio.AddTransient<IRepositorioInteres, RepositorioInteres>();
         servicio.AddTransient<IRepositorioUsuarioInteres, RepositorioUsuarioInteres>();
         servicio.AddTransient<IRepositorioCategoriaInteres,  RepositorioCategoriaInteres>();
+        servicio.AddScoped<IRolUsuarioServicio, RolUsuarioServicio>();
+        
         #endregion
 
     }

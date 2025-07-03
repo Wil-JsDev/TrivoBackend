@@ -13,6 +13,14 @@ public interface IRepositorioUsuarioInteres
     /// <param name="usuarioInteres">Entidad de relación UsuarioInteres que contiene los IDs necesarios.</param>
     /// <param name="cancellationToken">Token de cancelación.</param>
     Task CrearUsuarioInteresAsync(UsuarioInteres usuarioInteres, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Crea múltiples relaciones entre usuarios e intereses en la base de datos.
+    /// </summary>
+    /// <param name="relaciones">Lista de objetos <see cref="UsuarioInteres"/> que representan las relaciones a crear.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica si es necesario.</param>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
+    Task CrearMultiplesUsuarioInteresAsync(List<UsuarioInteres> relaciones, CancellationToken cancellationToken);
 
     /// <summary>
     /// Asocia una lista de intereses a un usuario específico, reemplazando las asociaciones existentes.

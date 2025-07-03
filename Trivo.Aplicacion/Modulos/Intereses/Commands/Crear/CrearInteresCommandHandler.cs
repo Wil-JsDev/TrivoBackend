@@ -18,18 +18,23 @@ internal sealed class CrearInteresCommandHandler(
     {
         if (request is null)
         {
-            logger.LogWarning("No se puede crear el Interes");
-            
-            return ResultadoT<InteresDetallesDto>.Fallo(Error.Fallo("400","No se puede crear el Interes"));
+            logger.LogWarning("Solicitud de creación de interés nula. No se recibió información en el cuerpo de la petición.");
+
+            return ResultadoT<InteresDetallesDto>.Fallo(
+                Error.Fallo("400", "No se pudo procesar la solicitud: el cuerpo está vacío o mal formado.")
+            );
         }
-        
-        var categoriaId = await repositorioCategoriaInteres.ObtenerPorIdAsync(request.CategoriaId ?? Guid.Empty, cancellationToken);
-        if (categoriaId is null)
+
+        var categoria = await repositorioCategoriaInteres.ObtenerPorIdAsync(request.CategoriaId ?? Guid.Empty, cancellationToken);
+        if (categoria is null)
         {
-            logger.LogWarning("No se puede crear el Interes");
-            
-            return ResultadoT<InteresDetallesDto>.Fallo(Error.NoEncontrado("404","No se puede crear el Interes"));
+            logger.LogWarning("No se encontró una categoría de interés con el ID proporcionado: {CategoriaId}", request.CategoriaId);
+
+            return ResultadoT<InteresDetallesDto>.Fallo(
+                Error.NoEncontrado("404", "La categoría de interés especificada no existe o el ID es inválido.")
+            );
         }
+
 
         Interes interesEntidad = new()
         {

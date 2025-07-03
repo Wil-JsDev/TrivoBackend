@@ -64,4 +64,8 @@ public class Error
     /// <returns>Una instancia de <see cref="Error"/> que representa un conflicto.</returns>
     public static Error Conflicto(string codigo, string descripcion) =>
         new Error(codigo, descripcion, ErrorTipo.Conflicto);
+
+
+    public static Error NoAutorizado(string codigo, string descripcion) =>
+        new Error(codigo, descripcion, ErrorTipo.NoAutorizado);
 }
