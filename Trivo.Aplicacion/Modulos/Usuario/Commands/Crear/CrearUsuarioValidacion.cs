@@ -45,5 +45,11 @@ public class CrearUsuarioValidacion : AbstractValidator<CrearUsuarioCommand>
                 .Must(f => f!.Length <= 5 * 1024 * 1024)
                 .WithMessage("La imagen no debe superar los 5 MB");
         });
+
+        RuleFor(x => x.Intereses)
+            .NotNull().WithMessage("Debe seleccionar al menos un interés.")
+            .Must(x => x!.Any()).WithMessage("Debe seleccionar al menos un interés.")
+            .Must(x => x!.Distinct().Count() == x.Count).WithMessage("No se permiten intereses duplicados.");
+        
     }
 }
