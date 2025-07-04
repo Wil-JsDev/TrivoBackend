@@ -15,7 +15,7 @@ internal sealed class CrearReclutadorCommandHandler(
 {
     public async Task<ResultadoT<ReclutadorDto>> Handle(CrearReclutadorCommand request, CancellationToken cancellationToken)
     {
-        if (request == null)
+        if (request is null)
         {
             logger.LogWarning("Se recibió un CrearReclutadorCommand nulo.");
             return ResultadoT<ReclutadorDto>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
@@ -25,7 +25,15 @@ internal sealed class CrearReclutadorCommandHandler(
         if (usuario is null)
         {
             logger.LogError("El usuario con id {UsuarioId} no existe.", request.UsuarioId);
+            
             return ResultadoT<ReclutadorDto>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
+        }
+        
+        if (usuario.CuentaConfirmada is false)
+        {
+            logger.LogWarning("Intento de crear un experto con una cuenta no confirmada. UsuarioId: {UsuarioId}", usuario.Id);
+                
+            return ResultadoT<ReclutadorDto>.Fallo(Error.Fallo("403", "El usuario debe confirmar su cuenta para poder crear un experto"));
         }
 
         var reclutador = new Dominio.Modelos.Reclutador
