@@ -9,9 +9,7 @@ public class CrearInteresValidacion : AbstractValidator<CrearInteresCommand>
     {
         RuleFor(x => x.Nombre)
             .NotEmpty()
-            .WithMessage("El nombre no puede ser nulo")
-            .MustAsync(async (nombre, ct) => !await repositorioInteres.NombreExisteAsync(nombre, ct))
-            .WithMessage("Este nombre ya está registrado");
+            .WithMessage("El nombre no puede ser nulo");
         
         RuleFor(x => x.CategoriaId)
             .NotNull()
@@ -20,12 +18,6 @@ public class CrearInteresValidacion : AbstractValidator<CrearInteresCommand>
         RuleFor(x => x.CreadoPor)
             .NotNull()
             .WithMessage("Debe especificar el usuario que crea el interés");
-        
-        // Validación compuesta: mismo nombre en la misma categoría no puede existir
-        RuleFor(x => x)
-            .MustAsync(async (command, ct) =>
-                !await repositorioInteres.NombreCategoriaExisteAsync(command.Nombre, command.CategoriaId ?? Guid.Empty, ct))
-            .WithMessage("Este interés ya existe en la categoría especificada");
         
     }
 }
