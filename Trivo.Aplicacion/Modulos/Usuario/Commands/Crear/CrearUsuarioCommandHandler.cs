@@ -17,7 +17,6 @@ internal sealed class CrearUsuarioCommandHandler(
     ICodigoServicio codigoServicio,
     ICloudinaryServicio cloudinaryServicio,
     ILogger<CrearUsuarioCommandHandler> logger,
-    IRepositorioCategoriaInteres categoriaInteresRepositorio,
     IRepositorioUsuarioInteres repositorioUsuarioInteres
     
     ) : ICommandHandler<CrearUsuarioCommand, UsuarioDto>
@@ -27,9 +26,7 @@ internal sealed class CrearUsuarioCommandHandler(
         CancellationToken cancellationToken
     )
     {
-
-        if (request is null)
-        {
+        
             // Validar email duplicado
             if (await repositorioUsuario.ExisteEmailAsync(request!.Email!, cancellationToken))
             {
@@ -93,13 +90,18 @@ internal sealed class CrearUsuarioCommandHandler(
             
             logger.LogInformation("Usuario '{UsuarioId}' creado correctamente.", usuario.Id);
             
-            var relacionesInteres = request.Intereses!.Select(interesId => new UsuarioInteres
+            if (request.Intereses is not null && request.Intereses.Any())
             {
-                UsuarioId = usuario.Id,
-                InteresId = interesId
-            }).ToList();
+                var relacionesInteres = request.Intereses.Select(interesId => new UsuarioInteres
+                {
+                    UsuarioId = usuario.Id,
+                    InteresId = interesId
+                }).ToList();
+
+                await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken);
+            }
             
-            await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
+            // await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
             
             UsuarioDto usuarioDto = new
             (
@@ -116,10 +118,5 @@ internal sealed class CrearUsuarioCommandHandler(
             );
 
             return ResultadoT<UsuarioDto>.Exito(usuarioDto);
-        }
-        
-        logger.LogWarning("Se recibió un comando CrearUsuarioCommand nulo.");
-
-        return ResultadoT<UsuarioDto>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
     }
 }
