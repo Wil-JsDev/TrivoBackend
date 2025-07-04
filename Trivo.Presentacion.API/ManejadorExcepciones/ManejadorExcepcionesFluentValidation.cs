@@ -11,34 +11,30 @@ public class ManejadorExcepcionesFluentValidation(ILogger<ManejadorExcepcionesFl
         CancellationToken cancellationToken
     )
     {
+        if (exception is not FluentValidation.ValidationException excepcionValidacion)
+            return false; // No es esta excepción, que siga otro handler
+
         var detallesProblema = new ProblemDetails
         {
-            Instance = httpContext.Request.Path
+            Title = "Ocurrieron uno o más errores de validación.",
+            Status = StatusCodes.Status400BadRequest,
+            Instance = httpContext.Request.Path,
+            Detail = excepcionValidacion.Message
         };
 
-        if (exception is FluentValidation.ValidationException excepcionValidacion)
-        {
-            detallesProblema.Title = "Ocurrieron uno o más errores de validación.";
-            detallesProblema.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
-            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        List<string> erroresValidacion = excepcionValidacion.Errors
+            .Select(e => e.ErrorMessage)
+            .ToList();
 
-            List<string> erroresValidacion = new();
+        detallesProblema.Extensions.Add("errors", erroresValidacion);
 
-            foreach (var error in excepcionValidacion.Errors)
-            {
-                erroresValidacion.Add(error.ErrorMessage);
-            }
+        logger.LogError("Error de validación: {Title}", detallesProblema.Title);
 
-            detallesProblema.Extensions.Add("Errores", erroresValidacion);
-        }
+        httpContext.Response.StatusCode = detallesProblema.Status.Value;
+        httpContext.Response.ContentType = "application/json";
 
-        logger.LogError("Error procesado: {Titulo}", detallesProblema.Title);
+        await httpContext.Response.WriteAsJsonAsync(detallesProblema, cancellationToken);
 
-        detallesProblema.Status = httpContext.Response.StatusCode;
-
-        await httpContext.Response.WriteAsJsonAsync(detallesProblema, cancellationToken)
-            .ConfigureAwait(false);
-
-        return true;
+        return true; // Excepción manejada
     }
 }

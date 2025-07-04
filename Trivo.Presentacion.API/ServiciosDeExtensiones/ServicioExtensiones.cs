@@ -7,8 +7,8 @@ public static class ServicioExtensiones
 {
     public static void AgregarExcepciones(this IServiceCollection servicio)
     {
-        servicio.AddExceptionHandler<ManejadorExcepcionesFluentValidation>();
         servicio.AddExceptionHandler<ManejadorDeExcepcionesGlobales>();
+        servicio.AddExceptionHandler<ManejadorExcepcionesFluentValidation>();
     }
     
     public static void AgregarVersionado(this IServiceCollection services)

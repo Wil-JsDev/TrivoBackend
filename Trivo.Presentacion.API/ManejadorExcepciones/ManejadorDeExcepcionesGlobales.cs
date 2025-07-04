@@ -10,16 +10,20 @@ public class ManejadorDeExcepcionesGlobales : IExceptionHandler
         Exception exception, 
         CancellationToken cancellationToken)
     {
-        ProblemDetails problemDetails = new()
+        var detallesProblema = new ProblemDetails
         {
             Title = "Error del servidor",
             Status = StatusCodes.Status500InternalServerError,
+            Instance = httpContext.Request.Path,
             Detail = exception.Message
         };
 
+        // logger.LogError(exception, "Error general capturado");
+
+        httpContext.Response.StatusCode = detallesProblema.Status.Value;
         httpContext.Response.ContentType = "application/json";
-        httpContext.Response.StatusCode = problemDetails.Status.Value;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails,cancellationToken);
+
+        await httpContext.Response.WriteAsJsonAsync(detallesProblema, cancellationToken);
 
         return true;
     }
