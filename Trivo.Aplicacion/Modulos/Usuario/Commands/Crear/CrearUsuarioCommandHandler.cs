@@ -84,16 +84,6 @@ internal sealed class CrearUsuarioCommandHandler(
             );
             
             logger.LogInformation("Usuario '{UsuarioId}' creado correctamente.", usuario.Id);
-
-
-            if (!request.Intereses!.Any())
-            {
-                logger.LogWarning("El usuario debe seleccionar al menos un interés. La lista de intereses está vacía.");
-
-                return ResultadoT<UsuarioDto>.Fallo(
-                    Error.Fallo("400", "Debe seleccionar al menos un interés para continuar con el registro.")
-                );
-            }
             
             var relacionesInteres = request.Intereses!.Select(interesId => new UsuarioInteres
             {
