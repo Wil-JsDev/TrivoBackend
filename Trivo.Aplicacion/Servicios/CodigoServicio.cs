@@ -3,6 +3,7 @@ using Trivo.Aplicacion.DTOs.Email;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 using Trivo.Dominio.Modelos;
 
 namespace Trivo.Aplicacion.Servicios;
@@ -13,7 +14,7 @@ public class CodigoServicio(
     IRepositorioCodigo repositorioCodigo
     ) : ICodigoServicio
 {
-    public async Task<ResultadoT<string>> GenerarCodigoAsync(Guid usuarioId, CancellationToken cancellationToken)
+    public async Task<ResultadoT<string>> GenerarCodigoAsync(Guid usuarioId,TipoCodigo tipoCodigo,CancellationToken cancellationToken)
     {
         var usuario = await repositorioUsuario.ObtenerByIdAsync(usuarioId, cancellationToken);
         if (usuario == null)
@@ -23,10 +24,10 @@ public class CodigoServicio(
             return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado"));
         }
 
-        if (usuario.CuentaConfirmada!.Value)
+        if (tipoCodigo == TipoCodigo.ConfirmacionCuenta && usuario.CuentaConfirmada!.Value)
         {
             logger.LogWarning("El usuario con ID {UsuarioId} ya tiene su cuenta confirmada.", usuarioId);
-    
+            
             return ResultadoT<string>.Fallo(Error.Conflicto("409", "La cuenta ya ha sido confirmada previamente."));
         }
 
@@ -36,7 +37,8 @@ public class CodigoServicio(
         {
             UsuarioId = usuario.Id,
             Valor = codigoGenerado,
-            Expiracion = DateTime.UtcNow.AddMinutes(10)
+            Expiracion = DateTime.UtcNow.AddMinutes(10),
+            Tipo = nameof(tipoCodigo)
         };
 
         await repositorioCodigo.CrearCodigoAsync(codigo, cancellationToken);
