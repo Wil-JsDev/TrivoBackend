@@ -38,7 +38,7 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
 
         var resultado = await mediator.Send(confirmarUsuario, cancellationToken);
         if (resultado.EsExitoso)
-            return Ok(resultado);
+            return Ok(resultado.Valor);
 
         return NotFound(resultado.Error);
     }
@@ -49,7 +49,7 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         ObtenerDetallesUsuarioQuery query = new(usuarioId);
         var resultado = await mediator.Send(query, cancellationToken);
         if (resultado.EsExitoso)
-            return Ok(resultado);
+            return Ok(resultado.Valor);
         
         return BadRequest(resultado.Error);
     }
@@ -60,7 +60,7 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
     {
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
-            return Ok(resultado);
+            return Ok(resultado.Valor);
         
         return BadRequest(resultado.Error);
     }

@@ -19,9 +19,9 @@ public class ReclutadorController(IMediator mediator) : ControllerBase
     {
         var resultado = await mediator.Send(reclutadorCommand, cancellationToken);
         if (resultado.EsExitoso)
-            return Ok(resultado);
+            return Ok(resultado.Valor);
         
-        return BadRequest(resultado);
+        return BadRequest(resultado.Error);
     }
     
 }
