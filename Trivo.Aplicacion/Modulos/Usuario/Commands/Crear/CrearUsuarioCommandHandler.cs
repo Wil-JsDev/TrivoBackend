@@ -73,8 +73,16 @@ internal sealed class CrearUsuarioCommandHandler(
 
             await repositorioUsuario.CrearAsync(usuario, cancellationToken);
 
-            var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+            var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, TipoCodigo.ConfirmacionCuenta, cancellationToken);
 
+            if (!codigo.EsExitoso)
+            {
+                logger.LogError("Falló la generación del código para el usuario '{UsuarioId}'. Error: {Error}",
+                    usuario.Id, codigo.Error!.Descripcion);
+        
+                return ResultadoT<UsuarioDto>.Fallo(codigo.Error!);
+            } 
+            
             await emailServicio.EnviarEmailAsync(
                 new EmailRespuestaDto(
                     Usuario: request.Email!,

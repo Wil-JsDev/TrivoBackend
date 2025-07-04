@@ -1,11 +1,12 @@
 using Trivo.Aplicacion.DTOs.Email;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Interfaces.Servicios;
 
 public interface ICodigoServicio
 {
-    Task<ResultadoT<string>> GenerarCodigoAsync(Guid usuarioId, CancellationToken cancellationToken);
+    Task<ResultadoT<string>> GenerarCodigoAsync(Guid usuarioId,TipoCodigo tipoCodigo,CancellationToken cancellationToken);
     
     Task<ResultadoT<CodigoDto>> ObtenerCodigoAsync(Guid codigoId, CancellationToken cancellationToken);
     
