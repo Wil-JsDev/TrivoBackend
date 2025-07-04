@@ -58,10 +58,10 @@ public class AutenticacionServicio(
         var tokenValidado = manejador.ValidateToken(refreshToken, new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateAudience = false,
             ValidIssuer = _configuraciones.Emisor,
-            ValidAudience = _configuraciones.Audiencia,
-            ValidateLifetime = true,
+            // ValidAudience = _configuraciones.Audiencia,
+            ValidateLifetime = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!)),
             ClockSkew = TimeSpan.Zero
@@ -87,28 +87,28 @@ public class AutenticacionServicio(
             TokenRefresco = nuevoRefreshToken,
         });
     }
-        public string GenerarRefreshToken(Usuario usuario)
+    public string GenerarRefreshToken(Usuario usuario)
+    {
+        var claims = new List<Claim>
         {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("tipo", "refresh")
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("tipo", "refresh")
+        };
 
-            var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
-            
-            var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: _configuraciones.Emisor,
-                audience: _configuraciones.Audiencia,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7), // duración más larga
-                signingCredentials: credenciales
-            );
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7), // duración más larga
+            signingCredentials: credenciales
+        );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
         
 }

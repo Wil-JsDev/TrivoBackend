@@ -21,9 +21,16 @@ internal sealed class CrearExpertoCommandHandler(
             if (usuario is null)
             {
                 logger.LogError($"El usuario con id {request.UsuarioId} no existe");
-                return ResultadoT<ExpertoDto>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
 
-            }   
+                return ResultadoT<ExpertoDto>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
+            }
+
+            if (usuario.CuentaConfirmada is false)
+            {
+                logger.LogWarning("Intento de crear un experto con una cuenta no confirmada. UsuarioId: {UsuarioId}", usuario.Id);
+                
+                return ResultadoT<ExpertoDto>.Fallo(Error.Fallo("403", "El usuario debe confirmar su cuenta para poder crear un experto"));
+            }
             
             var experto = new Dominio.Modelos.Experto
             {

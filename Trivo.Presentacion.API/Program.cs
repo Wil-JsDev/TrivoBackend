@@ -27,10 +27,21 @@ try
     builder.Services.AgregarCapaCompartida(builder.Configuration);
     builder.Services.AgregarVersionado();    
     
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontendDev", policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // React frontend
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
     
     var app = builder.Build();
     
     app.UseExceptionHandler(_ => { });
+    
+    app.UseCors("AllowFrontendDev");
     
     app.UseSerilogRequestLogging();
     
