@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
-using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.JWT;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
 
@@ -30,6 +30,13 @@ internal sealed class InicioSesionUsuarioCommandHandler(
             logger.LogWarning("Inicio de sesión fallido: no se encontró usuario con email {Email}", request.Email);
             
             return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado."));
+        }
+
+        if (emailUsuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
+        {
+            logger.LogWarning("El usuario con correo {Email} está baneado y no puede iniciar sesión.", emailUsuario.Email);
+            
+            return ResultadoT<TokenRespuestaDto>.Fallo(Error.Conflicto("409", "El usuario ha sido baneado y no puede iniciar sesión."));
         }
 
         if (!await repositorioUsuarios.CuentaConfirmadaAsync(emailUsuario.Id!.Value, cancellationToken))
