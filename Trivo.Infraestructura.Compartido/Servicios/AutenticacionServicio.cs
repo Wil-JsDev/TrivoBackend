@@ -58,9 +58,9 @@ public class AutenticacionServicio(
         var tokenValidado = manejador.ValidateToken(refreshToken, new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = false,
+            ValidateAudience = true,
             ValidIssuer = _configuraciones.Emisor,
-            // ValidAudience = _configuraciones.Audiencia,
+            ValidAudience = _configuraciones.Audiencia,
             ValidateLifetime = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!)),
