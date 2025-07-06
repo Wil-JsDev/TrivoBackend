@@ -87,7 +87,7 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        ModificarContrasenaUsuarioCommand command = new(usuarioId, parametroModificarContrasena.Contrasena, parametroModificarContrasena.ConfirmacionDeContrsena);
+        ModificarContrasenaUsuarioCommand command = new(usuarioId, parametroModificarContrasena.Codigo, parametroModificarContrasena.Contrasena, parametroModificarContrasena.ConfirmacionDeContrsena);
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
