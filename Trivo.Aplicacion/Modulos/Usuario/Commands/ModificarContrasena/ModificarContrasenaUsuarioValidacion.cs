@@ -23,5 +23,10 @@ public class ModificarContrasenaUsuarioValidacion : AbstractValidator<ModificarC
             .WithMessage("Debe confirmar la contraseña.")
             .Equal(x => x.Contrasena)
             .WithMessage("La confirmación de la contraseña no coincide.");
+
+        RuleFor(x => x.Codigo)
+            .NotEmpty()
+            .WithMessage("El codigo de confirmación es obligatorio.");
+
     }
 }

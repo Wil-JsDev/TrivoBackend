@@ -42,7 +42,7 @@ internal sealed class OlvidarContrasenaUsuarioCommandHandler(
             await emailServicio.EnviarEmailAsync(
                 new EmailRespuestaDto(
                     Usuario: usuario.Email!,
-                    Cuerpo: EmailTemas.OlvidarContrasena(codigo.Valor, usuario.NombreUsuario!),
+                    Cuerpo: EmailTemas.RecuperacionDeContrasena(usuario.NombreUsuario!, codigo.Valor!),
                     Tema: "Olvidaste la contraseña"
                 )
             );
