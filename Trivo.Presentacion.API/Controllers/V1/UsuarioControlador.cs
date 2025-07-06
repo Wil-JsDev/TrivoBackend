@@ -1,9 +1,12 @@
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Trivo.Aplicacion.DTOs.Cuentas.Contrasenas;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ConfirmarUsuario;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
+using Trivo.Aplicacion.Modulos.Usuario.Commands.ModificarContrasena;
+using Trivo.Aplicacion.Modulos.Usuario.Commands.OlvidarContrsena;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerDetalles;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
@@ -58,6 +61,33 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
     public async Task<IActionResult> InicioSesionAsync([FromBody] InicioSesionUsuarioCommand command,
         CancellationToken cancellationToken)
     {
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+
+    [HttpPost("forgot-password/{usuarioId}")]
+    public async Task<IActionResult> OlvidarContrasenaAsync([FromRoute] Guid usuarioId,
+        CancellationToken cancellationToken)
+    {
+        OlvidarContrasenaUsuarioCommand command = new(usuarioId);
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
+
+    [HttpPost("modify-password/{usuarioId}")]
+    public async Task<IActionResult> ModificarContrasenaAsync(
+        [FromRoute] Guid usuarioId,
+        [FromBody] ParametroModificarContrasenaDto parametroModificarContrasena,
+        CancellationToken cancellationToken
+        )
+    {
+        ModificarContrasenaUsuarioCommand command = new(usuarioId, parametroModificarContrasena.Contrasena, parametroModificarContrasena.ConfirmacionDeContrsena);
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
