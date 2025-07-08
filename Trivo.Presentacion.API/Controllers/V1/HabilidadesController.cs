@@ -2,6 +2,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Habilidades.Commands.Crear;
+using Trivo.Aplicacion.Modulos.Habilidades.Querys.Paginacion;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -21,4 +22,20 @@ public class HabilidadesController(IMediator mediator) : ControllerBase
         
         return BadRequest(resultado.Error);
     }
+
+    [HttpGet("pagination")]
+    public async Task<IActionResult> ObtenerPaginacionHabilidadesAsync(
+        [FromQuery] int numeroPagina,
+        [FromQuery] int tamanoPagina,
+        CancellationToken cancellationToken
+    )
+    {
+        ObtenerPaginasHabilidadesQuery query = new(numeroPagina, tamanoPagina);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+    
 }

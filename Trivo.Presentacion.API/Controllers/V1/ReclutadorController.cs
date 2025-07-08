@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Trivo.Aplicacion.DTOs.Reclutadores;
 using Trivo.Aplicacion.Modulos.Reclutador.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Reclutador.Commands.Crear;
 
@@ -22,6 +23,23 @@ public class ReclutadorController(IMediator mediator) : ControllerBase
             return Ok(resultado.Valor);
         
         return BadRequest(resultado.Error);
+    }
+
+    [HttpPut("{reclutadorId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ActualizarReclutadorAsync(
+        [FromRoute] Guid reclutadorId,
+        [FromBody] ParametroActualizarReclutador parametroActualizarReclutador,
+        CancellationToken cancellationToken
+    )
+    {
+        ActualizarReclutadorCommand command = new(reclutadorId, parametroActualizarReclutador.NombreEmpresa);
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
     }
     
 }
