@@ -1,6 +1,7 @@
 using Serilog;
 using Trivo.Aplicacion;
 using Trivo.Infraestructura.Compartido;
+using Trivo.Infraestructura.Compartido.SignalR.Hubs;
 using Trivo.Infraestructura.Persistencia;
 using Trivo.Presentacion.API.ServiciosDeExtensiones;
 
@@ -60,6 +61,9 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+    
+    app.MapHub<ChatHub>("/hubs/chat");
+
 
     app.Run();
 }
