@@ -35,6 +35,13 @@ internal sealed class CrearInteresCommandHandler(
             );
         }
 
+        //Mismo nombre no puede existir en la categoria especificada
+        if (await repositorioInteres.NombreCategoriaExisteAsync(request.Nombre, request.CategoriaId!.Value, cancellationToken))
+        {
+            logger.LogWarning("Este interes ya existe en la categoria especifica: {CategoriaId}", request.CategoriaId);;
+            
+            return ResultadoT<InteresDetallesDto>.Fallo(Error.Conflicto("409", "Este interés ya existe en la categoría especificada"));
+        }
 
         Interes interesEntidad = new()
         {

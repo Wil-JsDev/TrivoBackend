@@ -17,7 +17,6 @@ internal sealed class CrearUsuarioCommandHandler(
     ICodigoServicio codigoServicio,
     ICloudinaryServicio cloudinaryServicio,
     ILogger<CrearUsuarioCommandHandler> logger,
-    IRepositorioCategoriaInteres categoriaInteresRepositorio,
     IRepositorioUsuarioInteres repositorioUsuarioInteres
     
     ) : ICommandHandler<CrearUsuarioCommand, UsuarioDto>
@@ -27,9 +26,7 @@ internal sealed class CrearUsuarioCommandHandler(
         CancellationToken cancellationToken
     )
     {
-
-        if (request is null)
-        {
+        
             // Validar email duplicado
             if (await repositorioUsuario.ExisteEmailAsync(request!.Email!, cancellationToken))
             {
@@ -73,8 +70,16 @@ internal sealed class CrearUsuarioCommandHandler(
 
             await repositorioUsuario.CrearAsync(usuario, cancellationToken);
 
-            var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+            var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, TipoCodigo.ConfirmacionCuenta, cancellationToken);
 
+            if (!codigo.EsExitoso)
+            {
+                logger.LogError("Falló la generación del código para el usuario '{UsuarioId}'. Error: {Error}",
+                    usuario.Id, codigo.Error!.Descripcion);
+        
+                return ResultadoT<UsuarioDto>.Fallo(codigo.Error!);
+            } 
+            
             await emailServicio.EnviarEmailAsync(
                 new EmailRespuestaDto(
                     Usuario: request.Email!,
@@ -84,24 +89,19 @@ internal sealed class CrearUsuarioCommandHandler(
             );
             
             logger.LogInformation("Usuario '{UsuarioId}' creado correctamente.", usuario.Id);
-
-
-            if (!request.Intereses!.Any())
+            
+            if (request.Intereses is not null && request.Intereses.Any())
             {
-                logger.LogWarning("El usuario debe seleccionar al menos un interés. La lista de intereses está vacía.");
+                var relacionesInteres = request.Intereses.Select(interesId => new UsuarioInteres
+                {
+                    UsuarioId = usuario.Id,
+                    InteresId = interesId
+                }).ToList();
 
-                return ResultadoT<UsuarioDto>.Fallo(
-                    Error.Fallo("400", "Debe seleccionar al menos un interés para continuar con el registro.")
-                );
+                await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken);
             }
             
-            var relacionesInteres = request.Intereses!.Select(interesId => new UsuarioInteres
-            {
-                UsuarioId = usuario.Id,
-                InteresId = interesId
-            }).ToList();
-            
-            await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
+            // await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
             
             UsuarioDto usuarioDto = new
             (
@@ -118,10 +118,5 @@ internal sealed class CrearUsuarioCommandHandler(
             );
 
             return ResultadoT<UsuarioDto>.Exito(usuarioDto);
-        }
-        
-        logger.LogWarning("Se recibió un comando CrearUsuarioCommand nulo.");
-
-        return ResultadoT<UsuarioDto>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
     }
 }

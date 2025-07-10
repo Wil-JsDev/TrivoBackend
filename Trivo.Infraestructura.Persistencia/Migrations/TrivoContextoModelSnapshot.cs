@@ -202,6 +202,10 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
                     b.Property<bool?>("Usado")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Trivo.Aplicacion.DTOs.Expertos;
+using Trivo.Aplicacion.Modulos.Experto.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Experto.Commands.Crear;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
@@ -17,8 +19,26 @@ public class ExpertoController(IMediator mediator) : ControllerBase
     {
         var resultado = await mediator.Send(expertoCommand, cancellationToken);
         if (resultado.EsExitoso)
-            return Ok(resultado);
+            return Ok(resultado.Valor);
         
-        return BadRequest(resultado);
+        return BadRequest(resultado.Error);
     }
+
+    [HttpPut("{expertoId}")]
+    public async Task<IActionResult> ActualizarExpertoAsync(
+        [FromRoute] Guid expertoId,
+        [FromBody] ParametroActualizarExperto parametroActualizarExperto,
+        CancellationToken cancellationToken
+    )
+    {
+        ActualizarExpertoCommand command = new(expertoId,parametroActualizarExperto.DisponibleParaProyectos, parametroActualizarExperto.Contratado);
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
+    
+    
+    
 }

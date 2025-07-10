@@ -33,6 +33,15 @@ internal sealed class CrearHabilidadCommandHandler(
             return ResultadoT<HabilidadDto>.Fallo(Error.NoEncontrado("404", "El usuario especificado no fue encontrado."));
         }
 
+        if (await repositorioHabilidad.NombreExisteAsync(request.Nombre, cancellationToken))
+        {
+            logger.LogWarning("Ya existe una habilidad con el nombre '{Nombre}' al intentar crear una nueva.", request.Nombre);
+
+            return ResultadoT<HabilidadDto>.Fallo(
+                Error.Conflicto("409", "La habilidad especificada ya existe.")
+            );
+        }
+        
         var habilidad = new Habilidad()
         {
             HabilidadId = Guid.NewGuid(),

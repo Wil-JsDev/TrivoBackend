@@ -4,6 +4,7 @@ using Trivo.Aplicacion.DTOs.Email;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Commands.OlvidarContrsena;
 
@@ -28,12 +29,20 @@ internal sealed class OlvidarContrasenaUsuarioCommandHandler(
                 return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado"));
             }
 
-            var codigo = await codigoServicio.GenerarCodigoAsync(request.UsuarioId, cancellationToken);
+            var codigo = await codigoServicio.GenerarCodigoAsync(request.UsuarioId, TipoCodigo.RecuperacionContrasena, cancellationToken);
 
+            if (!codigo.EsExitoso)
+            {
+                logger.LogError("Falló la generación del código para el usuario '{UsuarioId}'. Error: {Error}",
+                    usuario.Id, codigo.Error!.Descripcion);
+        
+                return ResultadoT<string>.Fallo(codigo.Error!);
+            } 
+            
             await emailServicio.EnviarEmailAsync(
                 new EmailRespuestaDto(
                     Usuario: usuario.Email!,
-                    Cuerpo: EmailTemas.OlvidarContrasena(codigo.Valor, usuario.NombreUsuario!),
+                    Cuerpo: EmailTemas.RecuperacionDeContrasena(usuario.NombreUsuario!, codigo.Valor!),
                     Tema: "Olvidaste la contraseña"
                 )
             );

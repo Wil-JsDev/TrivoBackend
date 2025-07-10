@@ -12,6 +12,8 @@ public sealed class Codigo
 
     public bool? Usado { get; set; } = false;
     
+    public string? Tipo { get; set; }
+    
     public DateTime? Expiracion { get; set; }
     
     public DateTime? Creado { get; set; } = DateTime.UtcNow;

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,7 @@ using Trivo.Aplicacion.DTOs.JWT;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Dominio.Configuraciones;
 using Trivo.Infraestructura.Compartido.Servicios;
+using Trivo.Infraestructura.Compartido.SignalR;
 
 namespace Trivo.Infraestructura.Compartido;
 
@@ -86,7 +88,15 @@ public static class InyeccionDeDependencia
             servicio.AddScoped<ICloudinaryServicio, CloudinaryServicio>();
             servicio.AddScoped<IAutenticacionServicio, AutenticacionServicio>();
             
-        #endregion        
+        #endregion
+
+        #region SignalR
+
+        servicio.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+        servicio.AddTransient<INotificadorTiempoReal, NotificadorTiempoReal>();
+        servicio.AddSignalR();
+
+        #endregion
     }
     
 }

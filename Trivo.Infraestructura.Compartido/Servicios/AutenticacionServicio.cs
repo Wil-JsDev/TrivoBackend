@@ -17,7 +17,9 @@ namespace Trivo.Infraestructura.Compartido.Servicios;
 public class AutenticacionServicio(
     IOptions<JWTConfiguraciones> configuraciones, 
     IRolUsuarioServicio rolUsuarioServicio,
-    IRepositorioUsuario repositorioUsuarios
+    IRepositorioUsuario repositorioUsuarios,
+    IObtenerExpertoIdServicio obtenerExpertoIdServicio,
+    IObtenerReclutadorIdServicio obtenerReclutadorIdServicio
     ) : IAutenticacionServicio
 {
     private readonly JWTConfiguraciones _configuraciones = configuraciones.Value;
@@ -32,10 +34,24 @@ public class AutenticacionServicio(
             new Claim("nombreUsuario", usuario.NombreUsuario!),
             new Claim("tipo","access")
         };
-        
-        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario, cancellationToken);
 
+        //Agregar
+        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario.Id ?? Guid.Empty, cancellationToken);
         claims.AddRange(roles.Select(rol => new Claim("roles", rol.ToString())));
+
+        // Obtener experto id si aplica
+        var experto = await obtenerExpertoIdServicio.ObtenerExpertoIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        if (experto.HasValue)
+        {
+            claims.Add(new Claim("expertoId", experto.Value.ToString()));
+        }
+        
+        // Obtener reclutador id si aplica
+        var reclutador = await obtenerReclutadorIdServicio.ObtenerReclutadorIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        if (reclutador.HasValue)
+        {
+            claims.Add(new Claim("reclutadorId", reclutador.Value.ToString()));
+        }
 
         var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
         var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
@@ -61,7 +77,7 @@ public class AutenticacionServicio(
             ValidateAudience = true,
             ValidIssuer = _configuraciones.Emisor,
             ValidAudience = _configuraciones.Audiencia,
-            ValidateLifetime = true,
+            ValidateLifetime = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!)),
             ClockSkew = TimeSpan.Zero
@@ -85,31 +101,30 @@ public class AutenticacionServicio(
         {
             TokenAcceso = nuevoTokenAcceso,
             TokenRefresco = nuevoRefreshToken,
-            Expira = DateTime.UtcNow.AddMinutes(_configuraciones.DuracionEnMinutos)
         });
     }
-        public string GenerarRefreshToken(Usuario usuario)
+    public string GenerarRefreshToken(Usuario usuario)
+    {
+        var claims = new List<Claim>
         {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("tipo", "refresh")
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("tipo", "refresh")
+        };
 
-            var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
-            
-            var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: _configuraciones.Emisor,
-                audience: _configuraciones.Audiencia,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7), // duración más larga
-                signingCredentials: credenciales
-            );
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7), // duración más larga
+            signingCredentials: credenciales
+        );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
         
 }

@@ -1,14 +1,14 @@
 using Asp.Versioning;
-using Trivo.Presentacion.API.ManejadorExcepciones;
+using Trivo.Presentacion.API.Middlewares;
 
 namespace Trivo.Presentacion.API.ServiciosDeExtensiones;
 
 public static class ServicioExtensiones
 {
-    public static void AgregarExcepciones(this IServiceCollection servicio)
+
+    public static void UseManejadorErroresPersonalizado(this IApplicationBuilder construir)
     {
-        servicio.AddExceptionHandler<ManejadorExcepcionesFluentValidation>();
-        servicio.AddExceptionHandler<ManejadorDeExcepcionesGlobales>();
+        construir.UseMiddleware<MiddlewareCapturaExcepciones>();
     }
     
     public static void AgregarVersionado(this IServiceCollection services)
