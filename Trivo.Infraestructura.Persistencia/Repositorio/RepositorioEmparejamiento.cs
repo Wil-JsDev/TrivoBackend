@@ -24,7 +24,8 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
     {
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
-            .Where(e => e.Experto != null && e.Experto.UsuarioId == usuarioId)
+            .Where(e => e.Reclutador!.UsuarioId == usuarioId)
+            .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
     }
 
