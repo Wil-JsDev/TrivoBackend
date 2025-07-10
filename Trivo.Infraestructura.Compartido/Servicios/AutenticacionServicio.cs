@@ -17,7 +17,9 @@ namespace Trivo.Infraestructura.Compartido.Servicios;
 public class AutenticacionServicio(
     IOptions<JWTConfiguraciones> configuraciones, 
     IRolUsuarioServicio rolUsuarioServicio,
-    IRepositorioUsuario repositorioUsuarios
+    IRepositorioUsuario repositorioUsuarios,
+    IObtenerExpertoIdServicio obtenerExpertoIdServicio,
+    IObtenerReclutadorIdServicio obtenerReclutadorIdServicio
     ) : IAutenticacionServicio
 {
     private readonly JWTConfiguraciones _configuraciones = configuraciones.Value;
@@ -32,10 +34,24 @@ public class AutenticacionServicio(
             new Claim("nombreUsuario", usuario.NombreUsuario!),
             new Claim("tipo","access")
         };
-        
-        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario.Id ?? Guid.Empty, cancellationToken);
 
+        //Agregar
+        var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario.Id ?? Guid.Empty, cancellationToken);
         claims.AddRange(roles.Select(rol => new Claim("roles", rol.ToString())));
+
+        // Obtener experto id si aplica
+        var experto = await obtenerExpertoIdServicio.ObtenerExpertoIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        if (experto.HasValue)
+        {
+            claims.Add(new Claim("expertoId", experto.Value.ToString()));
+        }
+        
+        // Obtener reclutador id si aplica
+        var reclutador = await obtenerReclutadorIdServicio.ObtenerReclutadorIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        if (reclutador.HasValue)
+        {
+            claims.Add(new Claim("reclutadorId", reclutador.Value.ToString()));
+        }
 
         var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
         var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
