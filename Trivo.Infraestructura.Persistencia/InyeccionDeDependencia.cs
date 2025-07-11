@@ -42,22 +42,23 @@ public static class InyeccionDeDependencia
 
         #region ID
 
-        servicio.AddTransient(typeof(IRepositorioGenerico<>), typeof(RepositorioGenerico<>));
-        servicio.AddTransient(typeof(IValidacion<>), typeof(Validacion<>));
-        servicio.AddTransient<IRepositorioAdministrador, RepositorioAdministrador>();
-        servicio.AddTransient<IRepositorioExperto, RepositorioExperto>();
-        servicio.AddTransient<IRepositorioReclutador, RepositorioReclutador>();
-        servicio.AddTransient<IRepositorioCodigo,  RepositorioCodigo>();
-        servicio.AddTransient<IRepositorioUsuario, RepositorioUsuario>();
-        servicio.AddTransient<IRepositorioHabilidad, RepositorioHabilidad>();
-        servicio.AddTransient<IRepositorioUsuarioHabilidad, RepositorioUsuarioHabilidad>();
-        servicio.AddTransient<IRepositorioInteres, RepositorioInteres>();
-        servicio.AddTransient<IRepositorioUsuarioInteres, RepositorioUsuarioInteres>();
-        servicio.AddTransient<IRepositorioCategoriaInteres,  RepositorioCategoriaInteres>();
-        servicio.AddTransient<IRepositorioEmparejamiento, RepositorioEmparejamiento>();
-        servicio.AddScoped<IRolUsuarioServicio, RolUsuarioServicio>();
-        servicio.AddScoped<IObtenerExpertoIdServicio, ObtenerExpertoIdServicio>();
-        servicio.AddScoped<IObtenerReclutadorIdServicio, ObtenerReclutadorIdServicio>();
+            servicio.AddTransient(typeof(IRepositorioGenerico<>), typeof(RepositorioGenerico<>));
+            servicio.AddTransient(typeof(IValidacion<>), typeof(Validacion<>));
+            servicio.AddTransient<IRepositorioAdministrador, RepositorioAdministrador>();
+            servicio.AddTransient<IRepositorioExperto, RepositorioExperto>();
+            servicio.AddTransient<IRepositorioReclutador, RepositorioReclutador>();
+            servicio.AddTransient<IRepositorioCodigo,  RepositorioCodigo>();
+            servicio.AddTransient<IRepositorioUsuario, RepositorioUsuario>();
+            servicio.AddTransient<IRepositorioHabilidad, RepositorioHabilidad>();
+            servicio.AddTransient<IRepositorioUsuarioHabilidad, RepositorioUsuarioHabilidad>();
+            servicio.AddTransient<IRepositorioInteres, RepositorioInteres>();
+            servicio.AddTransient<IRepositorioUsuarioInteres, RepositorioUsuarioInteres>();
+            servicio.AddTransient<IRepositorioCategoriaInteres,  RepositorioCategoriaInteres>();
+            servicio.AddTransient<IRepositorioEmparejamiento, RepositorioEmparejamiento>();
+            servicio.AddScoped<IRolUsuarioServicio, RolUsuarioServicio>();
+            servicio.AddScoped<IObtenerExpertoIdServicio, ObtenerExpertoIdServicio>();
+            servicio.AddScoped<IObtenerReclutadorIdServicio, ObtenerReclutadorIdServicio>();
+            servicio.AddScoped<IRepositorioChat, RepositorioChat>();    
         
         #endregion
 
