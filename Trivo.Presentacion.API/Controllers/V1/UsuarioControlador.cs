@@ -120,14 +120,15 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
     [HttpPut("{usuarioId}/profile-photo")]
     public async Task<IActionResult> ActualizarFotoDePerfilAsync(
         [FromRoute] Guid usuarioId,
-        [FromForm] IFormFile imagen
+        [FromForm] ActualizarFotoDePerfilDto imagen,
+        CancellationToken cancellationToken
     )
     {
-        ActualizarImagenUsuarioCommand command = new(usuarioId, imagen);
-        var resultado = await mediator.Send(command);
+        ActualizarImagenUsuarioCommand command = new(usuarioId, imagen.FotoPerfil);
+        var resultado = await mediator.Send(command,cancellationToken); 
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
-
+    
         return BadRequest(resultado.Error);
     }
 }

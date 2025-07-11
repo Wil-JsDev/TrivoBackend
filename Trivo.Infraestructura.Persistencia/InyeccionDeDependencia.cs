@@ -56,6 +56,8 @@ public static class InyeccionDeDependencia
         servicio.AddTransient<IRepositorioCategoriaInteres,  RepositorioCategoriaInteres>();
         servicio.AddTransient<IRepositorioEmparejamiento, RepositorioEmparejamiento>();
         servicio.AddScoped<IRolUsuarioServicio, RolUsuarioServicio>();
+        servicio.AddScoped<IObtenerExpertoIdServicio, ObtenerExpertoIdServicio>();
+        servicio.AddScoped<IObtenerReclutadorIdServicio, ObtenerReclutadorIdServicio>();
         
         #endregion
 
