@@ -11,6 +11,8 @@ public class ActualizarHabilidadValidacion : AbstractValidator<ActualizarHabilid
 
         RuleFor(x => x.HabilidadIds)
             .NotNull().WithMessage("Debe proporcionar la lista de habilidades.")
-            .Must(ids => ids.Any()).WithMessage("Debe proporcionar al menos una habilidad.");
+            .Must(ids => ids.Any()).WithMessage("Debe proporcionar al menos una habilidad.")
+            .Must(ids => ids.Distinct().Count() == ids.Count)
+            .WithMessage("No se permiten intereses duplicados.");
     }
 }
