@@ -10,7 +10,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/experts")]
-public class ExpertoController(IMediator mediator) : ControllerBase
+public class ExpertoControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]

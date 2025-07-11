@@ -12,7 +12,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/interests")]
-public class InteresController(IMediator mediator) : ControllerBase
+public class InteresControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
