@@ -112,4 +112,13 @@ public interface IRepositorioInteres : IValidacion<Interes>
     /// <c>true</c> si ya existe un interés con ese nombre en la categoría especificada; de lo contrario, <c>false</c>.
     /// </returns>
     Task<bool> NombreCategoriaExisteAsync(string nombre, Guid categoriaId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Busca intereses cuyo nombre contenga el texto especificado, sin importar mayúsculas o minúsculas.
+    /// </summary>
+    /// <param name="interes">Texto a buscar dentro del nombre de los intereses.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación de manera anticipada.</param>
+    /// <returns>Una colección de intereses que coinciden parcialmente con el texto proporcionado.</returns>
+    Task<IEnumerable<Interes>> BuscarInteresesPorNombreAsync(string interes, CancellationToken cancellationToken);
+
 }

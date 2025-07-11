@@ -1,7 +1,10 @@
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Trivo.Aplicacion.DTOs.Intereses;
+using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Intereses.Commands.Crear;
+using Trivo.Aplicacion.Modulos.Intereses.Querys.BuscarPorNombre;
 using Trivo.Aplicacion.Modulos.Intereses.Querys.ObtenerInteresCategoriaId;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
@@ -9,7 +12,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/interests")]
-public class InteresController(IMediator mediator) : ControllerBase
+public class InteresControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,4 +43,19 @@ public class InteresController(IMediator mediator) : ControllerBase
         
         return BadRequest(resultado.Error);
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> BuscarInteresPorNombreAsync(
+        [FromQuery] string nombre,
+        CancellationToken cancellationToken
+        )
+    {
+        BuscarInteresesPorNombreQuery query = new(nombre);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+
+        return NotFound(resultado.Error);
+    }
+    
 }

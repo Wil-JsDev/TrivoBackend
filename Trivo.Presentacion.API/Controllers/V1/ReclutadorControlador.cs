@@ -10,7 +10,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/recruiters")]
-public class ReclutadorController(IMediator mediator) : ControllerBase
+public class ReclutadorControlador(IMediator mediator) : ControllerBase
 {
     
     [HttpPost]
