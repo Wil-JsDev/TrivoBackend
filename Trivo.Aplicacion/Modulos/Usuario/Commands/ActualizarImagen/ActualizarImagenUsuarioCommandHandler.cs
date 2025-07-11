@@ -48,6 +48,7 @@ internal sealed class ActualizarImagenUsuarioCommandHandler(
         );
 
         usuario.FotoPerfil = imagen;
+        usuario.FechaActualizacion = DateTime.UtcNow;
 
         await repositorioUsuario.ActualizarAsync(usuario, cancellationToken);
 

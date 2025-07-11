@@ -28,7 +28,8 @@ internal sealed class ActualizarUsuarioBiografiaCommandHandler(
         }
 
         usuario.Biografia = request.Biografia;
-
+        usuario.FechaActualizacion = DateTime.UtcNow;
+        
         await repositorioUsuario.ActualizarAsync(usuario, cancellationToken);
 
         logger.LogInformation("La biografía del usuario con ID {UsuarioId} fue actualizada exitosamente.", request.UsuarioId);
