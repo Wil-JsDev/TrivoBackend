@@ -40,18 +40,18 @@ public class AutenticacionServicio(
         claims.AddRange(roles.Select(rol => new Claim("roles", rol.ToString())));
 
         // Obtener experto id si aplica
-        var experto = await obtenerExpertoIdServicio.ObtenerExpertoIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
-        if (experto.HasValue)
-        {
-            claims.Add(new Claim("expertoId", experto.Value.ToString()));
-        }
+        // var experto = await obtenerExpertoIdServicio.ObtenerExpertoIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        // if (experto.HasValue)
+        // {
+        //     claims.Add(new Claim("expertoId", experto.Value.ToString()));
+        // }
         
         // Obtener reclutador id si aplica
-        var reclutador = await obtenerReclutadorIdServicio.ObtenerReclutadorIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
-        if (reclutador.HasValue)
-        {
-            claims.Add(new Claim("reclutadorId", reclutador.Value.ToString()));
-        }
+        // var reclutador = await obtenerReclutadorIdServicio.ObtenerReclutadorIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
+        // if (reclutador.HasValue)
+        // {
+        //     claims.Add(new Claim("reclutadorId", reclutador.Value.ToString()));
+        // }
 
         var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
         var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
