@@ -15,6 +15,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - redis
+
+  Trivo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: TrivoBackend
+    image: wdelacruzdev/trivo:0.0.5
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - 5026:5026
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}  
+    networks:
+      - redis
 
   pgAdmin:
     image: ${PG_ADMIN_IMAGE}
@@ -58,6 +80,7 @@ services:
       - redis
   
 volumes:
+  TrivoBackend:
   PgAdmin:
   PostgresDb:
   Seq:
