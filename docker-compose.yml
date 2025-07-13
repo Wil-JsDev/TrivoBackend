@@ -19,9 +19,6 @@ services:
       - app-network
 
   Trivo:
-    build:
-      context: .
-      dockerfile: Dockerfile
     container_name: TrivoBackend
     image: wdelacruzdev/trivo:0.0.6
     restart: unless-stopped
