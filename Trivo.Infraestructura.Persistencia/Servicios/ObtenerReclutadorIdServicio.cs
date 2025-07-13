@@ -13,6 +13,6 @@ public class ObtenerReclutadorIdServicio(TrivoContexto trivoContexto) : IObtener
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
         
-        return reclutador!.Id;
+        return reclutador?.Id;
     }
 }

@@ -3,7 +3,12 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.DTOs.Cuentas.Contrasenas;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
+using Trivo.Aplicacion.Modulos.Habilidades.Commands.Actualizar;
+using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Actualizar;
+using Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarBiografia;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarImagen;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ConfirmarUsuario;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
@@ -120,14 +125,70 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
     [HttpPut("{usuarioId}/profile-photo")]
     public async Task<IActionResult> ActualizarFotoDePerfilAsync(
         [FromRoute] Guid usuarioId,
-        [FromForm] IFormFile imagen
+        [FromForm] ActualizarFotoDePerfilDto imagen,
+        CancellationToken cancellationToken
     )
     {
-        ActualizarImagenUsuarioCommand command = new(usuarioId, imagen);
-        var resultado = await mediator.Send(command);
+        ActualizarImagenUsuarioCommand command = new(usuarioId, imagen.FotoPerfil);
+        var resultado = await mediator.Send(command,cancellationToken); 
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+    
+        return BadRequest(resultado.Error);
+    }
+
+    [HttpPut("{usuarioId}/biografia")]
+    public async Task<IActionResult> ActualizarBiografiaAsync( 
+        [FromRoute] Guid usuarioId,
+        [FromBody] ParametroActualizarUsuarioBiografia actualizarUsuarioBiografia,
+        CancellationToken cancellationToken
+        )
+    {
+        ActualizarUsuarioBiografiaCommand command = new(usuarioId, actualizarUsuarioBiografia.Biografia);
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
+
+    [HttpPut("{usuarioId}/intereses")]
+    public async Task<IActionResult> ActualizarInteresesUsuario(
+        [FromRoute] Guid usuarioId,
+        [FromBody] ActualizarInteresDto dto,
+        CancellationToken cancellationToken)
+    {
+        var comando = new ActualizarInteresCommand(usuarioId, dto.InteresIds);
+        var resultado = await mediator.Send(comando, cancellationToken);
+
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
 
-        return BadRequest(resultado.Error);
+        return resultado.Error!.Codigo switch
+        {
+            "400" => BadRequest(resultado.Error),
+            "404" => NotFound(resultado.Error)
+        };
+
     }
+    
+    [HttpPut("{usuarioId}/habilidades")]
+    public async Task<IActionResult> ActualizarHabilidadesUsuario(
+        [FromRoute] Guid usuarioId,
+        [FromBody] ActualizarHabilidadDto dto,
+        CancellationToken cancellationToken)
+    {
+        var comando = new ActualizarHabilidadCommand(usuarioId, dto.HabilidadesIds);
+        var resultado = await mediator.Send(comando, cancellationToken);
+
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+
+        return resultado.Error!.Codigo switch
+        {
+            "400" => BadRequest(resultado.Error),
+            "404" => NotFound(resultado.Error)
+        };
+    }
+    
 }

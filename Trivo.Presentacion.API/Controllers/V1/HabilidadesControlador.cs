@@ -2,6 +2,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Habilidades.Commands.Crear;
+using Trivo.Aplicacion.Modulos.Habilidades.Querys.BuscarPorNombre;
 using Trivo.Aplicacion.Modulos.Habilidades.Querys.Paginacion;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
@@ -9,7 +10,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/ability")]
-public class HabilidadesController(IMediator mediator) : ControllerBase
+public class HabilidadesControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -36,6 +37,20 @@ public class HabilidadesController(IMediator mediator) : ControllerBase
             return Ok(resultado.Valor);
         
         return BadRequest(resultado.Error);
+    }
+    
+    [HttpGet("search")]
+    public async Task<IActionResult> BuscarHabilidadesPorNombreAsync(
+        [FromQuery] string nombre,
+        CancellationToken cancellationToken
+    )
+    {
+        BuscarHabilidadesPorNombreQuery query = new(nombre);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+
+        return NotFound(resultado.Error);
     }
     
 }

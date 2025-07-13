@@ -153,4 +153,14 @@ public class RepositorioInteres(TrivoContexto trivoContexto) : Validacion<Intere
     {
         return await Validar(x => x.Nombre == nombre && x.CategoriaId == categoriaId, cancellationToken);
     }
+
+    public async Task<IEnumerable<Interes>> BuscarInteresesPorNombreAsync(string interes,
+        CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Interes>()
+            .AsNoTracking()
+            .Where(i => EF.Functions.ILike(i.Nombre!, $"%{interes}%"))
+            .ToListAsync(cancellationToken);
+    }
+    
 }

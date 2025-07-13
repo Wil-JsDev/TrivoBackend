@@ -9,9 +9,7 @@ public class CrearHabilidadValidacion : AbstractValidator<CrearHabilidadCommand>
     {
         RuleFor(x => x.Nombre)
             .NotEmpty()
-            .WithMessage("El nombre no puede ser nulo")
-            .MustAsync(async (nombre, ct) => !await repositorioHabilidad.NombreExisteAsync(nombre, ct))
-            .WithMessage("Este nombre ya está registrado.");
+            .WithMessage("El nombre no puede ser nulo");
         
         RuleFor(x => x.UsearioId)
             .NotEmpty()

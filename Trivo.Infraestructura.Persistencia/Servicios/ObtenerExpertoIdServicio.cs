@@ -13,6 +13,6 @@ public class ObtenerExpertoIdServicio( TrivoContexto trivoContexto ) : IObtenerE
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
         
-        return experto!.Id;
+        return experto?.Id;
     }
 }

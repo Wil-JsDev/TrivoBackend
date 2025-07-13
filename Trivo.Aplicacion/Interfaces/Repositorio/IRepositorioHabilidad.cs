@@ -57,4 +57,12 @@ public interface IRepositorioHabilidad : IValidacion<Habilidad>
     /// Un valor booleano que indica si existe (<c>true</c>) o no (<c>false</c>) un interés con el nombre dado.
     /// </returns>
     Task<bool> NombreExisteAsync(string nombre, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Busca habilidades cuyo nombre contenga el texto especificado, sin importar mayúsculas o minúsculas.
+    /// </summary>
+    /// <param name="habilidad">Texto a buscar dentro del nombre de las habilidades.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación de manera anticipada.</param>
+    /// <returns>Una colección de habilidades que coinciden parcialmente con el texto proporcionado.</returns>
+    Task<IEnumerable<Habilidad>> BuscarHabilidadesPorNombreAsync(string habilidad, CancellationToken cancellationToken);
 }

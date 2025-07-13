@@ -81,4 +81,13 @@ public class RepositorioHabilidad(TrivoContexto trivoContexto) : Validacion<Habi
         return await Validar(x => x.Nombre == nombre, cancellationToken);
     }
     
+    public async Task<IEnumerable<Habilidad>> BuscarHabilidadesPorNombreAsync(string habilidad,
+        CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Habilidad>()
+            .AsNoTracking()
+            .Where(i => EF.Functions.ILike(i.Nombre!, $"%{habilidad}%"))
+            .ToListAsync(cancellationToken);
+    }
+    
 }

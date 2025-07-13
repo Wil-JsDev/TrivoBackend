@@ -42,6 +42,7 @@ internal sealed class ActualizarUsuarioCommandHandler(
 
             usuario.NombreUsuario = request.NombreUsuario;
             usuario.Email = request.Email;
+            usuario.FechaActualizacion = DateTime.UtcNow;
 
             await repositorioUsuario.ActualizarAsync(usuario, cancellationToken);
 
