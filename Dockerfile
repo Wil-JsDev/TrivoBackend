@@ -25,9 +25,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
-COPY Trivo.Presentacion.API/appsettings.json .
-COPY Trivo.Presentacion.API/appsettings.Production.json .
-
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 5026
