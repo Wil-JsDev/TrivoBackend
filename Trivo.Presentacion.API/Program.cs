@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Trivo.Aplicacion;
 using Trivo.Infraestructura.Compartido;
 using Trivo.Infraestructura.Compartido.SignalR.Hubs;
 using Trivo.Infraestructura.Persistencia;
+using Trivo.Infraestructura.Persistencia.Contexto;
 using Trivo.Presentacion.API.ServiciosDeExtensiones;
 
 try 
@@ -45,6 +47,12 @@ try
     });
     
     var app = builder.Build();
+    
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<TrivoContexto>();
+        db.Database.Migrate(); // Aplica las migraciones automáticamente
+    }
     
     app.UseExceptionHandler(_ => { });
     
