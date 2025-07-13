@@ -15,27 +15,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
-
-  Trivo:
-    container_name: TrivoBackend
-    image: wdelacruzdev/trivo:0.0.6
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - 5026:5026
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ASPNETCORE_URLS=${ASPNETCORE_URLS}  
-    networks:
-      - app-network
-      - redis
-
+      
   pgAdmin:
     image: ${PG_ADMIN_IMAGE}
     container_name: PgAdmin
@@ -50,8 +30,6 @@ services:
       - ${PGADMIN_PORTS}:80
     volumes:
       - PgAdmin:/var/lib/pgadmin
-    networks:
-      - app-network
 
   seq:
     image: ${SEQ_IMAGE}
@@ -64,8 +42,6 @@ services:
       - ${SEQ_PORT_UI}:80
     volumes:
       - Seq:/data
-    networks:
-      - app-network
   
   redis:
     image: ${REDIS_IMAGE}
@@ -82,13 +58,10 @@ services:
       - redis
   
 volumes:
-  TrivoBackend:
   PgAdmin:
   PostgresDb:
   Seq:
     
 networks:
-  app-network:
-    driver: bridge
   redis:
     driver: bridge
