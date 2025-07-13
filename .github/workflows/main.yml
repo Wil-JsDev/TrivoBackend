@@ -1,0 +1,45 @@
+name: Docker image CI
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+    
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Git Semantic Version
+      uses: PaulHatch/semantic-version@v4.0.3
+      with: 
+        major_pattern: "major"
+        minor_pattern: "feat"
+        format: "${major}.${minor}.${patch}-prerelease${increment}"     
+      id: version
+
+    - name: Login to Docker hub
+      uses: docker/login-actions@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name:  Build and push
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: wdelacruzdev/trivo-backend:${{ env.NEW_VERSION }}
