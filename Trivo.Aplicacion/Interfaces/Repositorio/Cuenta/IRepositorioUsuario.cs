@@ -130,4 +130,11 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
     /// <returns>Una colección de usuarios con sus intereses.</returns>
     Task<IEnumerable<Usuario>> ObtenerTodosUsuariosConInteresesYHabilidades(CancellationToken cancellationToken);
+
+
+    Task<IEnumerable<UsuarioInteres>> ObtenerInteresesPorUsuarioIdAsync(Guid usuarioId,
+        CancellationToken cancellationToken);
+    
+    Task<IEnumerable<UsuarioHabilidad>> ObtenerHabilidadesPorUsuarioIdAsync(Guid usuarioId,
+        CancellationToken cancellationToken);
 }

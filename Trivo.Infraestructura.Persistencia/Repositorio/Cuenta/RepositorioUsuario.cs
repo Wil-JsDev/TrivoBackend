@@ -70,9 +70,9 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .AsNoTracking()
             .Where(u => u.Id == usuarioId)
             .Include(u => u.UsuarioHabilidades)!
-                .ThenInclude(uh => uh.Habilidad)
+            .ThenInclude(uh => uh.Habilidad)
             .Include(u => u.UsuarioInteres)!
-                .ThenInclude(ui => ui.Interes)
+            .ThenInclude(ui => ui.Interes)
             .Select(u => new Usuario
             {
                 Id = u.Id,
@@ -81,17 +81,22 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
                 Ubicacion = u.Ubicacion,
                 Biografia = u.Biografia,
                 FotoPerfil = u.FotoPerfil,
+
                 UsuarioHabilidades = u.UsuarioHabilidades!
                     .Select(uh => new UsuarioHabilidad
                     {
+                        HabilidadId = uh.HabilidadId, // ✅ Incluido para que no llegue como Guid.Empty
                         Habilidad = new Habilidad
                         {
+                            HabilidadId = uh.HabilidadId, // opcional pero recomendable si se usa luego
                             Nombre = uh.Habilidad!.Nombre
                         }
                     }).ToList(),
+
                 UsuarioInteres = u.UsuarioInteres!
                     .Select(ui => new UsuarioInteres
                     {
+                        InteresId = ui.InteresId, // ✅ Incluido para que no llegue como Guid.Empty
                         Interes = new Interes
                         {
                             Nombre = ui.Interes!.Nombre
@@ -154,6 +159,22 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Include(u => u.UsuarioHabilidades)!
                 .ThenInclude(uh => uh.Habilidad)
             .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<IEnumerable<UsuarioInteres>> ObtenerInteresesPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<UsuarioInteres>()
+            .Where(ui => ui.UsuarioId == usuarioId)
+            .Include(ui => ui.Interes)
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<IEnumerable<UsuarioHabilidad>> ObtenerHabilidadesPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<UsuarioHabilidad>()
+            .Where(ui => ui.UsuarioId == usuarioId)
+            .Include(ui => ui.Habilidad)
             .ToListAsync(cancellationToken);
     }
     
