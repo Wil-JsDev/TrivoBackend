@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
-using Trivo.Aplicacion.Interfaces.Servicios;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Infraestructura.Compartido.SignalR.Hubs;
 
 namespace Trivo.Infraestructura.Compartido.SignalR;

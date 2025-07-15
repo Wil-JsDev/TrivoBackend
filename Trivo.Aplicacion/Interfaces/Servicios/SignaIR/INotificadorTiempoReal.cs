@@ -1,4 +1,4 @@
-namespace Trivo.Aplicacion.Interfaces.Servicios;
+namespace Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 
 public interface INotificadorTiempoReal
 {

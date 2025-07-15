@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Dominio.Modelos;
 using Trivo.Infraestructura.Persistencia.Contexto;
 
@@ -30,4 +31,21 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
                      .Any(i => interesesIds.Contains(i.Id ?? Guid.Empty))))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<bool> EsUsuarioExpertoAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await ValidarAsync(x => x.UsuarioId == usuarioId, cancellationToken);
+    }
+
+    public async Task<Experto?> ObtenerDetallesExpertoAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Experto>()
+            .AsNoTracking()
+            .Include(e => e.Usuario)
+                .ThenInclude(u => u!.UsuarioHabilidades)
+            .Include(e => e.Usuario)
+                .ThenInclude(u => u!.UsuarioInteres)
+            .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
+    }
+    
 }

@@ -5,6 +5,7 @@ using Trivo.Aplicacion.DTOs.Cuentas.Contrasenas;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Habilidades;
 using Trivo.Aplicacion.DTOs.Intereses;
+using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Modulos.Habilidades.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Actualizar;
@@ -15,14 +16,19 @@ using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ModificarContrasena;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.OlvidarContrsena;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerBiografia;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerDetalles;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerFotoDePerfil;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerHabilidades;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerInteres;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/users")]
-public class UsuarioControlador(IMediator mediator) : ControllerBase
+public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo) : ControllerBase
 {
 
     [HttpPost]
@@ -137,7 +143,21 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         return BadRequest(resultado.Error);
     }
 
-    [HttpPut("{usuarioId}/biografia")]
+    [HttpGet("{usuarioId}/profile-photo")]
+    public async Task<IActionResult> ObtenerFotoDePerfilPorUsuarioIdAsync(
+        [FromRoute] Guid  usuarioId,
+        CancellationToken cancellationToken
+        )
+    {
+        ObtenerFotoPerfilPorUsuarioIdQuery query = new(usuarioId);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
+
+    [HttpPut("{usuarioId}/bio")]
     public async Task<IActionResult> ActualizarBiografiaAsync( 
         [FromRoute] Guid usuarioId,
         [FromBody] ParametroActualizarUsuarioBiografia actualizarUsuarioBiografia,
@@ -152,7 +172,18 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         return NotFound(resultado.Error);
     }
 
-    [HttpPut("{usuarioId}/intereses")]
+    [HttpGet("{usuarioId}/bio")]
+    public async Task<IActionResult> ObtenerBiografiaPorUsuarioIdAsync([FromRoute] Guid usuarioId, CancellationToken cancellationToken)
+    {
+        ObtenerBiografiaPorUsuarioIdQuery query = new(usuarioId);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
+    
+    [HttpPut("{usuarioId}/interests")]
     public async Task<IActionResult> ActualizarInteresesUsuario(
         [FromRoute] Guid usuarioId,
         [FromBody] ActualizarInteresDto dto,
@@ -171,8 +202,22 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         };
 
     }
+
+    [HttpGet("{usuarioId}/interests")]
+    public async Task<IActionResult> ObtenerBiogrfiaPorUsuarioIdAsync(
+        [FromRoute] Guid usuarioId,
+        CancellationToken cancellationToken
+        )
+    {
+        ObtenerInteresPorUsuarioIdQuery query = new(usuarioId);
+        var  resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
     
-    [HttpPut("{usuarioId}/habilidades")]
+    [HttpPut("{usuarioId}/ability")]
     public async Task<IActionResult> ActualizarHabilidadesUsuario(
         [FromRoute] Guid usuarioId,
         [FromBody] ActualizarHabilidadDto dto,
@@ -190,5 +235,40 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
             "404" => NotFound(resultado.Error)
         };
     }
+
+    [HttpGet("{usuarioId}/ability")]
+    public async Task<IActionResult> ObtenerHabilidadesPorUsuarioIdAsync(
+        [FromRoute]  Guid usuarioId,
+        CancellationToken cancellationToken
+        )
+    {
+        ObtenerHabilidadesPorUsuarioIdQuery query = new(usuarioId);
+        var  resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return NotFound(resultado.Error);
+    }
     
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerificarCorreo([FromQuery] string email, CancellationToken cancellationToken)
+    {
+        var resultado = await validarCorreo.ValidarCorreoAsync(email, cancellationToken);
+
+        if (!resultado.EsExitoso)
+            return BadRequest(resultado.Error);
+
+        return Ok(resultado.Valor);
+    }
+    
+    [HttpPost("recommended-users/stream")]
+    public async Task<IActionResult> EmitirUsuariosRecomendadosTiempoReal([FromQuery] Guid usuarioId, CancellationToken cancellationToken)
+    {
+        RecomendacionUsuariosQuery query = new(usuarioId); 
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
 }

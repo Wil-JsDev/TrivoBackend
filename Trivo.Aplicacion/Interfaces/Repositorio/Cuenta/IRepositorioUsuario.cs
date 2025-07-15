@@ -115,4 +115,26 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <param name="cancellationToken">Token para cancelar la operación de manera asíncrona si es necesario.</param>
     /// <returns>Un usuario con sus detalles completos.</returns>
     Task<Usuario> ObtenerDetallesUsuarioPorIdAsync(Guid usuarioId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Obtiene un usuario específico junto con sus intereses.
+    /// </summary>
+    /// <param name="usuarioId">El identificador único del usuario.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
+    /// <returns>Un usuario con sus intereses o null si no se encuentra.</returns>
+    Task<Usuario?> ObtenerUsuarioConInteresYHabilidades(Guid usuarioId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Obtiene todos los usuarios incluyendo sus intereses.
+    /// </summary>
+    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
+    /// <returns>Una colección de usuarios con sus intereses.</returns>
+    Task<IEnumerable<Usuario>> ObtenerTodosUsuariosConInteresesYHabilidades(CancellationToken cancellationToken);
+
+
+    Task<IEnumerable<UsuarioInteres>> ObtenerInteresesPorUsuarioIdAsync(Guid usuarioId,
+        CancellationToken cancellationToken);
+    
+    Task<IEnumerable<UsuarioHabilidad>> ObtenerHabilidadesPorUsuarioIdAsync(Guid usuarioId,
+        CancellationToken cancellationToken);
 }

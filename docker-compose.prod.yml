@@ -1,0 +1,118 @@
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE}
+    container_name: PostgreSQL
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORTS}:5432
+    volumes:
+      - PostgresDb:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  trivoBackend:
+    container_name: TrivoBackend
+    image: wdelacruzdev/trivo-backend:0.1.0-prerelease244
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - 5026:5026
+    environment:
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}
+    networks:
+      - app-network
+      - redis
+
+  pgAdmin:
+    image: ${PG_ADMIN_IMAGE}
+    container_name: PgAdmin
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - ${PGADMIN_PORTS}:80
+    volumes:
+      - PgAdmin:/var/lib/pgadmin
+    networks:
+      - app-network
+
+  seq:
+    image: ${SEQ_IMAGE}
+    container_name: SEQ
+    restart: always
+    environment:
+      - ACCEPT_EULA=${SEQ_ACCEPT_EULA}
+    ports:
+      - ${SEQ_PORT}:5341
+      - ${SEQ_PORT_UI}:80
+    volumes:
+      - Seq:/data
+    networks:
+      - app-network
+  
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: Redis
+    restart: always
+    ports:
+      - ${REDIS_PORTS}:6379
+    healthcheck:
+      test: ["CMD","redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redis
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "4000:11434"
+    restart: unless-stopped
+    volumes:
+      - ollama-data-tiny:/root/.ollama
+    networks:
+      - app-network
+    entrypoint: /bin/sh -c "\
+      ollama serve & \
+      until ollama list; do \
+      echo 'Esperando a que Ollama esté listo...'; \
+      sleep 1; \
+      done && \
+      if ! ollama list | grep -q 'tinyllama:1.1b'; then \
+      echo 'Descargando modelo tinyllama:1.1b...'; \
+      ollama pull tinyllama:1.1b; \
+      else \
+      echo 'Modelo tinyllama:1.1b ya descargado.'; \
+      fi && \
+      tail -f /dev/null"
+
+volumes:
+  TrivoBackend:
+  PgAdmin:
+  PostgresDb:
+  Seq:
+  ollama-data-tiny:
+
+networks:
+  app-network:
+    driver: bridge
+  redis:
+    driver: bridge
