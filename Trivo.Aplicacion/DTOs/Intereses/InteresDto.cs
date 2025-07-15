@@ -2,5 +2,6 @@ namespace Trivo.Aplicacion.DTOs.Intereses;
 
 public sealed record InteresDto
 (
-    string Nombre
+    Guid InteresId,
+    string? Nombre
 );
