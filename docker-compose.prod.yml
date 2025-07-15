@@ -20,7 +20,7 @@ services:
 
   trivoBackend:
     container_name: TrivoBackend
-    image: wdelacruzdev/trivo-backend:0.1.0-prerelease244
+    image: wdelacruzdev/trivo-backend:0.1.0-prerelease271
     restart: unless-stopped
     depends_on:
       postgres:
@@ -65,7 +65,7 @@ services:
       - Seq:/data
     networks:
       - app-network
-  
+
   redis:
     image: ${REDIS_IMAGE}
     container_name: Redis
