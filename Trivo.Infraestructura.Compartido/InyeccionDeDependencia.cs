@@ -28,10 +28,9 @@ public static class InyeccionDeDependencia
             servicio.Configure<JWTConfiguraciones>(configuraciones.GetSection("JWTConfiguraciones"));
             servicio.Configure<OllamaOpciones>(configuraciones.GetSection("OllamaOpciones"));
 
-            servicio.AddHttpClient<IOllamaServicio, OllamaServicio>((sp, client) =>
+            servicio.AddHttpClient<IOllamaServicio, OllamaServicio>((client) =>
             {
-                var opciones = sp.GetRequiredService<IOptions<OllamaOpciones>>().Value;
-                client.BaseAddress = new Uri(opciones.BaseUrl);
+                client.BaseAddress = new Uri(configuraciones["OllamaOpciones:BaseUrl"] ?? string.Empty);
             });
             
         #endregion

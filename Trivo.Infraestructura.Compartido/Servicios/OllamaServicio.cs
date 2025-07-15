@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Trivo.Aplicacion.Interfaces.Servicios.IA;
+using Trivo.Dominio.Configuraciones;
 
 namespace Trivo.Infraestructura.Compartido.Servicios;
 
@@ -8,10 +10,16 @@ public class OllamaServicio : IOllamaServicio
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OllamaServicio> _logger;
-    public OllamaServicio(ILogger<OllamaServicio> logger,HttpClient httpClient)
+    private readonly OllamaOpciones _ollamaOpciones; 
+
+    public OllamaServicio(
+        ILogger<OllamaServicio> logger,
+        HttpClient httpClient,
+        IOptions<OllamaOpciones> ollamaOpciones)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _ollamaOpciones = ollamaOpciones.Value; 
         _logger.LogInformation("BaseAddress de HttpClient para OllamaServicio: {BaseAddress}", _httpClient.BaseAddress);
     }
     
@@ -27,7 +35,8 @@ public class OllamaServicio : IOllamaServicio
             }
         };
 
-        var respuesta = await _httpClient.PostAsJsonAsync(new Uri("http://localhost:4000/api/chat"), solicitud);
+        var url = $"{_ollamaOpciones.BaseUrl.TrimEnd('/')}/api/chat";
+        var respuesta = await _httpClient.PostAsJsonAsync(url, solicitud);
         respuesta.EnsureSuccessStatusCode();
 
         var contenidoJson = await respuesta.Content.ReadFromJsonAsync<RespuestaOllama>();
