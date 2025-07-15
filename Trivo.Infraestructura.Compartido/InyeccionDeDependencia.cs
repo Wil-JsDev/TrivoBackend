@@ -60,14 +60,22 @@ public static class InyeccionDeDependencia
                 };
                 options.Events = new JwtBearerEvents()
                 {
-                    OnAuthenticationFailed = c =>
+                    OnAuthenticationFailed = context =>
                     {
-                        c.NoResult();
-                        c.Response.StatusCode = 500;
-                        c.Response.ContentType = "application/json";
-                        return c.Response.WriteAsync(c.Exception.ToString());
-                    },
+                        if (context.Exception is SecurityTokenExpiredException)
+                        {
+                            context.Response.StatusCode = 401;
+                            context.Response.ContentType = "application/json";
+                            var resultado = JsonConvert.SerializeObject(new JWTRespuesta(true, "El token ha expirado"));
+                            return context.Response.WriteAsync(resultado);
+                        }
 
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+                        var resultadoGeneral = JsonConvert.SerializeObject(new JWTRespuesta(true, "Token inválido o error de autenticación"));
+                        return context.Response.WriteAsync(resultadoGeneral);
+                    },
+                    
                     OnChallenge = c =>
                     {
                         c.HandleResponse();

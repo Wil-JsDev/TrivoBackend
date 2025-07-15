@@ -1,6 +1,6 @@
 using Trivo.Dominio.Modelos;
 
-namespace Trivo.Aplicacion.Interfaces.Repositorio;
+namespace Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 
 public interface IRepositorioReclutador: IRepositorioGenerico<Reclutador>
 {
@@ -15,5 +15,11 @@ public interface IRepositorioReclutador: IRepositorioGenerico<Reclutador>
         List<Guid> habilidadesIds, 
         List<Guid> interesesIds, 
         CancellationToken cancellationToken);
-
+    
+    /// <summary>
+    /// Verifica si el usuario está registrado como reclutador.
+    /// </summary>
+    Task<bool> EsUsuarioReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken);
+    
+    Task<Reclutador?> ObtenerDetallesReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken);
 }

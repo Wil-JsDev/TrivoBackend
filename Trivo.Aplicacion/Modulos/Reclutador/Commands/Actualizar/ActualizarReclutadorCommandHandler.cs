@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
-using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Utilidades;
 
 namespace Trivo.Aplicacion.Modulos.Reclutador.Commands.Actualizar;

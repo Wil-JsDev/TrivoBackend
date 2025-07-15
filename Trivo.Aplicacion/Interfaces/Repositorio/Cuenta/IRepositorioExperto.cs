@@ -1,6 +1,6 @@
 using Trivo.Dominio.Modelos;
 
-namespace Trivo.Aplicacion.Interfaces.Repositorio;
+namespace Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 
 /// <summary>
 /// Define las operaciones específicas para la entidad <see cref="Experto"/>, 
@@ -21,4 +21,11 @@ public interface IRepositorioExperto : IRepositorioGenerico<Experto>
         List<Guid> habilidadesIds, 
         List<Guid> interesesIds, 
         CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Verifica si el usuario está registrado como experto.
+    /// </summary>
+    Task<bool> EsUsuarioExpertoAsync(Guid usuarioId, CancellationToken cancellationToken);
+
+    Task<Experto?> ObtenerDetallesExpertoAsync(Guid usuarioId, CancellationToken cancellationToken);
 }

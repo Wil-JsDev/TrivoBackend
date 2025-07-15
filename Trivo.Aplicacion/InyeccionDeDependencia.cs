@@ -23,7 +23,8 @@ public static class InyeccionDeDependencia
         #region Servicios
 
             servicio.AddScoped<ICodigoServicio, CodigoServicio>();
-
+            servicio.AddScoped<IValidarCorreo, ValidarCorreo>();
+            
         #endregion
         
     }
