@@ -16,6 +16,7 @@ using Trivo.Aplicacion.Modulos.Usuario.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ModificarContrasena;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.OlvidarContrsena;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerDetalles;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -191,4 +192,14 @@ public class UsuarioControlador(IMediator mediator) : ControllerBase
         };
     }
     
+    [HttpPost("recommended-users/stream")]
+    public async Task<IActionResult> EmitirUsuariosRecomendadosTiempoReal([FromQuery] Guid usuarioId, CancellationToken cancellationToken)
+    {
+        RecomendacionUsuariosQuery query = new(usuarioId); 
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
 }
