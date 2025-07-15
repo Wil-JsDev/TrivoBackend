@@ -18,6 +18,11 @@ docker compose up -d
 
 ---
 
+### Comando para iniciar entorno de produccion
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
 ## Configuración del archivo .env
 
 

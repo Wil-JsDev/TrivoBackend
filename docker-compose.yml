@@ -16,6 +16,28 @@ services:
       timeout: 5s
       retries: 5
       
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "4000:11434"
+    restart: unless-stopped
+    volumes:
+      - ollama-data-tiny:/root/.ollama
+    entrypoint: /bin/sh -c "\
+      ollama serve & \
+      until ollama list; do \
+      echo 'Esperando a que Ollama esté listo...'; \
+      sleep 1; \
+      done && \
+      if ! ollama list | grep -q 'tinyllama:1.1b'; then \
+      echo 'Descargando modelo tinyllama:1.1b...'; \
+      ollama pull tinyllama:1.1b; \
+      else \
+      echo 'Modelo tinyllama:1.1b ya descargado.'; \
+      fi && \
+      tail -f /dev/null"
+
   pgAdmin:
     image: ${PG_ADMIN_IMAGE}
     container_name: PgAdmin
@@ -61,6 +83,7 @@ volumes:
   PgAdmin:
   PostgresDb:
   Seq:
+  ollama-data-tiny:
     
 networks:
   redis:

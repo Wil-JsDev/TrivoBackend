@@ -133,4 +133,28 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .ToListAsync(cancellationToken);
        
     }
+    public async Task<Usuario?> ObtenerUsuarioConInteresYHabilidades(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!
+                .ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!
+                .ThenInclude(uh => uh.Habilidad)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(u => u.Id == usuarioId, cancellationToken);
+    }
+    
+    public async Task<IEnumerable<Usuario>> ObtenerTodosUsuariosConInteresesYHabilidades(CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!
+                .ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!
+                .ThenInclude(uh => uh.Habilidad)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+    }
+    
 }
