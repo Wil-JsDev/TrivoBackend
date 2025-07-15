@@ -40,9 +40,10 @@ try
     {
         options.AddPolicy("AllowFrontendDev", policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // React frontend
+            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:3000")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
     });
     
@@ -57,6 +58,10 @@ try
     app.UseExceptionHandler(_ => { });
     
     app.UseCors("AllowFrontendDev");
+    
+    app.UseRouting();
+    
+    app.UseWebSockets();
     
     app.UseSerilogRequestLogging();
     
@@ -77,7 +82,7 @@ try
     app.MapControllers();
     
     app.MapHub<ChatHub>("/hubs/chat");
-
+    app.MapHub<RecomendacionUsuariosHub>("/hubs/recomendaciones");
 
     app.Run();
 }
