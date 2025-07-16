@@ -42,15 +42,5 @@ public class RepositorioUsuarioHabilidad(TrivoContexto trivoContexto) : IReposit
         
         return nuevasAsociaciones;
     }
-
-    public async Task ActualizarNivelHabilidadUsuarioAsync(Guid usuarioId, Guid habilidadId, Nivel nivel,
-        CancellationToken cancellationToken)
-    {
-        var usuarioHabilidad = await trivoContexto.Set<UsuarioHabilidad>()
-            .FirstOrDefaultAsync(uh => uh.UsuarioId == usuarioId && uh.HabilidadId == habilidadId, cancellationToken);
-
-        usuarioHabilidad!.Nivel = nivel.ToString();
-        
-        await trivoContexto.SaveChangesAsync(cancellationToken);
-    }
+    
 }

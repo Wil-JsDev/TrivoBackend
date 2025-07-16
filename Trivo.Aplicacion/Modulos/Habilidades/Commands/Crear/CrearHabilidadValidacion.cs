@@ -14,9 +14,5 @@ public class CrearHabilidadValidacion : AbstractValidator<CrearHabilidadCommand>
         RuleFor(x => x.UsearioId)
             .NotEmpty()
             .WithMessage("El id del usuario no puede ser nulo");
-
-        RuleFor(x => x.Nivel)
-            .NotEmpty()
-            .WithMessage("El nivel no puede ser nulo");
     }
 }

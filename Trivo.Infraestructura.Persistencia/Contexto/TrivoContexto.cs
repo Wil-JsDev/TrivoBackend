@@ -617,19 +617,6 @@ public class TrivoContexto : DbContext
             });
         
         #endregion
-        
-        #region Usuario Habilidad
-            
-        modelBuilder.Entity<UsuarioHabilidad>(entity =>
-        {
-            entity.Property(u => u.Nivel)
-                .IsRequired()
-                .IsRequired()
-                .HasColumnType("varchar(50)");
-
-        });
-        
-        #endregion
 
         #region Categoria Intereses
 
