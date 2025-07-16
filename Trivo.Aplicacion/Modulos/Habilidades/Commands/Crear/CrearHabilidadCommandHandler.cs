@@ -57,7 +57,6 @@ internal sealed class CrearHabilidadCommandHandler(
         {
             UsuarioId = usuario.Id,
             HabilidadId = habilidad.HabilidadId,
-            Nivel = request.Nivel.ToString()
         };
 
         await repositorioUsuarioHabilidad.CrearHabilidadesUsuarioAsync(usuarioHabilidad, cancellationToken);

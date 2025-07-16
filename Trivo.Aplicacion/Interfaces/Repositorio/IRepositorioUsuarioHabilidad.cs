@@ -22,14 +22,4 @@ public interface IRepositorioUsuarioHabilidad
     /// <returns>Una tarea que representa la operación asincrónica.</returns>
     Task<List<UsuarioHabilidad>> AsociarHabilidadesAlUsuarioAsync(Guid usuarioId, List<Guid> habilidadIds,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Actualiza el nivel de una habilidad específica asociada a un usuario.
-    /// </summary>
-    /// <param name="usuarioId">Identificador del usuario.</param>
-    /// <param name="habilidadId">Identificador de la habilidad.</param>
-    /// <param name="nivel">Nuevo nivel para la habilidad.</param>
-    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
-    /// <returns>Una tarea que representa la operación asincrónica.</returns>
-    Task ActualizarNivelHabilidadUsuarioAsync(Guid usuarioId, Guid habilidadId, Nivel nivel, CancellationToken cancellationToken);
 }

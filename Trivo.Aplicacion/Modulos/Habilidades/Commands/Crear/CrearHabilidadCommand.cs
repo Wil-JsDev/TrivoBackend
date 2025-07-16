@@ -4,4 +4,4 @@ using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Modulos.Habilidades.Commands.Crear;
 
-public sealed record CrearHabilidadCommand(string Nombre, Guid UsearioId, Nivel Nivel) : ICommand<HabilidadDto>;
+public sealed record CrearHabilidadCommand(string Nombre, Guid UsearioId) : ICommand<HabilidadDto>;
