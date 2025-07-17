@@ -125,10 +125,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .IsRequired()
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ChatId")
-                        .IsRequired()
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("FechaActualizacion")
                         .HasColumnType("timestamp with time zone");
 
@@ -136,9 +132,8 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Nombre")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid?>("MensajeId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TipoChat")
                         .IsRequired()
@@ -147,7 +142,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     b.HasKey("Id")
                         .HasName("PkChatId");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("MensajeId");
 
                     b.ToTable("Chat", (string)null);
                 });
@@ -168,6 +163,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Property<DateTime?>("FechaSalida")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NombreChat")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("ChatId", "UsuarioId");
 
@@ -641,14 +641,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
             modelBuilder.Entity("Trivo.Dominio.Modelos.Chat", b =>
                 {
-                    b.HasOne("Trivo.Dominio.Modelos.Mensaje", "Mensaje")
+                    b.HasOne("Trivo.Dominio.Modelos.Mensaje", null)
                         .WithMany("Chats")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FKChatId");
-
-                    b.Navigation("Mensaje");
+                        .HasForeignKey("MensajeId");
                 });
 
             modelBuilder.Entity("Trivo.Dominio.Modelos.ChatUsuario", b =>
@@ -741,10 +736,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
             modelBuilder.Entity("Trivo.Dominio.Modelos.Mensaje", b =>
                 {
                     b.HasOne("Trivo.Dominio.Modelos.Chat", "Chat")
-                        .WithMany()
+                        .WithMany("Mensajes")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_Mensaje_Chat");
 
                     b.HasOne("Trivo.Dominio.Modelos.Usuario", "Usuario")
                         .WithMany("Mensajes")
@@ -853,6 +849,8 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
             modelBuilder.Entity("Trivo.Dominio.Modelos.Chat", b =>
                 {
                     b.Navigation("ChatUsuarios");
+
+                    b.Navigation("Mensajes");
                 });
 
             modelBuilder.Entity("Trivo.Dominio.Modelos.Experto", b =>

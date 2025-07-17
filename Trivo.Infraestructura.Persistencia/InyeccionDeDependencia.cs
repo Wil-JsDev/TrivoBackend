@@ -58,9 +58,10 @@ public static class InyeccionDeDependencia
             servicio.AddScoped<IRolUsuarioServicio, RolUsuarioServicio>();
             servicio.AddScoped<IObtenerExpertoIdServicio, ObtenerExpertoIdServicio>();
             servicio.AddScoped<IObtenerReclutadorIdServicio, ObtenerReclutadorIdServicio>();
-            servicio.AddScoped<IRepositorioChat, RepositorioChat>();    
-        
-        #endregion
+            servicio.AddScoped<IRepositorioChat, RepositorioChat>();
+            servicio.AddScoped<IRepositorioMensaje, RepositorioMensaje>();
+
+            #endregion
 
     }
 }

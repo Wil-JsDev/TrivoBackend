@@ -316,11 +316,11 @@ public class TrivoContexto : DbContext
                  .HasConstraintName("FKMensajeId");
              
              modelBuilder.Entity<Mensaje>()
-                 .HasMany(m => m.Chats)
-                 .WithOne(c => c.Mensaje)
-                 .HasForeignKey(c => c.ChatId)
-                 .IsRequired()
-                 .HasConstraintName("FKChatId");
+                 .HasOne(m => m.Chat)
+                 .WithMany(c => c.Mensajes)
+                 .HasForeignKey(m => m.ChatId)
+                 .HasConstraintName("FK_Mensaje_Chat")
+                 .OnDelete(DeleteBehavior.Cascade);
 
              modelBuilder.Entity<ChatUsuario>()
                  .HasOne(m => m.Chat)
@@ -704,10 +704,6 @@ public class TrivoContexto : DbContext
                     .IsRequired()
                     .HasColumnType("varchar(50)");
 
-                entity.Property(e => e.Nombre)
-                    .HasMaxLength(100)
-                    .IsRequired(false); 
-
                 entity.Property(e => e.Activo)
                     .IsRequired();
 
@@ -729,9 +725,13 @@ public class TrivoContexto : DbContext
 
                 entity.Property(e => e.FechaSalida)
                     .IsRequired(false); 
+                
+                entity.Property(e => e.NombreChat)
+                    .HasMaxLength(100)
+                    .IsRequired();
             });
-            
-        #endregion
+
+            #endregion
         
         #region Mensaje 
         
