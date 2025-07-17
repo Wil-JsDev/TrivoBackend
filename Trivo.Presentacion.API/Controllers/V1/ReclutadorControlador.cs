@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.DTOs.Reclutadores;
 using Trivo.Aplicacion.Modulos.Reclutador.Commands.Actualizar;
@@ -26,6 +27,7 @@ public class ReclutadorControlador(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{reclutadorId}")]
+    [Authorize(Roles = "Reclutador")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ActualizarReclutadorAsync(

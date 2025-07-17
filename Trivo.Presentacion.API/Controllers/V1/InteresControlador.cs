@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
@@ -15,6 +16,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 public class InteresControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CrearInteresAsync([FromBody] CrearInteresCommand interesCommand, CancellationToken cancellationToken)
@@ -45,6 +47,7 @@ public class InteresControlador(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("search")]
+    [Authorize]
     public async Task<IActionResult> BuscarInteresPorNombreAsync(
         [FromQuery] string nombre,
         CancellationToken cancellationToken
