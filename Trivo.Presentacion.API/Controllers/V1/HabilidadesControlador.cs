@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Habilidades.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Habilidades.Querys.BuscarPorNombre;
@@ -13,6 +14,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 public class HabilidadesControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CrearHabilidadesAsync([FromBody] CrearHabilidadCommand crearHabilidadCommand, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.DTOs.Cuentas.Contrasenas;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
@@ -62,6 +63,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpGet("profile/{usuarioId}")]
+    [Authorize]
     public async Task<IActionResult> ObtenerDetallesPorIdUsuarioAsync([FromRoute] Guid usuarioId,
         CancellationToken cancellationToken)
     {
@@ -113,6 +115,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpPut("{usuarioId}/info")]
+    [Authorize]
     public async Task<IActionResult> ActualizarUsuarioAsync(
         [FromRoute] Guid usuarioId,
         [FromBody] ParametroActualizarUsuario parametroActualizarUsuario,
@@ -129,6 +132,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpPut("{usuarioId}/profile-photo")]
+    [Authorize]
     public async Task<IActionResult> ActualizarFotoDePerfilAsync(
         [FromRoute] Guid usuarioId,
         [FromForm] ActualizarFotoDePerfilDto imagen,
@@ -144,6 +148,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpGet("{usuarioId}/profile-photo")]
+    [Authorize]
     public async Task<IActionResult> ObtenerFotoDePerfilPorUsuarioIdAsync(
         [FromRoute] Guid  usuarioId,
         CancellationToken cancellationToken
@@ -158,6 +163,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpPut("{usuarioId}/bio")]
+    [Authorize]
     public async Task<IActionResult> ActualizarBiografiaAsync( 
         [FromRoute] Guid usuarioId,
         [FromBody] ParametroActualizarUsuarioBiografia actualizarUsuarioBiografia,
@@ -173,6 +179,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpGet("{usuarioId}/bio")]
+    [Authorize]
     public async Task<IActionResult> ObtenerBiografiaPorUsuarioIdAsync([FromRoute] Guid usuarioId, CancellationToken cancellationToken)
     {
         ObtenerBiografiaPorUsuarioIdQuery query = new(usuarioId);
@@ -184,6 +191,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
     
     [HttpPut("{usuarioId}/interests")]
+    [Authorize]
     public async Task<IActionResult> ActualizarInteresesUsuario(
         [FromRoute] Guid usuarioId,
         [FromBody] ActualizarInteresDto dto,
@@ -204,6 +212,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpGet("{usuarioId}/interests")]
+    [Authorize]
     public async Task<IActionResult> ObtenerBiogrfiaPorUsuarioIdAsync(
         [FromRoute] Guid usuarioId,
         CancellationToken cancellationToken
@@ -218,6 +227,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
     
     [HttpPut("{usuarioId}/ability")]
+    [Authorize]
     public async Task<IActionResult> ActualizarHabilidadesUsuario(
         [FromRoute] Guid usuarioId,
         [FromBody] ActualizarHabilidadDto dto,
@@ -237,6 +247,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
 
     [HttpGet("{usuarioId}/ability")]
+    [Authorize]
     public async Task<IActionResult> ObtenerHabilidadesPorUsuarioIdAsync(
         [FromRoute]  Guid usuarioId,
         CancellationToken cancellationToken
@@ -262,6 +273,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
     
     [HttpPost("recommended-users/stream")]
+    [Authorize]
     public async Task<IActionResult> EmitirUsuariosRecomendadosTiempoReal([FromQuery] Guid usuarioId, CancellationToken cancellationToken)
     {
         RecomendacionUsuariosQuery query = new(usuarioId); 

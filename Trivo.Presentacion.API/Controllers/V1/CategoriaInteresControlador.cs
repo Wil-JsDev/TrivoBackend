@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.CategoriaIntereses.Commands;
 using Trivo.Aplicacion.Modulos.CategoriaIntereses.Querys.Paginacion;
@@ -12,6 +13,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 public class CategoriaInteresControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CrearCategoriaInteres([FromBody] CrearCategoriaInteresCommand categoriaInteresCommand, CancellationToken cancellationToken)
