@@ -273,7 +273,7 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
     }
     
     [HttpPost("recommended-users/stream")]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> EmitirUsuariosRecomendadosTiempoReal(
         [FromQuery] Guid usuarioId, 
         [FromQuery] int numeroPagina, 

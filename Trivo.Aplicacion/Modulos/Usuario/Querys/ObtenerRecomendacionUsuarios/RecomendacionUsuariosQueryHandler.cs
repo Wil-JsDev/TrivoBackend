@@ -31,16 +31,16 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("404", "El usuario no fue encontrado o no tiene datos de intereses/habilidades."));
         }
 
-        var todosUsuarios = await repositorioUsuario.ObtenerTodosUsuariosConInteresesYHabilidades(cancellationToken);
+        var rol = await repositorioUsuario.ObtenerRolDeUsuarioAsync(usuarioActual.Id ?? Guid.Empty, cancellationToken);
         
-        var usuariosParaComparar = todosUsuarios.Where(x => x.Id != usuarioActual.Id).ToList();  
-
-        var prompt = ConstruirPrompt(usuarioActual, usuariosParaComparar);
+        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(usuarioActual.Id ?? Guid.Empty, rol, cancellationToken);
+        
+        IEnumerable<Dominio.Modelos.Usuario> paraComparar = usuariosParaComparar.ToList();
+        
+        var prompt = ConstruirPrompt(usuarioActual, paraComparar.ToList());
         
         logger.LogInformation("Prompt construido correctamente para el usuario {UsuarioId}. Enviando solicitud a la IA...", usuarioActual.Id);
         
-        // var respuestaIa = await ollamaServicio.EnviarPeticionIaAsync("tinyllama:1.1b", prompt);
-
         var respuestaIa = await cache.ObtenerOCrearAsync($"respuesta-ia-{usuarioActual.Id}",
             async () => await ollamaServicio.EnviarPeticionIaAsync("tinyllama:1.1b", prompt),
             cancellationToken: cancellationToken
@@ -53,32 +53,29 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
         }
         
-        // EXTRAER índices con Regex para evitar problemas con texto adicional en la respuesta
+        // Extraer índices con Regex para evitar problemas con el texto adicional de la respuesta
         var indicesRecomendados = Regex.Matches(respuestaIa, @"\d+")
             .Select(m => int.Parse(m.Value) - 1) // índice 0-based
-            .Where(idx => idx >= 0 && idx < usuariosParaComparar.Count)
+            .Where(idx => idx >= 0 && idx < paraComparar.Count())
             .Distinct()
             .ToList();
 
         var usuariosRecomendados = indicesRecomendados
-            .Select(idx => usuariosParaComparar[idx])
+            .Select(idx => paraComparar.ElementAt(idx))
             .ToList();
         
         if (!usuariosRecomendados.Any())
         {
             logger.LogWarning("La IA no devolvió nombres válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
 
-            usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, usuariosParaComparar, 5);
+            usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
         
         logger.LogWarning("Respuesta cruda IA: {Respuesta}", respuestaIa);
         
-        // var usuarioReconmendandosDto = usuariosRecomendados.Select(UsuarioMapper.MapToDto).ToList();
-
         var cacheKey = $"recomendaciones-ia-dto-{request.UsuarioId}-pag-{request.NumeroPagina}-size-{request.TamanoPagina}";
 
-        var resultadoPaginado = await cache.ObtenerOCrearAsync(cacheKey,
-            async () =>
+        var resultadoPaginado = await cache.ObtenerOCrearAsync(cacheKey, () =>
             {
                 var usuarioReconmendandosDtos = usuariosRecomendados.Select(UsuarioMapper.MapToDto).ToList();
         
@@ -88,12 +85,12 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                    .Paginar(request.NumeroPagina, request.TamanoPagina)
                     .ToList();
 
-                return new ResultadoPaginado<UsuarioReconmendacionDto>(
+                return Task.FromResult(new ResultadoPaginado<UsuarioReconmendacionDto>(
                     elementosPaginados,
                     totalElementos,
                     request.NumeroPagina,
                     request.TamanoPagina
-                );
+                ));
             },
             cancellationToken: cancellationToken
         );

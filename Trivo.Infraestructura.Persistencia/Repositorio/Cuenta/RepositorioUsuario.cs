@@ -177,5 +177,49 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Include(ui => ui.Habilidad)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<string> ObtenerRolDeUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        var usuario = await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.Expertos)
+            .Include(u => u.Reclutadores)
+            .FirstOrDefaultAsync(u => u.Id == usuarioId, cancellationToken);
+        
+        var tieneExperto = usuario!.Expertos != null & usuario.Expertos!.Any();
+        var tieneReclutador = usuario.Reclutadores != null & usuario.Reclutadores!.Any();
+
+        if (tieneExperto)
+            return nameof(Roles.Experto);
+        
+        if (tieneReclutador)
+            return nameof(Roles.Reclutador);
+        
+        return "Sin Rol";
+    }
+    
+    public async Task<IEnumerable<Usuario>> ObtenerUsuariosObjetivoAsync(Guid usuarioActualId, string rol, CancellationToken cancellationToken)
+    {
+        var query = _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+            .Include(u => u.Expertos)
+            .Include(u => u.Reclutadores)
+            .Where(u => u.Id != usuarioActualId); // Excluir usuario actual
+
+        if (rol == nameof(Roles.Experto))
+        {
+            // Si el usuario actual es experto => devolver usuarios que TIENEN RELACIÓN con él como reclutador
+            query = query.Where(u => u.Reclutadores!.Any());
+        }
+        else if (rol == nameof(Roles.Reclutador))
+        {
+            // Si el usuario actual es reclutador => devolver usuarios que TIENEN RELACIÓN con él como experto
+            query = query.Where(u => u.Expertos!.Any());
+        }
+
+        return await query.AsSplitQuery().ToListAsync(cancellationToken);
+    }
     
 }
