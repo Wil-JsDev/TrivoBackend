@@ -137,4 +137,9 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     
     Task<IEnumerable<UsuarioHabilidad>> ObtenerHabilidadesPorUsuarioIdAsync(Guid usuarioId,
         CancellationToken cancellationToken);
+    
+    Task<IEnumerable<Usuario>> ObtenerUsuariosObjetivoAsync(Guid usuarioActualId, string rol,
+        CancellationToken cancellationToken);
+    
+    Task<string> ObtenerRolDeUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 }
