@@ -75,22 +75,26 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         
         var cacheKey = $"recomendaciones-ia-dto-{request.UsuarioId}-pag-{request.NumeroPagina}-size-{request.TamanoPagina}";
 
-        var resultadoPaginado = await cache.ObtenerOCrearAsync(cacheKey, () =>
+        var resultadoPaginado = await cache.ObtenerOCrearAsync(
+            cacheKey,
+            async () =>
             {
-                var usuarioReconmendandosDtos = usuariosRecomendados.Select(UsuarioMapper.MapToDto).ToList();
-        
+                var usuarioReconmendandosDtos = usuariosRecomendados
+                    .Select(UsuarioMapper.MapToDto)
+                    .ToList();
+
                 var totalElementos = usuarioReconmendandosDtos.Count;
 
                 var elementosPaginados = usuarioReconmendandosDtos
-                   .Paginar(request.NumeroPagina, request.TamanoPagina)
+                    .Paginar(request.NumeroPagina, request.TamanoPagina)
                     .ToList();
 
-                return Task.FromResult(new ResultadoPaginado<UsuarioReconmendacionDto>(
+                return new ResultadoPaginado<UsuarioReconmendacionDto>(
                     elementosPaginados,
                     totalElementos,
                     request.NumeroPagina,
                     request.TamanoPagina
-                ));
+                );
             },
             cancellationToken: cancellationToken
         );
