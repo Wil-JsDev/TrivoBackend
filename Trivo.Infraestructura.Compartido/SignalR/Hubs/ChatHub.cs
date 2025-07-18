@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Trivo.Aplicacion.DTOs.Mensaje;
 
 namespace Trivo.Infraestructura.Compartido.SignalR.Hubs;
 
+[Authorize]
 public class ChatHub(
     ILogger<ChatHub> logger
     ): Hub<IChatHub>
@@ -19,12 +22,20 @@ public class ChatHub(
         return base.OnDisconnectedAsync(exception);
     }
     
-    public async Task EnviarMensaje(Guid receptorId, string contenido)
+    public async Task EnviarMensaje(MensajeDto mensaje)
     {
         var emisorId = Context.UserIdentifier;
-        logger.LogInformation($"Usuario {emisorId} envia mensaje a {receptorId}: {contenido}");
+       
+        
+        if (!Guid.TryParse(emisorId, out var emisorGuid))
+        {
+            logger.LogWarning("UserIdentifier no es un GUID valido");
+            return;
+        }
+        
+        logger.LogInformation($" Usuario {emisorId} envia mensaje a {mensaje.ReceptorId}: {mensaje.Contenido}");
 
-        await Clients.User(receptorId.ToString())
-            .RecibirMensajePrivado(Guid.Parse(emisorId), contenido);
+        await Clients.User(mensaje.ReceptorId.ToString())
+            .RecibirMensajePrivado(mensaje with { EmisorId = emisorGuid });
     }
 }

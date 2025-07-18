@@ -5,6 +5,7 @@ public sealed class ChatUsuario
     public Guid? ChatId { get; set; }
     
     public Chat? Chat { get; set; }
+    public string NombreChat { get; set; }
     
     public Guid? UsuarioId { get; set; }
     
