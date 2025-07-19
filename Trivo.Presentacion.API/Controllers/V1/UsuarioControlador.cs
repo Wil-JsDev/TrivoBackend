@@ -272,19 +272,4 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
         return Ok(resultado.Valor);
     }
     
-    [HttpPost("recommended-users/stream")]
-    [Authorize]
-    public async Task<IActionResult> EmitirUsuariosRecomendadosTiempoReal(
-        [FromQuery] Guid usuarioId, 
-        [FromQuery] int numeroPagina, 
-        [FromQuery] int tamanoPagina, 
-        CancellationToken cancellationToken)
-    {
-        RecomendacionUsuariosQuery query = new(usuarioId, numeroPagina, tamanoPagina); 
-        var resultado = await mediator.Send(query, cancellationToken);
-        if (resultado.EsExitoso)
-            return Ok(resultado.Valor);
-        
-        return BadRequest(resultado.Error);
-    }
 }

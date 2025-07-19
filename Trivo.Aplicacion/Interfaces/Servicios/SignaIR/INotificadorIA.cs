@@ -4,5 +4,5 @@ namespace Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 
 public interface INotificadorIA
 {
-    Task NotificarRecomendaciones(Guid usuarioId, IEnumerable<UsuarioReconmendacionDto> recomendaciones);
+    Task NotificarRecomendaciones(Guid usuarioId, IEnumerable<UsuarioReconmendacionDto>? recomendaciones);
 }
