@@ -23,17 +23,13 @@ internal sealed class ObtenerHabilidadesPorUsuarioIdQueryHandler(
             return ResultadoT<IEnumerable<HabilidadConIdDto>>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
         }
         
-        var usuarioHabilidadesDto = await cache.ObtenerOCrearAsync($"obtener-habilidades-por-usuario-id-{request.UsuarioId}",
-            async () =>
-            {
-                var obtenerHabilidadesPorUsuarioIdAsync =  await repositorioUsuario.ObtenerHabilidadesPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
-                return obtenerHabilidadesPorUsuarioIdAsync.Select(x => new HabilidadConIdDto
-                (
-                    HabilidadId: x.HabilidadId ?? Guid.Empty,
-                    Nombre: x.Habilidad!.Nombre
-                )).ToList();
-            },
-            cancellationToken: cancellationToken);
+        var obtenerHabilidadesPorUsuarioIdAsync =  await repositorioUsuario.ObtenerHabilidadesPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
+        
+        var usuarioHabilidadesDto = obtenerHabilidadesPorUsuarioIdAsync.Select(x => new HabilidadConIdDto
+        (
+            HabilidadId: x.HabilidadId ?? Guid.Empty,
+            Nombre: x.Habilidad!.Nombre
+        )).ToList();
         
         if (!usuarioHabilidadesDto.Any())
         {

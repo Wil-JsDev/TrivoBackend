@@ -15,9 +15,11 @@ internal sealed class ObtenerFotoPerfilPorUsuarioIdQueryHandler(
 {
     public async Task<ResultadoT<FotoDePerfilUsuarioDto>> Handle(ObtenerFotoPerfilPorUsuarioIdQuery request, CancellationToken cancellationToken)
     {
-        var usuario = await cache.ObtenerOCrearAsync($"obtener-foto-perfil-por-usuario-id-{request.UsuarioId}", 
-            async () => await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken), 
-            cancellationToken: cancellationToken);
+        // var usuario = await cache.ObtenerOCrearAsync($"obtener-foto-perfil-por-usuario-id-{request.UsuarioId}", 
+        //     async () => await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken), 
+        //     cancellationToken: cancellationToken);
+        
+        var usuario = await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken);
         
         if (usuario is null)
         {

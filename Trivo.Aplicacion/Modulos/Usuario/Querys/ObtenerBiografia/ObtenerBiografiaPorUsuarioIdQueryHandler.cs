@@ -15,9 +15,7 @@ internal sealed class ObtenerBiografiaPorUsuarioIdQueryHandler(
 {
     public async Task<ResultadoT<BiografiaUsuarioDto>> Handle(ObtenerBiografiaPorUsuarioIdQuery request, CancellationToken cancellationToken)
     {
-        var usuario = await cache.ObtenerOCrearAsync($"obtener-biografia-por-usuario-id-{request.UsuarioId}", 
-            async () => await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken), 
-            cancellationToken: cancellationToken);
+        var usuario = await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken);
         
         if (usuario is null)
         {
