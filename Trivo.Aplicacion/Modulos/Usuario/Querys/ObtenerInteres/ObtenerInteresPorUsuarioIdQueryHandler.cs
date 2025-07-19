@@ -36,8 +36,14 @@ internal sealed class ObtenerInteresPorUsuarioIdQueryHandler(
             cancellationToken: cancellationToken
         );
 
+        var usuarioInteres = await repositorioUsuario.ObtenerInteresesPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
 
-        IEnumerable<InteresDto> interesDtos = usuarioInteresDto.ToList();
+        var interesDtos = usuarioInteres.Select(x => new InteresDto
+        (
+            InteresId: x.InteresId ?? Guid.Empty,
+            Nombre: x.Interes!.Nombre!
+        )).ToList();
+        
         if (!interesDtos.Any())
         {
             logger.LogWarning("El usuario con ID {UsuarioId} no tiene intereses registrados.", request.UsuarioId);
