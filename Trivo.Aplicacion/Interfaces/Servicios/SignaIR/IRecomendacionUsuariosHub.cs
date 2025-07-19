@@ -4,5 +4,5 @@ namespace Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 
 public interface IRecomendacionUsuariosHub
 {
-    Task RecibirRecomendaciones(IEnumerable<UsuarioReconmendacionDto> recomendaciones);
+    Task RecibirRecomendaciones(IEnumerable<UsuarioReconmendacionDto>? recomendaciones);
 }
