@@ -53,25 +53,26 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
         }
         
-        // Extraer índices con Regex para evitar problemas con el texto adicional de la respuesta
-        var indicesRecomendados = Regex.Matches(respuestaIa, @"\d+")
-            .Select(m => int.Parse(m.Value) - 1) // índice 0-based
-            .Where(idx => idx >= 0 && idx < paraComparar.Count())
+        logger.LogWarning("Respuesta cruda IA:\n{RespuestaIa}", respuestaIa);
+
+        var guidRegex = new Regex(@"\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}\b");
+        var matches = guidRegex.Matches(respuestaIa);
+
+        var idsRecomendados = matches
+            .Select(m => Guid.TryParse(m.Value, out var guid) ? guid : Guid.Empty)
+            .Where(g => g != Guid.Empty)
             .Distinct()
             .ToList();
 
-        var usuariosRecomendados = indicesRecomendados
-            .Select(idx => paraComparar.ElementAt(idx))
+        var usuariosRecomendados = paraComparar
+            .Where(u => u.Id.HasValue && idsRecomendados.Contains(u.Id.Value))
             .ToList();
-        
+
         if (!usuariosRecomendados.Any())
         {
-            logger.LogWarning("La IA no devolvió nombres válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
-
+            logger.LogWarning("La IA no devolvió IDs válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
-        
-        logger.LogWarning("Respuesta cruda IA: {Respuesta}", respuestaIa);
         
         var cacheKey = $"recomendaciones-ia-dto-{request.UsuarioId}-pag-{request.NumeroPagina}-size-{request.TamanoPagina}";
 
@@ -130,32 +131,31 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
             var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
 
-            var usuariosContexto = usuarios.Select((u, i) =>
+            var usuariosContexto = usuarios.Select((u) =>
             {
                 var intereses = string.Join(", ", u.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
                 var habilidades = string.Join(", ", u.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-                return $"{i + 1} | Intereses: {intereses} | Habilidades: {habilidades}";
+                return $"{u.Id}: {intereses} | {habilidades}";
             });
 
             var prompt = $@"
-            Eres un sistema que recomienda usuarios similares basado en intereses y habilidades.
+            Recomienda los 9 usuarios más parecidos por intereses y habilidades.
 
-            Usuario actual:
-            - Intereses: {interesesUsuario}
-            - Habilidades: {habilidadesUsuario}
+            Usuario:
+            {interesesUsuario} | {habilidadesUsuario}
 
-            Usuarios disponibles:
+            Candidatos:
             {string.Join("\n", usuariosContexto)}
 
-            Instrucciones:
-            - Devuelve SOLO los números (índices) de los 9 usuarios MÁS SIMILARES.
-            - La respuesta debe ser ÚNICAMENTE una lista de números separados por comas, SIN espacios, SIN texto adicional, SIN explicaciones.
-            - Ejemplo de respuesta válida: 1,3,2
+            Devuelve SOLO los GUID de los más parecidos, separados por comas. NO EXPLIQUES NADA. NO DES TEXTOS. SOLO LOS ID.
 
-            Respuesta:
+            Ejemplo válido: 4ac34db1-5ce4-4631-b7ac-5afbeb03be02,a605b5bb-06ff-427b-b673-df4aafbb3277,...
+
+            Tu respuesta:
             ";
-
             return prompt.Trim();
         }
+
+        
     #endregion
 }
