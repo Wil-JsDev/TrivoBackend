@@ -7,6 +7,8 @@ public sealed record UsuarioReconmendacionDto
 (
     Guid UsuarioId,
     string? Nombre,
+    string? Apellido,
+    string? Biografia,
     List<InteresConIdDto> Intereses,
     List<HabilidadConIdDto> Habilidades,
     string? FotoPerfil
