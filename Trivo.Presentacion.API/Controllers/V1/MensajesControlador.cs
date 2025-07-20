@@ -52,17 +52,5 @@ public class MensajesControlador(IMediator mediator) : ControllerBase
 
         return Ok(resultado.Valor);
     }
-    
-    [HttpGet("{chatId}/pagination")]
-    public async Task<IActionResult> ResultadoPaginadoChat(
-        [FromRoute] Guid chatId,
-        [FromQuery] int pageNumber,
-        [FromQuery] int pageSize, CancellationToken cancellationToken)
-    {
-        ObtenerPaginasMensajesQuery query = new(chatId, pageNumber, pageSize);
-        var resultado = await mediator.Send(query, cancellationToken);
-        if (!resultado.EsExitoso)
-            return BadRequest(resultado.Error);
-        return Ok(resultado.Valor);
-    }
+
 }
