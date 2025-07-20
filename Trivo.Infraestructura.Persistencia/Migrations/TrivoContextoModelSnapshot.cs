@@ -380,7 +380,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     b.Property<Guid?>("ChatId")
                         .IsRequired()
                         .HasColumnType("uuid")
-                        .HasColumnName("PkChatId");
+                        .HasColumnName("FkChatId");
 
                     b.Property<string>("Contenido")
                         .IsRequired()
@@ -740,7 +740,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Mensaje_Chat");
+                        .HasConstraintName("FKMensajeChat");
 
                     b.HasOne("Trivo.Dominio.Modelos.Usuario", "Usuario")
                         .WithMany("Mensajes")
