@@ -47,21 +47,17 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     Task<Usuario> BuscarPorNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Filtra usuarios que tengan las habilidades indicadas.
+    /// Filtra y obtiene los usuarios que tienen al menos uno de los intereses o habilidades especificados.
     /// </summary>
-    /// <param name="habilidadesIds">Lista de Ids de habilidades.</param>
-    /// <param name="cancellationToken">Token para cancelar la operacion.</param>
-    /// <returns>Lista de usuarios que cumplen el filtro.</returns>
-    Task<IEnumerable<Usuario>> FiltrarPorHabilidadesAsync(List<Guid> habilidadesIds, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Filtra usuarios que tengan los intereses indicados.
-    /// </summary>
-    /// <param name="interesesIds">Lista de Ids de intereses.</param>
-    /// <param name="cancellationToken">Token para cancelar la operacion.</param>
-    /// <returns>Lista de usuarios que cumplen el filtro.</returns>
-    Task<IEnumerable<Usuario>> FiltrarPorInteresesAsync(List<Guid> interesesIds, CancellationToken cancellationToken);
-
+    /// <param name="interesesIds">Lista opcional de IDs de intereses para filtrar.</param>
+    /// <param name="habilidadesIds">Lista opcional de IDs de habilidades para filtrar.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <returns>Una colección de objetos <see cref="Usuario"/> que coinciden con los intereses o habilidades especificados.</returns>
+    Task<IEnumerable<Usuario>> FiltrarPorInteresesYHabilidadesAsync(
+        List<Guid>? interesesIds,
+        List<Guid>? habilidadesIds,
+        CancellationToken cancellationToken);
+    
     /// <summary>
     /// Obtiene las habilidades de un usuario dado su Id.
     /// </summary>
@@ -130,16 +126,40 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
     /// <returns>Una colección de usuarios con sus intereses.</returns>
     Task<IEnumerable<Usuario>> ObtenerTodosUsuariosConInteresesYHabilidades(CancellationToken cancellationToken);
-
-
+    
+   /// <summary>
+    /// Obtiene la lista de intereses asociados a un usuario específico.
+    /// </summary>
+    /// <param name="usuarioId">El ID del usuario.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <returns>Una colección de objetos <see cref="UsuarioInteres"/>.</returns>
     Task<IEnumerable<UsuarioInteres>> ObtenerInteresesPorUsuarioIdAsync(Guid usuarioId,
         CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// Obtiene la lista de habilidades asociadas a un usuario específico.
+    /// </summary>
+    /// <param name="usuarioId">El ID del usuario.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <returns>Una colección de objetos <see cref="UsuarioHabilidad"/>.</returns>
     Task<IEnumerable<UsuarioHabilidad>> ObtenerHabilidadesPorUsuarioIdAsync(Guid usuarioId,
         CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// Obtiene la lista de usuarios potenciales para emparejamiento, basada en el rol y el ID del usuario actual.
+    /// </summary>
+    /// <param name="usuarioActualId">El ID del usuario que realiza la búsqueda.</param>
+    /// <param name="rol">El rol del usuario para filtrar los objetivos (por ejemplo: "Experto", "Aprendiz").</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <returns>Una colección de objetos <see cref="Usuario"/> como objetivos posibles.</returns>
     Task<IEnumerable<Usuario>> ObtenerUsuariosObjetivoAsync(Guid usuarioActualId, string rol,
         CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// Obtiene el rol asignado a un usuario específico.
+    /// </summary>
+    /// <param name="usuarioId">El ID del usuario.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
+    /// <returns>Una cadena que representa el rol del usuario.</returns>
     Task<string> ObtenerRolDeUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 }
