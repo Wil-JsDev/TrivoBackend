@@ -149,7 +149,6 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Where(u => usuarioIds.Contains(u.Id ?? Guid.Empty))
             .ToListAsync(cancellationToken);
     }
-
     
     public async Task<Usuario?> ObtenerUsuarioConInteresYHabilidades(Guid usuarioId, CancellationToken cancellationToken)
     {

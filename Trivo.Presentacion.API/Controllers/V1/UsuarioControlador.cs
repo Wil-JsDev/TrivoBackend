@@ -23,6 +23,7 @@ using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerFotoDePerfil;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerHabilidades;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerInteres;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerUsuariosPorHabilidadesInteres;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -271,5 +272,25 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
 
         return Ok(resultado.Valor);
     }
-    
+
+    [HttpPost("filter-by-interests-and-ability")]
+    public async Task<IActionResult> ObtenerUsuariosPorInteresesYHabilidades(
+        [FromBody] ParametroUsuariFiltroHabilidadesInteres usuarisHabilidadesInteres,
+        [FromQuery] int numeroPagina,
+        [FromQuery] int tamanoPagina, 
+        CancellationToken cancellationToken
+        )
+    {
+        ObtenerUsuariosPorInteresesYHabilidadesQuery query = new(
+            numeroPagina,
+            tamanoPagina,
+            usuarisHabilidadesInteres.HabilidadIds,
+            usuarisHabilidadesInteres.InteresIds);
+        
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
 }
