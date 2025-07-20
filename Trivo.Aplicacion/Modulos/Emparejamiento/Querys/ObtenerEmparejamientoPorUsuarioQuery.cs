@@ -8,4 +8,4 @@ public sealed record ObtenerEmparejamientoPorUsuarioQuery
 (
     Guid UsuarioId,
     Roles Rol
-) : IQuery<IEnumerable<EmparejamientoDto>>, IQuery<EmparejamientoDto>;
+) : IQuery<IEnumerable<EmparejamientoDto>>;
