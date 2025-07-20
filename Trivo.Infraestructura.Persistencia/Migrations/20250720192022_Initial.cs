@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Trivo.Infraestructura.Persistencia.Migrations
 {
     /// <inheritdoc />
-    public partial class PrimeraMigracion : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,7 +26,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
                     Linkedin = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -63,7 +63,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     Linkedin = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     EstadoUsuario = table.Column<string>(type: "varchar(50)", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -77,11 +77,12 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     PkCodigoId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
                     Valor = table.Column<string>(type: "text", nullable: false),
-                    Usado = table.Column<bool>(type: "boolean", nullable: false),
+                    Usado = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    Tipo = table.Column<string>(type: "varchar(50)", nullable: false),
                     Expiracion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Creado = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Revocado = table.Column<bool>(type: "boolean", nullable: false),
-                    RefrescarCodigo = table.Column<bool>(type: "boolean", nullable: true)
+                    Revocado = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    RefrescarCodigo = table.Column<bool>(type: "boolean", nullable: true, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -103,7 +104,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     DisponibleParaProyectos = table.Column<bool>(type: "boolean", nullable: false),
                     Contratado = table.Column<bool>(type: "boolean", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -147,7 +148,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     NombreEmpresa = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -165,8 +166,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 columns: table => new
                 {
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FkHabilidadId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Nivel = table.Column<string>(type: "varchar(50)", nullable: false)
+                    FkHabilidadId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -196,7 +196,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     ReclutadorEstado = table.Column<string>(type: "varchar(50)", nullable: false),
                     EmparejamientoEstado = table.Column<string>(type: "varchar(50)", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -237,7 +237,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                     FkCategoriaId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkCreadoPorId = table.Column<Guid>(type: "uuid", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -285,12 +285,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 columns: table => new
                 {
                     PkChatId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChatId = table.Column<Guid>(type: "uuid", nullable: false),
                     TipoChat = table.Column<string>(type: "varchar(50)", nullable: false),
-                    Nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
+                    MensajeId = table.Column<Guid>(type: "uuid", nullable: true),
                     FechaRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -303,6 +302,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 {
                     FkChatId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkUsuariosId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NombreChat = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     FechaIngreso = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaSalida = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -328,7 +328,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 columns: table => new
                 {
                     MensajeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PkChatId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FkChatId = table.Column<Guid>(type: "uuid", nullable: false),
                     FkEmisorId = table.Column<Guid>(type: "uuid", nullable: false),
                     Contenido = table.Column<string>(type: "text", nullable: false),
                     Estado = table.Column<string>(type: "varchar(50)", nullable: false),
@@ -345,8 +345,8 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         principalColumn: "PkUsuarioId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Mensaje_Chat_PkChatId",
-                        column: x => x.PkChatId,
+                        name: "FKMensajeChat",
+                        column: x => x.FkChatId,
                         principalTable: "Chat",
                         principalColumn: "PkChatId",
                         onDelete: ReferentialAction.Cascade);
@@ -397,9 +397,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 column: "InteresId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chat_ChatId",
+                name: "IX_Chat_MensajeId",
                 table: "Chat",
-                column: "ChatId");
+                column: "MensajeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChatUsuario_FkUsuariosId",
@@ -437,14 +437,14 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 column: "FkCreadoPorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Mensaje_FkChatId",
+                table: "Mensaje",
+                column: "FkChatId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Mensaje_FkEmisorId",
                 table: "Mensaje",
                 column: "FkEmisorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Mensaje_PkChatId",
-                table: "Mensaje",
-                column: "PkChatId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notificacion_FkUsuariosId",
@@ -496,12 +496,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 principalColumn: "PkInteresId");
 
             migrationBuilder.AddForeignKey(
-                name: "FKChatId",
+                name: "FK_Chat_Mensaje_MensajeId",
                 table: "Chat",
-                column: "ChatId",
+                column: "MensajeId",
                 principalTable: "Mensaje",
-                principalColumn: "MensajeId",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "MensajeId");
         }
 
         /// <inheritdoc />
@@ -512,7 +511,7 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                 table: "CategoriaInteres");
 
             migrationBuilder.DropForeignKey(
-                name: "FKChatId",
+                name: "FK_Chat_Mensaje_MensajeId",
                 table: "Chat");
 
             migrationBuilder.DropTable(
