@@ -2,9 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Trivo.Aplicacion.DTOs.Chat;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.Modulos.Chat.Querys.Paginacion;
 using Trivo.Aplicacion.Modulos.Mensajes.Querys;
+using Trivo.Aplicacion.Paginacion;
 
 namespace Trivo.Infraestructura.Compartido.SignalR.Hubs;
 
@@ -56,23 +58,47 @@ public class ChatHub(
         if (!Guid.TryParse(Context.UserIdentifier, out var usuarioId))
             return;
 
-        var chats = await mediator.Send(new ObtenerPaginasChatQuery(
+        var resultado = await mediator.Send(new ObtenerPaginasChatQuery(
             usuarioId,
             numeroPagina,
             tamanoPagina
         ));
+        
+        if (!resultado.EsExitoso)
+        {
+            var resultadoVacio = new ResultadoPaginado<ChatDto>(
+                Enumerable.Empty<ChatDto>(),
+                totalElementos: 0,
+                paginaActual: numeroPagina,
+                tamanioPagina: tamanoPagina
+            );
 
-        await Clients.Caller.RecibirChats(chats.Valor);
+            await Clients.Caller.RecibirChats(resultadoVacio);
+            return;
+        }
+        await Clients.Caller.RecibirChats(resultado.Valor);
     }
 
     public async Task ObtenerMensajesChat(Guid chatId, int numeroPagina = 1, int tamanoPagina = 20)
     {
-        var mensajes = await mediator.Send(new ObtenerPaginasMensajesQuery(
+        var resultado = await mediator.Send(new ObtenerPaginasMensajesQuery(
             chatId,
             numeroPagina,
             tamanoPagina
         ));
 
-        await Clients.Caller.RecibirMensajesDelChat(chatId, mensajes.Valor);
+        if (!resultado.EsExitoso)
+        {
+            var resultadoVacio = new ResultadoPaginado<MensajeDto>(
+                Enumerable.Empty<MensajeDto>(),
+                totalElementos: 0,
+                paginaActual: numeroPagina,
+                tamanioPagina: tamanoPagina
+                );
+            await Clients.Caller.RecibirMensajesDelChat(chatId, resultadoVacio);
+            return;
+        }
+        
+        await Clients.Caller.RecibirMensajesDelChat(chatId, resultado.Valor);
     }
 }
