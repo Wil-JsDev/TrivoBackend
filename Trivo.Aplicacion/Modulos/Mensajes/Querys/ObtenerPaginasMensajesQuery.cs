@@ -5,7 +5,7 @@ using Trivo.Aplicacion.Paginacion;
 namespace Trivo.Aplicacion.Modulos.Mensajes.Querys;
 
 public sealed record ObtenerPaginasMensajesQuery(
-    Guid chatId,
+    Guid ChatId,
     int NumeroPagina,
     int TamanoPagina
     ): IQuery<ResultadoPaginado<MensajeDto>>;

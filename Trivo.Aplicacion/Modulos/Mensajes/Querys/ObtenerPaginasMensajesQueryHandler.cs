@@ -33,12 +33,12 @@ internal class ObtenerPaginasMensajesQueryHandler(
 
         }
         
-        string cacheKey = $"obtener-paginas-mensaje-{request.chatId}-{request.NumeroPagina}-{request.TamanoPagina}";
+        string cacheKey = $"obtener-paginas-mensaje-{request.ChatId}-{request.NumeroPagina}-{request.TamanoPagina}";
 
         var resultadoPaginado = await cache.ObtenerOCrearAsync(
             cacheKey,
             async () => await repositorioMensaje.ObtenerMensajePorChatIdPaginadoAsync(
-                request.chatId,
+                request.ChatId,
                 request.NumeroPagina,
                 request.TamanoPagina,
                 cancellationToken)
