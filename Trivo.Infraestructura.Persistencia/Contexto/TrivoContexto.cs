@@ -319,7 +319,7 @@ public class TrivoContexto : DbContext
                  .HasOne(m => m.Chat)
                  .WithMany(c => c.Mensajes)
                  .HasForeignKey(m => m.ChatId)
-                 .HasConstraintName("FK_Mensaje_Chat")
+                 .HasConstraintName("FKMensajeChat")
                  .OnDelete(DeleteBehavior.Cascade);
 
              modelBuilder.Entity<ChatUsuario>()
@@ -738,7 +738,7 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Mensaje>(entity =>
             {
                 entity.Property(e => e.ChatId)
-                    .HasColumnName("PkChatId")
+                    .HasColumnName("FkChatId")
                     .IsRequired();
                 
                 entity.Property(e => e.Contenido)
