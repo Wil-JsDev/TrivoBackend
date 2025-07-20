@@ -13,15 +13,15 @@ internal sealed class CrearEmparejamientoCommandHandler(
     IRepositorioEmparejamiento repositorioEmparejamiento,
     IRepositorioReclutador repositorioReclutador,
     IRepositorioExperto repositorioExperto
-    ) : ICommandHandler<CrearEmparejamientoCommand, EmparejamientoDto>
+    ) : ICommandHandler<CrearEmparejamientoCommand, EmparejamientoDetallesDto>
 {
-   public async Task<ResultadoT<EmparejamientoDto>> Handle(CrearEmparejamientoCommand request, CancellationToken cancellationToken)
+   public async Task<ResultadoT<EmparejamientoDetallesDto>> Handle(CrearEmparejamientoCommand request, CancellationToken cancellationToken)
     {
         if (request is null)
         {
             logger.LogWarning("La solicitud de creación de emparejamiento es nula.");
             
-            return ResultadoT<EmparejamientoDto>.Fallo(Error.Fallo("400", "La solicitud enviada no puede ser nula."));
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "La solicitud enviada no puede ser nula."));
         }
 
         var reclutador = await repositorioReclutador.ObtenerByIdAsync(request.ReclutadorId ?? Guid.Empty, cancellationToken);
@@ -29,7 +29,7 @@ internal sealed class CrearEmparejamientoCommandHandler(
         {
             logger.LogWarning("No se encontró el reclutador con ID {ReclutadorId}.", request.ReclutadorId);
             
-            return ResultadoT<EmparejamientoDto>.Fallo(Error.NoEncontrado("404", "El reclutador especificado no fue encontrado."));
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El reclutador especificado no fue encontrado."));
         }
 
         var experto = await repositorioExperto.ObtenerByIdAsync(request.ExpertoId ?? Guid.Empty, cancellationToken);
@@ -37,34 +37,52 @@ internal sealed class CrearEmparejamientoCommandHandler(
         {
             logger.LogWarning("No se encontró el experto con ID {ExpertoId}.", request.ExpertoId);
             
-            return ResultadoT<EmparejamientoDto>.Fallo(Error.NoEncontrado("404", "El experto especificado no fue encontrado."));
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El experto especificado no fue encontrado."));
         }
-
-        Dominio.Modelos.Emparejamiento emparejamiento = new()
+        
+        var emparejamiento = new Dominio.Modelos.Emparejamiento
         {
             ReclutadorId = reclutador.Id,
             ExpertoId = experto.Id,
-            ExpertoEstado = nameof(ExpertoEstado.Match),
-            ReclutadorEstado = nameof(ReclutadorEstado.Match),
-            EmparejamientoEstado = nameof(EmparejamientoEstado.Completado)
+            EmparejamientoEstado = EmparejamientoEstado.Pendiente.ToString()
         };
+        
+        if (!Enum.TryParse(request.CreadoPor, ignoreCase: true, out Roles rolCreador) || !EstadosPorRol.TryGetValue(rolCreador, out var valor))
+        {
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "Rol de creador inválido."));
+        }
 
+        var (estadoExperto, estadoReclutador) = valor;
+        emparejamiento.ExpertoEstado = estadoExperto;
+        emparejamiento.ReclutadorEstado = estadoReclutador;
+        
         await repositorioEmparejamiento.CrearAsync(emparejamiento, cancellationToken);
-
+        
         logger.LogInformation("Se creó un nuevo emparejamiento entre el reclutador {ReclutadorId} y el experto {ExpertoId}.",
             emparejamiento.ReclutadorId, emparejamiento.ExpertoId);
 
-        EmparejamientoDto emparejamientoDto = new
+        EmparejamientoDetallesDto empresaDto = new
         (
-            EmparejamientoId: emparejamiento.Id!.Value,
-            emparejamiento.ReclutadorId!.Value,
-            emparejamiento.ExpertoId!.Value,
-            emparejamiento.ExpertoEstado!,
-            emparejamiento.ReclutadorEstado!,
-            emparejamiento.EmparejamientoEstado!
+            EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
+            ReclutadotId: emparejamiento.ReclutadorId ?? Guid.Empty,
+            ExpertoId: emparejamiento.ExpertoId ?? Guid.Empty,
+            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
+            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
+            FechaRegistro: emparejamiento.FechaRegistro
         );
         
-        return ResultadoT<EmparejamientoDto>.Exito(emparejamientoDto);
+        return ResultadoT<EmparejamientoDetallesDto>.Exito(empresaDto);
     }
 
+   #region Metodos Privados
+   
+    private static readonly Dictionary<Roles, (string expertoEstado, string reclutadorEstado)> EstadosPorRol =
+       new()
+       {
+           { Roles.Experto, (ExpertoEstado.Match.ToString(), ReclutadorEstado.Pendiente.ToString()) },
+           { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Match.ToString()) }
+       };
+   
+   #endregion
 }

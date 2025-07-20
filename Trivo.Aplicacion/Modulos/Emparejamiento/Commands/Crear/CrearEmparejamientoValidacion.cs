@@ -7,11 +7,14 @@ public class CrearEmparejamientoValidacion : AbstractValidator<CrearEmparejamien
     public CrearEmparejamientoValidacion()
     {
         RuleFor(x => x.ExpertoId)
-            .NotEmpty()
-            .WithMessage("El ID del experto es obligatorio");
-        
+            .NotNull().WithMessage("El ID del experto es obligatorio.")
+            .Must(id => id != Guid.Empty).WithMessage("El ID del experto debe ser un GUID válido.");
+
         RuleFor(x => x.ReclutadorId)
-            .NotEmpty()
-            .WithMessage("El ID del reclutador es obligatorio");
+            .NotNull().WithMessage("El ID del reclutador es obligatorio.")
+            .Must(id => id != Guid.Empty).WithMessage("El ID del reclutador debe ser un GUID válido.");
+        
+        RuleFor(x => x.CreadoPor)
+            .NotEmpty().WithMessage("Debe especificarse quién creó el emparejamiento.");
     }
 }
