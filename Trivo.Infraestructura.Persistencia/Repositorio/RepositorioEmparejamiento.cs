@@ -24,6 +24,8 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
     {
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
+            .Include(e => e.Experto)
+                .ThenInclude(x => x!.Usuario)   
             .Where(e => e.Reclutador!.UsuarioId == usuarioId)
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
@@ -33,6 +35,8 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
     {
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
+            .Include(e => e.Reclutador)
+                .ThenInclude(x => x!.Usuario)
             .Where(x => x.Experto!.UsuarioId == usuarioId)
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
