@@ -16,5 +16,6 @@ public interface IChatHub
     Task NotificacionNuevoMatch(string mensaje);
     Task NotificacionPendiente(string mensaje);
     Task NotificarNuevoChat(IEnumerable<ChatDto> chat);
-
+    Task NotificarPaginacion(Guid usuarioId, ResultadoPaginado<ChatDto> chat);
+    
 }

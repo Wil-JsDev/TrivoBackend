@@ -81,10 +81,7 @@ internal class CrearChatCommandHandler(
         var resultado = MapperChat.MapChatToDto(nuevoChat, request.EmisorId);
 
         await notificador.NotificarNuevoChat(request.EmisorId, new List<ChatDto> { resultado });
-        await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { 
-            MapperChat.MapChatToDto(nuevoChat, request.ReceptorId) 
-        });
-        
+        await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { resultado });
         await repositorioChat.CrearAsync(nuevoChat, cancellationToken);
         
         logger.LogInformation("Se creó un nuevo chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);

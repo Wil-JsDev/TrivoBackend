@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Trivo.Aplicacion.DTOs.Chat;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
+using Trivo.Aplicacion.Paginacion;
 using Trivo.Infraestructura.Compartido.SignalR.Hubs;
 
 namespace Trivo.Infraestructura.Compartido.SignalR;
@@ -21,8 +22,18 @@ public class NotificadorTiempoReal(IHubContext<ChatHub, IChatHub> hub) : INotifi
         => hub.Clients.User(usuarioId.ToString())
             .NotificacionPendiente(contenido);
     
-    public async Task NotificarNuevoChat(Guid usuarioId, IEnumerable<ChatDto> chat)
+    public async Task NotificarNuevoChat(Guid usuarioId, IEnumerable<ChatDto> chats)
     {
-        await hub.Clients.User(usuarioId.ToString()).NotificarNuevoChat(chat);
+        foreach (var chat in chats)
+        {
+            await hub.Clients.User(usuarioId.ToString())
+                .RecibirNuevoChat(chat);
+        }
+    }
+
+    public async Task NotificarPaginacion(Guid usuarioId, ResultadoPaginado<ChatDto> resultado)
+    {
+        await hub.Clients.User(usuarioId.ToString())
+            .NotificarNuevoChat(resultado.Elementos!.ToList());
     }
 }
