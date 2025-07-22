@@ -101,4 +101,26 @@ public class ChatHub(
         
         await Clients.Caller.RecibirMensajesDelChat(chatId, resultado.Valor);
     }
+    
+    public async Task NotificarNuevoChat(IEnumerable<ChatDto> chats)
+    {
+        foreach (var chat in chats)
+        {
+            if (chat.Participantes == null || !chat.Participantes.Any())
+            {
+                logger.LogWarning("Chat sin participantes: {ChatId}", chat.Id);
+                continue;
+            }
+
+            var usuariosIds = chat.Participantes
+                .Select(p => p.UsuarioId.ToString())
+                .ToList();
+
+            logger.LogInformation("Notificando nuevo chat {ChatId} a usuarios: {Usuarios}", 
+                chat.Id, string.Join(", ", usuariosIds));
+
+            await Clients.Users(usuariosIds).RecibirNuevoChat(chat);
+        }
+    }
+    
 }

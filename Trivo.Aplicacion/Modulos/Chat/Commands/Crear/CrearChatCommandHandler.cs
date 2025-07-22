@@ -5,6 +5,7 @@ using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
@@ -14,7 +15,8 @@ namespace Trivo.Aplicacion.Modulos.Chat.Commands.Crear;
 internal class CrearChatCommandHandler(
     ILogger<CrearChatCommandHandler> logger,
     IRepositorioChat repositorioChat,
-    IRepositorioUsuario repositorioUsuario
+    IRepositorioUsuario repositorioUsuario,
+    INotificadorTiempoReal notificador
     ) : ICommandHandler<CrearChatCommand, ChatDto>
 {
     public async Task<ResultadoT<ChatDto>> Handle(CrearChatCommand request, CancellationToken cancellationToken)
@@ -76,7 +78,12 @@ internal class CrearChatCommandHandler(
                 }
             }
         };
+        var resultado = MapperChat.MapChatToDto(nuevoChat, request.EmisorId);
 
+        await notificador.NotificarNuevoChat(request.EmisorId, new List<ChatDto> { resultado });
+        await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { 
+            MapperChat.MapChatToDto(nuevoChat, request.ReceptorId) 
+        });
         
         await repositorioChat.CrearAsync(nuevoChat, cancellationToken);
         

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Trivo.Aplicacion.DTOs.Chat;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Infraestructura.Compartido.SignalR.Hubs;
@@ -19,4 +20,9 @@ public class NotificadorTiempoReal(IHubContext<ChatHub, IChatHub> hub) : INotifi
     public Task NotificarMatchPendiente(Guid usuarioId, string contenido)
         => hub.Clients.User(usuarioId.ToString())
             .NotificacionPendiente(contenido);
+    
+    public async Task NotificarNuevoChat(Guid usuarioId, IEnumerable<ChatDto> chat)
+    {
+        await hub.Clients.User(usuarioId.ToString()).NotificarNuevoChat(chat);
+    }
 }
