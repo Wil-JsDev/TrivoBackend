@@ -37,34 +37,30 @@ internal class ObtenerPaginasMensajesQueryHandler(
 
         }
         
-        string cacheKey = $"obtener-paginas-mensaje-{request.ChatId}-{request.NumeroPagina}-{request.TamanoPagina}";
 
-        var resultadoPaginado = await cache.ObtenerOCrearAsync(
-            cacheKey,
-            async () => await repositorioMensaje.ObtenerMensajePorChatIdPaginadoAsync(
-                request.ChatId,
-                request.NumeroPagina,
-                request.TamanoPagina,
-                cancellationToken)
-        );
+        var resultadoPaginado = await repositorioMensaje.ObtenerMensajePorChatIdPaginadoAsync(
+            request.ChatId,
+            request.NumeroPagina,
+            request.TamanoPagina,
+            cancellationToken);
 
         var elementos = resultadoPaginado.Elementos!
             .Select(x => new MensajeDto(
-                x.MensajeId!.Value,
-                x.ChatId!.Value,
-                x.Contenido,
+                x.MensajeId!,
+                x.ChatId!,
+                x.Contenido!,
                 x.Estado,
                 x.FechaEnvio,
-                x.EmisorId!.Value,
+                x.EmisorId,
                 new UsuarioDto(
-                    x.Emisor!.Id!.Value,
+                    x.Emisor!.Id!,
                     x.Emisor.Nombre!,
                     x.Emisor.Apellido!,
                     x.Emisor.FotoPerfil!
                 ),
                 x.ReceptorId,
                 new UsuarioDto(
-                    x.Receptor!.Id!.Value,
+                    x.Receptor!.Id!,
                     x.Receptor.Nombre!,
                     x.Receptor.Apellido!,
                     x.Receptor.FotoPerfil!

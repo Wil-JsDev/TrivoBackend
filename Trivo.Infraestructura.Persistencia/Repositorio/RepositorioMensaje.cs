@@ -33,12 +33,14 @@ public class RepositorioMensaje(TrivoContexto trivoContexto): RepositorioGeneric
             .Where(ci => ci.ChatId == chatId && ci.Contenido != null)
             .OrderByDescending(m => m.FechaEnvio).FirstOrDefaultAsync(cancellationToken);
 
-    public async Task<ResultadoPaginado<Mensaje>> ObtenerMensajePorChatIdPaginadoAsync(Guid chatId, int pagina, int tamano, CancellationToken cancellationToken)
+    public async Task<ResultadoPaginado<MensajeDto>> ObtenerMensajePorChatIdPaginadoAsync(
+        Guid chatId, 
+        int pagina, 
+        int tamano, 
+        CancellationToken cancellationToken)
     {
         var consulta = trivoContexto.Set<Mensaje>()
             .Where(m => m.ChatId == chatId)
-            .Include(m => m.Emisor)
-            .Include(m => m.Receptor)
             .OrderByDescending(m => m.FechaEnvio);
 
         var total = await consulta.CountAsync(cancellationToken);
@@ -46,9 +48,30 @@ public class RepositorioMensaje(TrivoContexto trivoContexto): RepositorioGeneric
         var mensajes = await consulta
             .Skip((pagina - 1) * tamano)
             .Take(tamano)
+            .Select(m => new MensajeDto(
+                m.MensajeId!.Value,
+                m.ChatId!.Value,
+                m.Contenido!,
+                m.Estado!,
+                m.FechaEnvio!.Value,
+                m.EmisorId!.Value,
+                new UsuarioDto(
+                    m.Emisor!.Id!.Value,
+                    m.Emisor.Nombre!,
+                    m.Emisor.Apellido!,
+                    m.Emisor.FotoPerfil!
+                ),
+                m.ReceptorId,
+                new UsuarioDto(
+                    m.Receptor!.Id!.Value,
+                    m.Receptor.Nombre!,
+                    m.Receptor.Apellido!,
+                    m.Receptor.FotoPerfil!
+                )
+            ))
             .ToListAsync(cancellationToken);
 
-        return new ResultadoPaginado<Mensaje>(mensajes, total, pagina, tamano);
+        return new ResultadoPaginado<MensajeDto>(mensajes, total, pagina, tamano);
     }
 
 

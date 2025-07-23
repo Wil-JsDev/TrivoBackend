@@ -35,16 +35,13 @@ internal class ObtenerPaginasChatQueryHandler(
 
         }
 
-        string cacheKey = $"obtener-paginas-chat-{request.UsuarioId}-{request.NumeroPagina}-{request.TamanoPagina}";
 
-        var resultadoPagina = await cache.ObtenerOCrearAsync(
-            cacheKey,
-            async () => await repositorioChat.ObtenerChatsPorUsuarioIdPaginadoAsync(
+        var resultadoPagina = 
+             await repositorioChat.ObtenerChatsPorUsuarioIdPaginadoAsync(
                 request.UsuarioId,
                 request.NumeroPagina,
                 request.TamanoPagina,
-                cancellationToken)
-        );
+                cancellationToken);
 
         var elementos = resultadoPagina.Elementos!
             .Select(chat => MapperChat.MapChatToDto(chat, request.UsuarioId)) 

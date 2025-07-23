@@ -118,6 +118,50 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
 
     public async Task<Chat?> ObtenerChatConUsuariosYMensajesAsync(Guid chatId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _trivoContexto.Chat
+            .Where(c => c.Id == chatId)
+            .Select(c => new Chat
+            {
+                Id = c.Id,
+                FechaRegistro = c.FechaRegistro,
+                ChatUsuarios = c.ChatUsuarios.Select(cu => new ChatUsuario
+                {
+                    UsuarioId = cu.UsuarioId,
+                    NombreChat = cu.NombreChat,
+                    Usuario = new Usuario
+                    {
+                        Id = cu.Usuario.Id,
+                        NombreUsuario = cu.Usuario.NombreUsuario,
+                        Nombre = cu.Usuario.Nombre,
+                        Apellido = cu.Usuario.Apellido,
+                        FotoPerfil = cu.Usuario.FotoPerfil
+                    }
+                }).ToList(),
+                Mensajes = c.Mensajes
+                    .OrderByDescending(m => m.FechaEnvio)
+                    .Select(m => new Mensaje
+                    {
+                        MensajeId = m.MensajeId,
+                        Contenido = m.Contenido,
+                        FechaEnvio = m.FechaEnvio,
+                        Estado = m.Estado,
+                        Emisor = new Usuario
+                        {
+                            Id = m.Emisor.Id,
+                            Nombre = m.Emisor.Nombre,
+                            Apellido = m.Emisor.Apellido,
+                            FotoPerfil = m.Emisor.FotoPerfil
+                        },
+                        Receptor = new Usuario
+                        {
+                            Id = m.Receptor.Id,
+                            Nombre = m.Receptor.Nombre,
+                            Apellido = m.Receptor.Apellido,
+                            FotoPerfil = m.Receptor.FotoPerfil
+                        }
+                    }).ToList()
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
