@@ -9,9 +9,7 @@ public record MensajeDto(
     Guid ChatId,
     string? Contenido ,
     string? Estado,
-    DateTime? FechaEnvio ,
+    DateTime? FechaEnvio,
     Guid EmisorId,
-    UsuarioDto? Emisor,
-    Guid ReceptorId,
-    UsuarioDto? Receptor
+    Guid ReceptorId
 );

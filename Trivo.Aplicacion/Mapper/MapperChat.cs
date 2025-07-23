@@ -28,27 +28,6 @@ public class MapperChat
 
     if (ultimoMensaje is not null)
     {
-        var emisor = ultimoMensaje.Emisor;
-        var receptor = ultimoMensaje.Receptor;
-
-        var emisorDto = emisor is null
-            ? null
-            : new UsuarioDto(
-                emisor.Id!.Value,
-                emisor.Nombre,
-                emisor.Apellido,
-                emisor.FotoPerfil
-            );
-
-        var receptorDto = receptor is null
-            ? null
-            : new UsuarioDto(
-                receptor.Id!.Value,
-                receptor.Nombre,
-                receptor.Apellido,
-                receptor.FotoPerfil
-            );
-
         ultimoMensajeDto = new MensajeDto(
             ultimoMensaje.MensajeId!.Value,
             chat.Id!.Value,
@@ -56,11 +35,10 @@ public class MapperChat
             ultimoMensaje.Estado ?? string.Empty,
             ultimoMensaje.FechaEnvio ?? DateTime.UtcNow,
             ultimoMensaje.EmisorId!.Value,
-            emisorDto,
-            ultimoMensaje.ReceptorId,
-            receptorDto
+            ultimoMensaje.ReceptorId
         );
     }
+
 
     return new ChatDto(
         Id: chat.Id ?? Guid.Empty,

@@ -83,19 +83,8 @@ internal sealed class EnviarMensajeCommandHandler(
             mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
             mensaje.EmisorId.Value,
-            new UsuarioDto(
-                emisor.Id!.Value,
-                emisor.Nombre,
-                emisor.Apellido,
-                emisor.FotoPerfil
-            ),
-            mensaje.ReceptorId,
-            new UsuarioDto(
-                receptor.Id!.Value,
-                receptor.Nombre,
-                receptor.Apellido,
-                receptor.FotoPerfil
-            )
+            mensaje.ReceptorId
+          
         );
         
         await notificador.NotificarMensajePrivado(dto, dto.EmisorId);

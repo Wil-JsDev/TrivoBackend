@@ -52,19 +52,8 @@ internal class ObtenerPaginasMensajesQueryHandler(
                 x.Estado,
                 x.FechaEnvio,
                 x.EmisorId,
-                new UsuarioDto(
-                    x.Emisor!.Id!,
-                    x.Emisor.Nombre!,
-                    x.Emisor.Apellido!,
-                    x.Emisor.FotoPerfil!
-                ),
-                x.ReceptorId,
-                new UsuarioDto(
-                    x.Receptor!.Id!,
-                    x.Receptor.Nombre!,
-                    x.Receptor.Apellido!,
-                    x.Receptor.FotoPerfil!
-                )
+                x.ReceptorId
+              
             ));
         
         
