@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Trivo.Aplicacion.DTOs.Mensaje;
+using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Dominio.Modelos;
@@ -35,35 +37,21 @@ public class RepositorioMensaje(TrivoContexto trivoContexto): RepositorioGeneric
     {
         var consulta = trivoContexto.Set<Mensaje>()
             .Where(m => m.ChatId == chatId)
-            .Include(m => m.Usuario)
+            .Include(m => m.Emisor)
+            .Include(m => m.Receptor)
             .OrderByDescending(m => m.FechaEnvio);
-        
+
         var total = await consulta.CountAsync(cancellationToken);
 
-        var mensajes = consulta
+        var mensajes = await consulta
             .Skip((pagina - 1) * tamano)
             .Take(tamano)
-            .Select(m => new Mensaje
-            {
-                MensajeId = m.MensajeId,
-                ChatId = m.ChatId,
-                Contenido = m.Contenido,
-                Estado = m.Estado,
-                FechaEnvio = m.FechaEnvio,
-                EmisorId = m.EmisorId,
-                Usuario = new Usuario
-                {
-                    Id = m.Usuario.Id,
-                    NombreUsuario = m.Usuario.NombreUsuario,
-                    Nombre = m.Usuario.Nombre,
-                    Apellido = m.Usuario.Apellido,
-                    FotoPerfil = m.Usuario.FotoPerfil,
-                    Mensajes = null
-                }
-            });
+            .ToListAsync(cancellationToken);
 
         return new ResultadoPaginado<Mensaje>(mensajes, total, pagina, tamano);
-
     }
+
+
+
 
 }

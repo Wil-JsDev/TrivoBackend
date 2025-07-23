@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Mensaje;
+using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
@@ -45,7 +46,14 @@ internal class EnviarArchivoCommandHandler(
             return ResultadoT<MensajeDto>.Fallo(Error.Fallo("403", "Emisor o receptor no pertenece al chat"));
         
         }
+        var emisor = await repositorioChat.ObtenerUsuarioPorIdAsync(request.EmisorId, cancellationToken);
+        var receptor = await repositorioChat.ObtenerUsuarioPorIdAsync(request.ReceptorId, cancellationToken);
 
+        if (emisor == null || receptor == null)
+        {
+            logger.LogWarning("Emisor o receptor no encontrados");
+            return ResultadoT<MensajeDto>.Fallo(Error.Fallo("404", "Emisor o receptor no encontrados"));
+        }
         
         string url = "";
         if (request.Archivo != null)
@@ -65,11 +73,11 @@ internal class EnviarArchivoCommandHandler(
             MensajeId = Guid.NewGuid(),
             ChatId = request.ChatId,
             EmisorId = request.EmisorId,
+            ReceptorId = request.ReceptorId, 
             Contenido = url,
             FechaEnvio = DateTime.UtcNow,
             FechaRegistro = DateTime.UtcNow,
             Estado = EstadoMensaje.Enviado.ToString()
-            
         };
         logger.LogInformation("Mensaje persistido en la base de datos. Id: {MensajeId}", mensaje.MensajeId);
 
@@ -78,14 +86,27 @@ internal class EnviarArchivoCommandHandler(
         var dto = new MensajeDto(
             mensaje.MensajeId.Value,
             mensaje.ChatId.Value,
-            mensaje.EmisorId.Value,
-            mensaje.Estado,
             mensaje.Contenido,
+            mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
-            request.ReceptorId
+            mensaje.EmisorId.Value,
+            new UsuarioDto(
+                emisor.Id!.Value,
+                emisor.Nombre,
+                emisor.Apellido,
+                emisor.FotoPerfil
+            ),
+            mensaje.ReceptorId,
+            new UsuarioDto(
+                receptor.Id!.Value,
+                receptor.Nombre,
+                receptor.Apellido,
+                receptor.FotoPerfil
+            )
         );
         
-        await notificador.NotificarMensajePrivado(dto);
+        await notificador.NotificarMensajePrivado(dto, dto.EmisorId);
+        await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
         
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
 

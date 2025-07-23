@@ -66,7 +66,7 @@ internal class ObtenerPaginasChatQueryHandler(
             tamanioPagina: request.TamanoPagina
         );
         
-        await notificador.NotificarPaginacion(request.UsuarioId, resultadoPaginado);
+        await notificador.NotificarChatsPaginados(request.UsuarioId, resultadoPaginado);
         logger.LogInformation(
             "Se obtuvo exitosamente la página {NumeroPagina} de chats. Chats total en esta página: {CantidadActividades}",
             request.NumeroPagina, elementos.Count);

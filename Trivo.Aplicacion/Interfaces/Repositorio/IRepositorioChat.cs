@@ -11,6 +11,9 @@ public interface IRepositorioChat : IRepositorioGenerico<Chat>
     Task<Chat> ObtenerChatPorIdAsync(Guid chatId, CancellationToken cancellationToken);
 
     Task<bool> UsuarioPerteneceAlChatAsync(Guid chatId, Guid usuarioId, CancellationToken cancellationToken);
+    Task<Usuario?> ObtenerUsuarioPorIdAsync(Guid usuarioId, CancellationToken cancellationToken);
     Task<Chat?> BuscarChat1a1Async(Guid emisorId, Guid receptorId, CancellationToken cancellationToken);
+    Task<Chat?> ObtenerChatConUsuariosYMensajesAsync(Guid chatId, CancellationToken cancellationToken);
+
 
 }

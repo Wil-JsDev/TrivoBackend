@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Chat;
 using Trivo.Aplicacion.DTOs.Mensaje;
+using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Aplicacion.Utilidades;
@@ -13,14 +15,16 @@ namespace Trivo.Aplicacion.Modulos.Mensajes.Querys;
 internal class ObtenerPaginasMensajesQueryHandler(
     ILogger<ObtenerPaginasMensajesQueryHandler> logger,
     IRepositorioMensaje repositorioMensaje,
-    IDistributedCache cache
+    IRepositorioChat repositorioChat,
+    IDistributedCache cache,
+    INotificadorTiempoReal notificador
     ): IQueryHandler<ObtenerPaginasMensajesQuery, ResultadoPaginado<MensajeDto>>
 {
     public async Task<ResultadoT<ResultadoPaginado<MensajeDto>>> Handle(ObtenerPaginasMensajesQuery request, CancellationToken cancellationToken)
     {
         if (request is null)
         {
-            logger.LogWarning("");
+            logger.LogWarning("la solicitud no puede estar vacia");
             return ResultadoT<ResultadoPaginado<MensajeDto>>.Fallo(Error.Fallo("", ""));
         }
 
@@ -46,14 +50,27 @@ internal class ObtenerPaginasMensajesQueryHandler(
 
         var elementos = resultadoPaginado.Elementos!
             .Select(x => new MensajeDto(
-                x.MensajeId.Value,
-                x.ChatId.Value,
-                x.EmisorId.Value,
-                x.Estado,
+                x.MensajeId!.Value,
+                x.ChatId!.Value,
                 x.Contenido,
-                x.FechaEnvio.Value
-                
+                x.Estado,
+                x.FechaEnvio,
+                x.EmisorId!.Value,
+                new UsuarioDto(
+                    x.Emisor!.Id!.Value,
+                    x.Emisor.Nombre!,
+                    x.Emisor.Apellido!,
+                    x.Emisor.FotoPerfil!
+                ),
+                x.ReceptorId,
+                new UsuarioDto(
+                    x.Receptor!.Id!.Value,
+                    x.Receptor.Nombre!,
+                    x.Receptor.Apellido!,
+                    x.Receptor.FotoPerfil!
+                )
             ));
+        
         
         if (!elementos.Any())
         {
@@ -69,6 +86,21 @@ internal class ObtenerPaginasMensajesQueryHandler(
             paginaActual: request.NumeroPagina,
             tamanioPagina: request.TamanoPagina
         );
+
+        var chat = await repositorioChat.ObtenerChatConUsuariosYMensajesAsync(request.ChatId, cancellationToken);
+        if (chat is null)
+        {
+            logger.LogWarning("Chat no encontrado para notificacion de paginacion");
+            return ResultadoT<ResultadoPaginado<MensajeDto>>.Fallo(Error.Fallo("404", "Chat no encontrado"));
+        }
+
+        var usuarios = chat.ChatUsuarios.Select(cu => cu.UsuarioId!.Value).ToList();
+
+        foreach(var usuarioId in usuarios)
+        {
+            await notificador.NotificarPaginaMensajes(usuarioId, request.ChatId, resultado);
+        }
+        
         
         logger.LogInformation("Página {NumeroPagina} de mensajes obtenida exitosamente. Total de elementos: {Cantidad}",
             request.NumeroPagina, elementos.Count());

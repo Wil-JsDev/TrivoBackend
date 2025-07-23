@@ -10,8 +10,8 @@ namespace Trivo.Infraestructura.Compartido.SignalR;
 public class NotificadorTiempoReal(IHubContext<ChatHub, IChatHub> hub) : INotificadorTiempoReal
 {
     
-    public Task NotificarMensajePrivado(MensajeDto mensaje)
-        => hub.Clients.User(mensaje.ReceptorId.ToString())
+    public Task NotificarMensajePrivado(MensajeDto mensaje, Guid usuarioId)
+        => hub.Clients.User(usuarioId.ToString())
             .RecibirMensajePrivado(mensaje);
 
     public Task NotificarMatchConfirmado(Guid usuarioId, string contenido)
@@ -31,9 +31,15 @@ public class NotificadorTiempoReal(IHubContext<ChatHub, IChatHub> hub) : INotifi
         }
     }
 
-    public async Task NotificarPaginacion(Guid usuarioId, ResultadoPaginado<ChatDto> resultado)
+    public async Task NotificarChatsPaginados(Guid usuarioId, ResultadoPaginado<ChatDto> resultado)
     {
         await hub.Clients.User(usuarioId.ToString())
-            .NotificarNuevoChat(resultado.Elementos!.ToList());
+            .RecibirChats(resultado);
+    }
+
+    public async Task NotificarPaginaMensajes(Guid usuarioId, Guid chatId, ResultadoPaginado<MensajeDto> pagina)
+    {
+        await hub.Clients.User(usuarioId.ToString())
+            .RecibirMensajesDelChat(chatId, pagina);
     }
 }

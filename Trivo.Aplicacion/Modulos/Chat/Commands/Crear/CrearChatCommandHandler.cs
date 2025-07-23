@@ -54,7 +54,6 @@ internal class CrearChatCommandHandler(
         {
             return ResultadoT<ChatDto>.Fallo(Error.NoEncontrado("404", "Usuario receptor no encontrado"));
         }
-
         
         var nuevoChat = new Dominio.Modelos.Chat
         {
@@ -64,28 +63,35 @@ internal class CrearChatCommandHandler(
             FechaRegistro = DateTime.UtcNow,
             ChatUsuarios = new List<Dominio.Modelos.ChatUsuario>
             {
-                new() { 
-                    UsuarioId = emisor.Id, 
-                    FechaIngreso = DateTime.UtcNow, 
+                new()
+                {
+                    UsuarioId = emisor.Id,
+                    FechaIngreso = DateTime.UtcNow,
                     Usuario = emisor,
-                    NombreChat = $"{receptor.Nombre} {receptor.Apellido}".Trim()  
+                    NombreChat = $"{receptor.Nombre} {receptor.Apellido}".Trim()
                 },
-                new() { 
-                    UsuarioId = receptor.Id, 
-                    FechaIngreso = DateTime.UtcNow, 
+                new()
+                {
+                    UsuarioId = receptor.Id,
+                    FechaIngreso = DateTime.UtcNow,
                     Usuario = receptor,
-                    NombreChat = $"{emisor.Nombre} {emisor.Apellido}".Trim() 
+                    NombreChat = $"{emisor.Nombre} {emisor.Apellido}".Trim()
                 }
             }
         };
+
+        
+        await repositorioChat.CrearAsync(nuevoChat, cancellationToken);
+        
+
         var resultado = MapperChat.MapChatToDto(nuevoChat, request.EmisorId);
 
         await notificador.NotificarNuevoChat(request.EmisorId, new List<ChatDto> { resultado });
         await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { resultado });
-        await repositorioChat.CrearAsync(nuevoChat, cancellationToken);
-        
+
         logger.LogInformation("Se creó un nuevo chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
-        return ResultadoT<ChatDto>.Exito(MapperChat.MapChatToDto(nuevoChat, request.EmisorId));
+        return ResultadoT<ChatDto>.Exito(resultado);
+        
     }
     
     

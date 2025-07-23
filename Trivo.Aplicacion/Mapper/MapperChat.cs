@@ -6,46 +6,69 @@ namespace Trivo.Aplicacion.Mapper;
 
 public class MapperChat
 {
-    public static ChatDto MapChatToDto(Dominio.Modelos.Chat chat, Guid usuarioConsultanteId)
+   public static ChatDto MapChatToDto(Dominio.Modelos.Chat chat, Guid usuarioConsultanteId)
+{
+    var usuariosDtos = chat.ChatUsuarios.Select(cu => new UsuarioChatDto(
+        cu.UsuarioId!.Value,
+        cu.Usuario?.NombreUsuario ?? "",
+        $"{cu.Usuario?.Nombre} {cu.Usuario?.Apellido}".Trim(),
+        cu.Usuario?.FotoPerfil
+    )).ToList();
+
+    var nombreChat = chat.ChatUsuarios
+        .Where(cu => cu.UsuarioId != usuarioConsultanteId)
+        .Select(cu => $"{cu.Usuario?.Nombre} {cu.Usuario?.Apellido}".Trim())
+        .FirstOrDefault() ?? "Sin nombre";
+
+    var ultimoMensaje = chat.Mensajes?
+        .OrderByDescending(m => m.FechaEnvio)
+        .FirstOrDefault();
+
+    MensajeDto? ultimoMensajeDto = null;
+
+    if (ultimoMensaje is not null)
     {
-        var usuariosDtos = chat.ChatUsuarios.Select(cu => new UsuarioChatDto(
-            cu.UsuarioId!.Value,
-            cu.Usuario?.NombreUsuario ?? "",
-            $"{cu.Usuario?.Nombre} {cu.Usuario?.Apellido}".Trim(),
-            cu.Usuario?.FotoPerfil
-        )).ToList();
-        
-        var nombreChat = chat.ChatUsuarios
-            .Where(cu => cu.UsuarioId != usuarioConsultanteId)  
-            .Select(cu => $"{cu.Usuario?.Nombre} {cu.Usuario?.Apellido}".Trim())
-            .FirstOrDefault() ?? "Sin nombre";  
+        var emisor = ultimoMensaje.Emisor;
+        var receptor = ultimoMensaje.Receptor;
 
-        var ultimoMensaje = chat.Mensajes?
-            .OrderByDescending(m => m.FechaEnvio)
-            .FirstOrDefault();
-
-        MensajeDto? ultimoMensajeDto = null;
-
-        if (ultimoMensaje is not null)
-        {
-            var emisorId = ultimoMensaje.EmisorId ?? Guid.Empty;
-
-            ultimoMensajeDto = new MensajeDto(
-                ultimoMensaje.MensajeId!.Value,
-                chat.Id!.Value,
-                emisorId,
-                ultimoMensaje.Estado ?? string.Empty,
-                ultimoMensaje.Contenido ?? string.Empty,
-                ultimoMensaje.FechaEnvio ?? DateTime.UtcNow
+        var emisorDto = emisor is null
+            ? null
+            : new UsuarioDto(
+                emisor.Id!.Value,
+                emisor.Nombre,
+                emisor.Apellido,
+                emisor.FotoPerfil
             );
-        }
 
-        return new ChatDto(
-            Id: chat.Id ?? Guid.Empty,
-            Participantes: usuariosDtos,
-            Nombre: nombreChat,  
-            FechaCreacion: chat.FechaRegistro ?? DateTime.UtcNow,
-            UltimoMensaje: ultimoMensajeDto
+        var receptorDto = receptor is null
+            ? null
+            : new UsuarioDto(
+                receptor.Id!.Value,
+                receptor.Nombre,
+                receptor.Apellido,
+                receptor.FotoPerfil
+            );
+
+        ultimoMensajeDto = new MensajeDto(
+            ultimoMensaje.MensajeId!.Value,
+            chat.Id!.Value,
+            ultimoMensaje.Contenido ?? string.Empty,
+            ultimoMensaje.Estado ?? string.Empty,
+            ultimoMensaje.FechaEnvio ?? DateTime.UtcNow,
+            ultimoMensaje.EmisorId!.Value,
+            emisorDto,
+            ultimoMensaje.ReceptorId,
+            receptorDto
         );
     }
+
+    return new ChatDto(
+        Id: chat.Id ?? Guid.Empty,
+        Participantes: usuariosDtos,
+        Nombre: nombreChat,
+        FechaCreacion: chat.FechaRegistro ?? DateTime.UtcNow,
+        UltimoMensaje: ultimoMensajeDto
+    );
+}
+
 }

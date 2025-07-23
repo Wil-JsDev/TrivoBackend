@@ -51,6 +51,9 @@ public class ChatHub(
         logger.LogInformation($"Usuario {emisorId} envía mensaje a {mensaje.ReceptorId}: {mensaje.Contenido}");
         await Clients.User(mensaje.ReceptorId.ToString())
             .RecibirMensajePrivado(mensaje with { EmisorId = emisorGuid });
+        
+        await Clients.User(emisorGuid.ToString())
+            .RecibirMensajePrivado(mensaje with { EmisorId = emisorGuid });
     }
     public async Task ObtenerChatsUsuario(int numeroPagina = 1, int tamanoPagina = 10)
     {
@@ -93,7 +96,7 @@ public class ChatHub(
                 totalElementos: 0,
                 paginaActual: numeroPagina,
                 tamanioPagina: tamanoPagina
-                );
+            );
             await Clients.Caller.RecibirMensajesDelChat(chatId, resultadoVacio);
             return;
         }

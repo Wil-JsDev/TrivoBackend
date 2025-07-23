@@ -9,6 +9,7 @@ public sealed class Mensaje
     public Guid? ChatId { get; set; }
     
     public Guid? EmisorId { get; set; }
+    public Guid ReceptorId { get; set; }
     
     public string? Contenido { get; set; }
     
@@ -18,7 +19,8 @@ public sealed class Mensaje
     
     public DateTime? FechaRegistro { get; set; } = DateTime.UtcNow;
     
-    public Usuario? Usuario { get; set; }
+    public Usuario? Emisor { get; set; }
+    public Usuario? Receptor { get; set; }
     
     public Chat? Chat { get; set; }
     

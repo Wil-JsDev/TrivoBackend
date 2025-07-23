@@ -184,6 +184,10 @@ public class TrivoContexto : DbContext
             modelBuilder.Entity<Mensaje>()
                 .Property(c => c.EmisorId)
                 .HasColumnName("FkEmisorId");
+            
+            modelBuilder.Entity<Mensaje>()
+                .Property(c => c.ReceptorId)
+                .HasColumnName("FKReceptorId");
 
             modelBuilder.Entity<Reporte>()
                 .Property(c => c.ReportadoPor)
@@ -267,11 +271,18 @@ public class TrivoContexto : DbContext
                  .HasConstraintName("FKCreadoPorId");
              
              modelBuilder.Entity<Usuario>()
-                 .HasMany(u => u.Mensajes)
-                 .WithOne(c => c.Usuario)
-                 .HasForeignKey(c => c.EmisorId)
-                 .IsRequired()
-                 .HasConstraintName("FKEmisorId");
+                 .HasMany(u => u.MensajesEnviados)
+                 .WithOne(m => m.Emisor)
+                 .HasForeignKey(m => m.EmisorId)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_EmisorId");
+
+             modelBuilder.Entity<Usuario>()
+                 .HasMany(u => u.MensajesRecibidos)
+                 .WithOne(m => m.Receptor)
+                 .HasForeignKey(m => m.ReceptorId)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_ReceptorId");
              
              modelBuilder.Entity<Usuario>()
                  .HasMany(u => u.Reportes)
