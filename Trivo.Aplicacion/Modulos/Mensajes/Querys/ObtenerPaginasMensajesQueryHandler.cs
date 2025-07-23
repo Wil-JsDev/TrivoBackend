@@ -74,7 +74,7 @@ internal class ObtenerPaginasMensajesQueryHandler(
 
         foreach(var usuarioId in usuarios)
         {
-            await notificador.NotificarPaginaMensajes(usuarioId, request.ChatId, resultado);
+            await notificador.NotificarPaginaMensajes(usuarioId, request.ChatId, resultado.Elementos!);
         }
         
         

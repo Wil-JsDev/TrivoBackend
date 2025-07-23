@@ -10,6 +10,6 @@ public interface INotificadorTiempoReal
     Task NotificarMatchConfirmado(Guid usuarioId, string contenido);
     Task NotificarMatchPendiente(Guid usuarioId, string contenido);
     Task NotificarNuevoChat(Guid usuarioId, IEnumerable<ChatDto> chat);
-    Task NotificarChatsPaginados(Guid usuarioId, ResultadoPaginado<ChatDto> chat);
-    Task NotificarPaginaMensajes(Guid usuarioId, Guid chatId, ResultadoPaginado<MensajeDto> pagina);
+    Task NotificarChatsPaginados(Guid usuarioId, IEnumerable<ChatDto> chat);
+    Task NotificarPaginaMensajes(Guid usuarioId, Guid chatId, IEnumerable<MensajeDto> pagina);
 }
