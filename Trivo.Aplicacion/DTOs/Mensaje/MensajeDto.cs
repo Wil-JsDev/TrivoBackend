@@ -4,7 +4,7 @@ using Trivo.Aplicacion.DTOs.Usuario;
 
 namespace Trivo.Aplicacion.DTOs.Mensaje;
 
-public record MensajeDto(
+public sealed record MensajeDto(
     Guid MensajeId,
     Guid ChatId,
     string? Contenido ,

@@ -4,7 +4,7 @@ using Trivo.Aplicacion.DTOs.Mensaje;
 
 namespace Trivo.Aplicacion.Modulos.Mensajes.Commands.EnviarArchivo;
 
-public record EnviarArchivoCommand(
+public sealed record EnviarArchivoCommand(
     Guid ChatId,
     Guid EmisorId,
     Guid ReceptorId,

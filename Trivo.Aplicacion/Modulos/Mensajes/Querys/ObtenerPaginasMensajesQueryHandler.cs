@@ -45,16 +45,7 @@ internal class ObtenerPaginasMensajesQueryHandler(
             cancellationToken);
 
         var elementos = resultadoPaginado.Elementos!
-            .Select(x => new MensajeDto(
-                x.MensajeId!,
-                x.ChatId!,
-                x.Contenido!,
-                x.Estado,
-                x.FechaEnvio,
-                x.EmisorId,
-                x.ReceptorId
-              
-            ));
+            .Select(x => x with { MensajeId = x.MensajeId!, ChatId = x.ChatId!, Contenido = x.Contenido! });
         
         
         if (!elementos.Any())
