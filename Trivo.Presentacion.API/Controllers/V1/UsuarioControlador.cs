@@ -113,7 +113,7 @@ public class UsuarioControlador(
     {
         ModificarContrasenaUsuarioCommand command = new(email,
             parametroModificarContrasena.Contrasena,
-            parametroModificarContrasena.ConfirmacionDeContrsena);
+            parametroModificarContrasena.ConfirmacionDeContrasena);
         
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
