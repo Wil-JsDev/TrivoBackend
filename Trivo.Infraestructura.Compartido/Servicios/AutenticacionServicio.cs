@@ -67,6 +67,32 @@ public class AutenticacionServicio(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
+    public string GenerarTokenAdministrador(Administrador admin)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, admin.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, admin.Email!),
+            new Claim("nombreUsuario", admin.NombreUsuario!),
+            new Claim("rol", Roles.Administrador.ToString()),
+            new Claim("tipo", "access")
+        };
+
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_configuraciones.DuracionEnMinutos),
+            signingCredentials: credenciales
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    
     public async Task<ResultadoT<TokenRespuestaDto>> RefrescarTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
         var manejador = new JwtSecurityTokenHandler();
@@ -126,5 +152,29 @@ public class AutenticacionServicio(
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
+    public string GenerarRefreshTokenAdministrador(Administrador admin)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, admin.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("tipo", "refresh-admin")
+        };
+
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7),
+            signingCredentials: credenciales
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
         
 }

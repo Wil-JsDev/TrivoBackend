@@ -39,4 +39,31 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
             .Where(usuario =>  usuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken) =>
+        await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
+    
+    public async Task<Usuario> BuscarPorEmailAsync(string email, CancellationToken cancellationToken) =>
+        (await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Where(usuario => usuario.Email == email)
+            .FirstOrDefaultAsync(cancellationToken))!;
+    
+    public async Task<bool> EmailEnUsoAsync(string email, Guid excluirUsuarioId, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Email == email && us.Id != excluirUsuarioId, cancellationToken);
+    
+    public async Task<bool> ExisteEmailAsync(string email, CancellationToken cancellationToken) =>
+        await ValidarAsync(us => us.Email == email, cancellationToken);
+
+    public async Task<bool> ExisteNombreUsuarioAsync(string nombreUsuario, CancellationToken cancellationToken)
+    {
+       return await ValidarAsync(us => us.Nombre == nombreUsuario, cancellationToken);
+    }
+
+    public async Task ActualizarContrasenaAsync(Administrador admin, string nuevaContrasena)
+    {
+        admin.ContrasenaHash = nuevaContrasena;
+        _trivoContexto.Set<Administrador>().Update(admin);
+        await _trivoContexto.SaveChangesAsync();
+    }
 }
