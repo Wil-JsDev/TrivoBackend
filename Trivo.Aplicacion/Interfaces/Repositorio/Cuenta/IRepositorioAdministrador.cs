@@ -12,7 +12,7 @@ public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
 
     Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken);
 
-    Task<Usuario> BuscarPorEmailAsync(string email, CancellationToken cancellationToken);
+    Task<Administrador> BuscarPorEmailAsync(string email, CancellationToken cancellationToken);
 
     Task<bool> EmailEnUsoAsync(string email, Guid excluirUsuarioId, CancellationToken cancellationToken);
 

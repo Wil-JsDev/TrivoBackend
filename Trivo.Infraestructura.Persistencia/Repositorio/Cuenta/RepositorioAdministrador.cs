@@ -43,8 +43,8 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
     public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken) =>
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
     
-    public async Task<Usuario> BuscarPorEmailAsync(string email, CancellationToken cancellationToken) =>
-        (await _trivoContexto.Set<Usuario>()
+    public async Task<Administrador> BuscarPorEmailAsync(string email, CancellationToken cancellationToken) =>
+        (await _trivoContexto.Set<Administrador>()
             .AsNoTracking()
             .Where(usuario => usuario.Email == email)
             .FirstOrDefaultAsync(cancellationToken))!;

@@ -30,8 +30,9 @@ internal sealed class InicioSesionAdminstradorCommandHandler(
             return ResultadoT<TokenRespuestaDto>.Fallo(Error.Conflicto("409", "La contraseña es incorrecta."));
         }
 
-        var tokenAcceso = await autenticacionServicio.GenerarToken(email, cancellationToken);
-        var refrescarToken = autenticacionServicio.GenerarRefreshToken(email);
+        var tokenAcceso = autenticacionServicio.GenerarTokenAdministrador(email);
+        
+        var refrescarToken = autenticacionServicio.GenerarRefreshTokenAdministrador(email);
 
         logger.LogInformation("Inicio de sesión exitoso para el administrador con ID '{Id}' y email '{Email}'.", email.Id, email.Email);
 
