@@ -32,14 +32,6 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         
         await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<Usuario>> ObtenerUsuariosBaneadosAsync(CancellationToken cancellationToken)
-    {
-        return await _trivoContexto.Set<Usuario>()
-            .AsNoTracking()
-            .Where(usuario =>  usuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
-            .ToListAsync(cancellationToken);
-    }
     
     public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken) =>
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
@@ -67,15 +59,17 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         _trivoContexto.Set<Administrador>().Update(admin);
         await _trivoContexto.SaveChangesAsync();
     }
-   public async Task<ResultadoPaginado<Usuario>> ObtenerPaginadoUsuariosBaneadosAsync(
+   public async Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosBan(
        int numeroPagina,
        int tamanoPagina,
        CancellationToken cancellationToken)
    {
-       var consulta = _trivoContexto.Set<Usuario>()
+       var consulta = _trivoContexto.Set<Reporte>()
            .AsNoTracking()
-           .Where(usuario => usuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
-           .OrderByDescending(x => x.FechaRegistro);
+           .Where(x => x.EstadoReporte == EstadoReporte.Resuelto.ToString())
+           .Include(x => x.Usuario)
+           .Where(x => x.Usuario!.EstadoUsuario == EstadoUsuario.Baneado.ToString())
+           .AsSplitQuery();
        
        var total = await consulta.CountAsync(cancellationToken);
        
@@ -84,7 +78,7 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
            .Take(tamanoPagina)
            .ToListAsync(cancellationToken);
        
-       return new ResultadoPaginado<Usuario>(usuariosBaneados, numeroPagina, tamanoPagina, total);
+       return new ResultadoPaginado<Reporte>(usuariosBaneados, numeroPagina, tamanoPagina, total);
    }
    
    public async Task<ResultadoPaginado<Usuario>> ObtenerPaginadoUltimosUsuariosAsync(

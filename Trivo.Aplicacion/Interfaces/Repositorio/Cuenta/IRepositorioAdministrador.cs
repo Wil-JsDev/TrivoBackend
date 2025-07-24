@@ -9,7 +9,7 @@ public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
 
     Task DesbanearUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 
-    Task<ResultadoPaginado<Usuario>> ObtenerPaginadoUsuariosBaneadosAsync(
+    Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosBan(
         int numeroPagina,
         int tamanoPagina,
         CancellationToken cancellationToken);
