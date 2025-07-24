@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Paginacion;
 using Trivo.Dominio.Enum;
 using Trivo.Dominio.Modelos;
 using Trivo.Infraestructura.Persistencia.Contexto;
@@ -66,4 +67,79 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         _trivoContexto.Set<Administrador>().Update(admin);
         await _trivoContexto.SaveChangesAsync();
     }
+   public async Task<ResultadoPaginado<Usuario>> ObtenerPaginadoUsuariosBaneadosAsync(
+       int numeroPagina,
+       int tamanoPagina,
+       CancellationToken cancellationToken)
+   {
+       var consulta = _trivoContexto.Set<Usuario>()
+           .AsNoTracking()
+           .Where(usuario => usuario.EstadoUsuario == nameof(EstadoUsuario.Baneado))
+           .OrderByDescending(x => x.FechaRegistro);
+       
+       var total = await consulta.CountAsync(cancellationToken);
+       
+       var usuariosBaneados = await consulta
+           .Skip((numeroPagina - 1) * tamanoPagina)
+           .Take(tamanoPagina)
+           .ToListAsync(cancellationToken);
+       
+       return new ResultadoPaginado<Usuario>(usuariosBaneados, numeroPagina, tamanoPagina, total);
+   }
+   
+   public async Task<ResultadoPaginado<Usuario>> ObtenerPaginadoUltimosUsuariosAsync(
+       int numeroPagina,
+       int tamanoPagina,
+       CancellationToken cancellationToken)
+   {
+       var consulta = _trivoContexto.Set<Usuario>()
+           .AsNoTracking()
+           .OrderByDescending(x => x.FechaRegistro);
+
+       var total = await consulta.CountAsync(cancellationToken);
+
+       var usuarios = await consulta
+           .Skip((numeroPagina - 1) * tamanoPagina)
+           .Take(tamanoPagina)
+           .ToListAsync(cancellationToken);
+
+       return new ResultadoPaginado<Usuario>(usuarios, total, numeroPagina, tamanoPagina);
+   }
+
+   public async Task<ResultadoPaginado<Emparejamiento>> ObtenerPaginadoUltimosEmparejamientosAsync(
+       int numeroPagina,
+       int tamanoPagina,
+       CancellationToken cancellationToken)
+   {
+       var consulta = _trivoContexto.Set<Emparejamiento>()
+           .AsNoTracking()
+           .OrderByDescending(x => x.FechaRegistro);
+       
+       var total = await consulta.CountAsync(cancellationToken);
+       
+       var emparejamientos = await consulta
+           .Skip((numeroPagina - 1) * tamanoPagina)
+           .Take(tamanoPagina)
+           .ToListAsync(cancellationToken);
+       
+       return new ResultadoPaginado<Emparejamiento>(emparejamientos, numeroPagina, tamanoPagina, total);
+   }
+
+   public Task<int> ContarEmparejamientosCompletadosAsync(CancellationToken cancellationToken)
+   {
+       return Task.FromResult(_trivoContexto
+           .Set<Emparejamiento>()
+           .AsNoTracking()
+           .Count(x => x.EmparejamientoEstado == EmparejamientoEstado.Completado.ToString()));
+   }
+   
+   public async Task<int> ContarUsuariosActivosAsync(
+       CancellationToken cancellationToken)
+   {
+       return await _trivoContexto.Set<Usuario>()
+           .AsNoTracking()
+           .Where(x => x.EstadoUsuario == nameof(EstadoUsuario.Activo))
+           .CountAsync(cancellationToken);
+   }
+   
 }
