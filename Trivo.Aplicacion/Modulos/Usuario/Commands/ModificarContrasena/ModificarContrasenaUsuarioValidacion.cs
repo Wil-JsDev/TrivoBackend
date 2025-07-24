@@ -6,9 +6,11 @@ public class ModificarContrasenaUsuarioValidacion : AbstractValidator<ModificarC
 {
     public ModificarContrasenaUsuarioValidacion()
     {
-        RuleFor(x => x.UsuarioId)
+        RuleFor(x => x.Email)
             .NotEmpty()
-            .WithMessage("El ID del usuario es obligatorio.");
+            .WithMessage("El correo electrónico es obligatorio.")
+            .EmailAddress()
+            .WithMessage("Debe proporcionar un correo electrónico válido.");
 
         RuleFor(x => x.Contrasena)
             .NotEmpty()
@@ -23,10 +25,6 @@ public class ModificarContrasenaUsuarioValidacion : AbstractValidator<ModificarC
             .WithMessage("Debe confirmar la contraseña.")
             .Equal(x => x.Contrasena)
             .WithMessage("La confirmación de la contraseña no coincide.");
-
-        RuleFor(x => x.Codigo)
-            .NotEmpty()
-            .WithMessage("El codigo de confirmación es obligatorio.");
-
+        
     }
 }

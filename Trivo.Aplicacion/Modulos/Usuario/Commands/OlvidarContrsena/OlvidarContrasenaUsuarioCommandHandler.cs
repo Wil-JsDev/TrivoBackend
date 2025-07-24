@@ -21,15 +21,15 @@ internal sealed class OlvidarContrasenaUsuarioCommandHandler(
     {
         if (request != null)
         {
-            var usuario = await repositorioUsuario.ObtenerByIdAsync(request.UsuarioId, cancellationToken);
+            var usuario = await repositorioUsuario.BuscarPorEmailUsuarioAsync(request.Email, cancellationToken);
             if (usuario == null)
             {
-                logger.LogError("No se encontró el usuario con ID '{RequestUsuarioId}'", request.UsuarioId);
+                logger.LogError("No se encontró el usuario con ID '{RequestUsuarioId}'", usuario!.Id);
 
                 return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado"));
             }
 
-            var codigo = await codigoServicio.GenerarCodigoAsync(request.UsuarioId, TipoCodigo.RecuperacionContrasena, cancellationToken);
+            var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, TipoCodigo.RecuperacionContrasena, cancellationToken);
 
             if (!codigo.EsExitoso)
             {

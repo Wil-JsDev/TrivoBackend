@@ -6,8 +6,10 @@ public class OlvidarContrasenaUsuarioValidacion : AbstractValidator<OlvidarContr
 {
     public OlvidarContrasenaUsuarioValidacion()
     {
-        RuleFor(x => x.UsuarioId)
+        RuleFor(x => x.Email)
             .NotEmpty()
-            .WithMessage("El ID del usuario es obligatorio");
+            .WithMessage("El correo electrónico es obligatorio.")
+            .EmailAddress()
+            .WithMessage("Debe proporcionar un correo electrónico válido.");
     }
 }
