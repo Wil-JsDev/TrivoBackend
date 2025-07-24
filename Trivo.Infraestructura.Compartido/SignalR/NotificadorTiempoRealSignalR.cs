@@ -31,13 +31,13 @@ public class NotificadorTiempoReal(IHubContext<ChatHub, IChatHub> hub) : INotifi
         }
     }
 
-    public async Task NotificarChatsPaginados(Guid usuarioId, ResultadoPaginado<ChatDto> resultado)
+    public async Task NotificarChatsPaginados(Guid usuarioId, IEnumerable<ChatDto> resultado)
     {
         await hub.Clients.User(usuarioId.ToString())
             .RecibirChats(resultado);
     }
 
-    public async Task NotificarPaginaMensajes(Guid usuarioId, Guid chatId, ResultadoPaginado<MensajeDto> pagina)
+    public async Task NotificarPaginaMensajes(Guid usuarioId, Guid chatId, IEnumerable<MensajeDto> pagina)
     {
         await hub.Clients.User(usuarioId.ToString())
             .RecibirMensajesDelChat(chatId, pagina);
