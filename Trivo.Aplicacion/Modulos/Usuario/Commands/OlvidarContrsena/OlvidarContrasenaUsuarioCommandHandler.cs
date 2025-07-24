@@ -19,16 +19,15 @@ internal sealed class OlvidarContrasenaUsuarioCommandHandler(
         OlvidarContrasenaUsuarioCommand request, 
         CancellationToken cancellationToken)
     {
-        if (request != null)
-        {
             var usuario = await repositorioUsuario.BuscarPorEmailUsuarioAsync(request.Email, cancellationToken);
-            if (usuario == null)
+            
+            if (!await repositorioUsuario.ExisteEmailAsync(request.Email, cancellationToken))
             {
-                logger.LogError("No se encontró el usuario con ID '{RequestUsuarioId}'", usuario!.Id);
+                logger.LogError("No se encontró ningún usuario con el correo electrónico '{Email}'.", request.Email);
 
-                return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado"));
+                return ResultadoT<string>.Fallo(Error.NoEncontrado("404", "No existe ningún usuario con este correo"));
             }
-
+            
             var codigo = await codigoServicio.GenerarCodigoAsync(usuario.Id ?? Guid.Empty, TipoCodigo.RecuperacionContrasena, cancellationToken);
 
             if (!codigo.EsExitoso)
@@ -51,11 +50,5 @@ internal sealed class OlvidarContrasenaUsuarioCommandHandler(
                 usuario.Email, usuario.Id);
 
             return ResultadoT<string>.Exito("Se envió el código de recuperación correctamente.");
-        }
-
-        logger.LogWarning("Se recibió un comando OlvidarContrasenaCommand nulo.");
-
-        return ResultadoT<string>.Fallo(Error.Fallo("400", "La solicitud no puede ser nula."));
-
     }
 }
