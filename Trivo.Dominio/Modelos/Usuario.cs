@@ -26,6 +26,8 @@ public sealed class Usuario : EntidadBase
 
     public string? EstadoUsuario { get; set; }
     
+    public string? Posicion { get; set; }
+    
     // Relaciones
     public ICollection<Codigo>? Codigos { get; set; }
     
