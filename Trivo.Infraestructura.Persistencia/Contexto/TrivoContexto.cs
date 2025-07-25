@@ -416,6 +416,10 @@ public class TrivoContexto : DbContext
                     .IsRequired()
                     .HasMaxLength(255);
 
+                entity.Property(u => u.Posicion)
+                    .IsRequired()
+                    .HasMaxLength(50);
+                
                 entity.Property(u => u.NombreUsuario)
                     .IsRequired()              
                     .HasMaxLength(50);
@@ -449,7 +453,6 @@ public class TrivoContexto : DbContext
                     .IsRequired()
                     .HasColumnType("varchar(50)");
             });
-            
 
         #endregion
         

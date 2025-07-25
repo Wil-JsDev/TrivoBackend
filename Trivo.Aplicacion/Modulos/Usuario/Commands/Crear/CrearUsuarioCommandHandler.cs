@@ -65,7 +65,8 @@ internal sealed class CrearUsuarioCommandHandler(
                 NombreUsuario = request.NombreUsuario,
                 Ubicacion = request.Ubicacion,
                 FotoPerfil = imageUrl,
-                EstadoUsuario = nameof(EstadoUsuario.Activo)
+                EstadoUsuario = nameof(EstadoUsuario.Activo),
+                Posicion = request.Posicion
             };
 
             await repositorioUsuario.CrearAsync(usuario, cancellationToken);
