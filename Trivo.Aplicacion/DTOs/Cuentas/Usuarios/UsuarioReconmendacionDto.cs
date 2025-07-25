@@ -9,6 +9,7 @@ public sealed record UsuarioReconmendacionDto
     string? Nombre,
     string? Apellido,
     string? Biografia,
+    string? Posicion,
     List<InteresConIdDto> Intereses,
     List<HabilidadConIdDto> Habilidades,
     string? FotoPerfil
