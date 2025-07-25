@@ -76,7 +76,7 @@ public class AutenticacionServicio(
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, admin.Email!),
             new Claim("nombreUsuario", admin.NombreUsuario!),
-            new Claim("rol", Roles.Administrador.ToString()),
+            new Claim("roles", Roles.Administrador.ToString()),
             new Claim("tipo", "access")
         };
 
