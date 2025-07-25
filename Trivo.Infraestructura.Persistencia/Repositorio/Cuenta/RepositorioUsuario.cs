@@ -81,6 +81,7 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
                 Ubicacion = u.Ubicacion,
                 Biografia = u.Biografia,
                 FotoPerfil = u.FotoPerfil,
+                Posicion = u.Posicion,
 
                 UsuarioHabilidades = u.UsuarioHabilidades!
                     .Select(uh => new UsuarioHabilidad
