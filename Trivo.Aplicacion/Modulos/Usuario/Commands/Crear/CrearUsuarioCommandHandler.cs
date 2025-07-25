@@ -112,6 +112,7 @@ internal sealed class CrearUsuarioCommandHandler(
                 Email: usuario.Email,
                 NombreUsuario: usuario.NombreUsuario,
                 Ubicacion: usuario.Ubicacion,
+                Posicion: usuario.Posicion,
                 FotoPerfil: usuario.FotoPerfil,
                 EstadoUsuario: usuario.EstadoUsuario,
                 FechaRegistro: usuario.FechaRegistro

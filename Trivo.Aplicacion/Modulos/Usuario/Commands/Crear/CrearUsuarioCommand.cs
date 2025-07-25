@@ -14,6 +14,7 @@ public sealed class CrearUsuarioCommand : ICommand<UsuarioDto>
     public string? NombreUsuario { get; set; }
     public string? Ubicacion { get; set; }
     
+    public string? Posicion { get; set; }
     public List<Guid>? Intereses { get; set; }
     public IFormFile? Foto { get; set; }
 }
