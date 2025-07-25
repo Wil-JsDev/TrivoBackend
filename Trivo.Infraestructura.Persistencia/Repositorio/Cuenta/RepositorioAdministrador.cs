@@ -67,9 +67,10 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
        var consulta = _trivoContexto.Set<Reporte>()
            .AsNoTracking()
            .Where(x => x.EstadoReporte == EstadoReporte.Resuelto.ToString())
-           .Include(x => x.Usuario)
-           .Where(x => x.Usuario!.EstadoUsuario == EstadoUsuario.Baneado.ToString())
-           .Include(x => x.Mensaje)
+           .Include(x => x.Mensaje)!
+           .ThenInclude(m => m.Emisor)
+           .Include(x => x.Mensaje)!
+           .ThenInclude(m => m.Receptor)
            .AsSplitQuery();
        
        var total = await consulta.CountAsync(cancellationToken);
