@@ -10,8 +10,9 @@ public sealed record UsuarioDetallesExpertoDto(
     string? Ubicacion,
     string? Biografia,
     string? FotoPerfil,
+    string? Posicion,
     IEnumerable<HabilidadNombreDto> Habilidad,
     IEnumerable<InteresDto> Interes,
     bool? DisponibleParaProyectos,
     bool? Contratado
-) : UsuarioDetallesDto(Nombre, Apellido, Ubicacion, Biografia, FotoPerfil, Habilidad, Interes);
+) : UsuarioDetallesDto(Nombre, Apellido, Ubicacion, Biografia, FotoPerfil, Posicion ,Habilidad, Interes);

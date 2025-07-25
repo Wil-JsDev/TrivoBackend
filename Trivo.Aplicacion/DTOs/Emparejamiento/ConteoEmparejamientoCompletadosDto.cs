@@ -1,0 +1,3 @@
+namespace Trivo.Aplicacion.DTOs.Emparejamiento;
+
+public record ConteoEmparejamientoCompletadosDto(int EmparejamientosCompletados);

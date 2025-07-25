@@ -10,6 +10,7 @@ public record UsuarioDetallesDto
     string? Ubicacion,
     string? Biografia,
     string? FotoPerfil,
+    string? Posicion,
     IEnumerable<HabilidadNombreDto>? Habilidad,
     IEnumerable<InteresDto>? Interes
 );

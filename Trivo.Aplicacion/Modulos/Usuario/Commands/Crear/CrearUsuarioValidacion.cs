@@ -16,6 +16,10 @@ public class CrearUsuarioValidacion : AbstractValidator<CrearUsuarioCommand>
             .NotEmpty().WithMessage("El apellido es obligatorio.")
             .MaximumLength(30).WithMessage("El apellido no debe exceder los 30 caracteres.");
 
+        RuleFor(x => x.Posicion)
+            .NotEmpty()
+            .WithMessage("El campo de posicion es obligatorio");
+        
         RuleFor(x => x.Biografia)
             .NotEmpty().WithMessage("La biografía es obligatoria");
 

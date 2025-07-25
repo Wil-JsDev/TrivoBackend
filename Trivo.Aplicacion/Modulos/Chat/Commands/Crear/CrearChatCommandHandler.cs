@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Chat;
-using Trivo.Aplicacion.DTOs.Mensaje;
-using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
@@ -37,14 +35,16 @@ internal class CrearChatCommandHandler(
 
         if (chatExistente is not null)
         {
-            logger.LogInformation("Ya existe un chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
-            return ResultadoT<ChatDto>.Exito(MapperChat.MapChatToDto(chatExistente, request.EmisorId ));
+            logger.LogWarning("Ya existe un chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
+            
+            return ResultadoT<ChatDto>.Fallo(Error.Fallo("400", "Ya existe un chat entre estos usuarios."));
         }
-        
         
         var emisor = await repositorioUsuario.ObtenerByIdAsync(request.EmisorId, cancellationToken);
         if (emisor is null)
         {
+            logger.LogWarning("El usuario emisor con ID {EmisorId} no existe.", request.EmisorId);
+            
             return ResultadoT<ChatDto>.Fallo(Error.NoEncontrado("404", "Usuario emisor no encontrado"));
         }        
         
@@ -52,6 +52,8 @@ internal class CrearChatCommandHandler(
 
         if (receptor is null)
         {
+            logger.LogWarning("El usuario receptor con ID {ReceptorId} no existe.", request.ReceptorId);
+            
             return ResultadoT<ChatDto>.Fallo(Error.NoEncontrado("404", "Usuario receptor no encontrado"));
         }
         
@@ -90,9 +92,8 @@ internal class CrearChatCommandHandler(
         await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { resultado });
 
         logger.LogInformation("Se creó un nuevo chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
-        return ResultadoT<ChatDto>.Exito(resultado);
         
+        return ResultadoT<ChatDto>.Exito(resultado);
     }
-    
     
 }
