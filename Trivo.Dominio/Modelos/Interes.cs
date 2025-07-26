@@ -1,6 +1,6 @@
 namespace Trivo.Dominio.Modelos;
 
-public sealed class Interes : EntidadBase
+public sealed class  Interes : EntidadBase
 {
     public string? Nombre { get; set; }
     

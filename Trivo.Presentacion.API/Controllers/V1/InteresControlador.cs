@@ -7,6 +7,7 @@ using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Intereses.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Intereses.Querys.BuscarPorNombre;
 using Trivo.Aplicacion.Modulos.Intereses.Querys.ObtenerInteresCategoriaId;
+using Trivo.Aplicacion.Modulos.Intereses.Querys.Paginacion;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -46,6 +47,21 @@ public class InteresControlador(IMediator mediator) : ControllerBase
         return BadRequest(resultado.Error);
     }
 
+    [HttpGet("pagination")]
+    public async Task<IActionResult> ObtenerPaginacionDeInteresAsync(
+        [FromQuery] int numeroPagina,
+        [FromQuery] int tamanoPagina,
+        CancellationToken cancellationToken
+        )
+    {
+        PaginacionInteresQuery query = new(numeroPagina, tamanoPagina);
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+    
     [HttpGet("search")]
     [Authorize]
     public async Task<IActionResult> BuscarInteresPorNombreAsync(
