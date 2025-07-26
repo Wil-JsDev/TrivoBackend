@@ -2,6 +2,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Emparejamiento.Commands.Crear;
+using Trivo.Aplicacion.Modulos.Emparejamiento.Commands.Rechazos;
 using Trivo.Aplicacion.Modulos.Emparejamiento.Querys;
 using Trivo.Dominio.Enum;
 
@@ -23,6 +24,17 @@ public class EmparejamientoControlador(IMediator mediator) : ControllerBase
         return Ok(resultado.Valor);
     }
 
+    [HttpPost("reject")]
+    public async Task<IActionResult> RechazarEmparejamientoAsync([FromBody] CrearRechazosEmparejamientoCommand command,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (!resultado.EsExitoso)
+            return BadRequest(resultado.Error);
+        
+        return Ok(resultado.Valor);
+    }
+    
     [HttpGet("filter")]
     public async Task<IActionResult> FiltrarEmparejamientosPorUsuarioAsync(
         [FromQuery] Guid usuarioId,
