@@ -28,15 +28,7 @@ internal sealed class ObtenerUsuariosPorInteresesYHabilidadesQueryHandler(
             return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(
                 Error.Fallo("400", "El número y tamaño de página deben ser mayores a cero."));
         }
-
-        if (!request.HabilidadesIds.Any() || !request.InteresesIds.Any())
-        {
-            logger.LogWarning("Lista de intereses o habilidades vacía.");
         
-            return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(
-                Error.Fallo("400", "Debe especificar al menos un interés y una habilidad."));
-        }
-
         var usuariosConInteresYHabilidades = await repositorioUsuario
             .FiltrarPorInteresesYHabilidadesAsync(request.InteresesIds, request.HabilidadesIds, cancellationToken);
 
