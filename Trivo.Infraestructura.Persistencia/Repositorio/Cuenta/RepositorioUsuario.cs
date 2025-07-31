@@ -210,6 +210,15 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
         
         return "Sin Rol";
     }
+
+    public async Task<Usuario?> ObtenerPorIdConRelacionesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
     
     public async Task<IEnumerable<Usuario>> ObtenerUsuariosObjetivoAsync(Guid usuarioActualId, string rol, CancellationToken cancellationToken)
     {
