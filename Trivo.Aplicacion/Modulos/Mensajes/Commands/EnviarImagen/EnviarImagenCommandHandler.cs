@@ -79,7 +79,8 @@ internal class EnviarImagenCommandHandler(
             Contenido = url,
             FechaEnvio = DateTime.UtcNow,
             FechaRegistro = DateTime.UtcNow,
-            Estado = EstadoMensaje.Enviado.ToString()
+            Estado = EstadoMensaje.Enviado.ToString(),
+            Tipo = TipoMensaje.Imagen.ToString()
         };
         logger.LogInformation("Mensaje persistido en la base de datos. Id: {MensajeId}", mensaje.MensajeId);
 
@@ -93,7 +94,8 @@ internal class EnviarImagenCommandHandler(
             mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
             mensaje.EmisorId.Value,
-            mensaje.ReceptorId
+            mensaje.ReceptorId,
+            mensaje.Tipo
         );
         
         await notificador.NotificarMensajePrivado(dto, dto.EmisorId);

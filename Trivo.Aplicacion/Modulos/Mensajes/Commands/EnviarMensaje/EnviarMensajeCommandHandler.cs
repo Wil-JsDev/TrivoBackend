@@ -71,7 +71,8 @@ internal sealed class EnviarMensajeCommandHandler(
             Contenido = request.Contenido,
             FechaEnvio = DateTime.UtcNow,
             FechaRegistro = DateTime.UtcNow,
-            Estado = EstadoMensaje.Enviado.ToString()
+            Estado = EstadoMensaje.Enviado.ToString(),
+            Tipo = TipoMensaje.Texto.ToString()
         };
 
         await repositorioMensaje.CrearAsync(mensaje, cancellationToken);
@@ -83,8 +84,8 @@ internal sealed class EnviarMensajeCommandHandler(
             mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
             mensaje.EmisorId.Value,
-            mensaje.ReceptorId
-          
+            mensaje.ReceptorId,
+            mensaje.Tipo
         );
         
         await notificador.NotificarMensajePrivado(dto, dto.EmisorId);
