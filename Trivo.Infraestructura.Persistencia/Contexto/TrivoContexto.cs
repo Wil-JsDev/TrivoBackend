@@ -767,6 +767,9 @@ public class TrivoContexto : DbContext
                     .IsRequired()
                     .HasColumnType("varchar(50)");
 
+                entity.Property(e => e.Tipo)
+                    .HasColumnType("varchar(50)");
+                
                 entity.Property(e => e.FechaRegistro)
                     .IsRequired();
             });

@@ -11,5 +11,6 @@ public sealed record MensajeDto(
     string? Estado,
     DateTime? FechaEnvio,
     Guid EmisorId,
-    Guid ReceptorId
+    Guid ReceptorId,
+    string? TipoMensaje
 );

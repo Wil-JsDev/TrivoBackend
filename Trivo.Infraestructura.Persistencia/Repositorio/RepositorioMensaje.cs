@@ -55,8 +55,8 @@ public class RepositorioMensaje(TrivoContexto trivoContexto): RepositorioGeneric
                 m.Estado!,
                 m.FechaEnvio!.Value,
                 m.EmisorId!.Value,
-                m.ReceptorId
-              
+                m.ReceptorId,
+                m.Tipo
             ))
             .ToListAsync(cancellationToken);
 
