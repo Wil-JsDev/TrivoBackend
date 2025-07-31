@@ -90,11 +90,12 @@ internal sealed class CrearEmparejamientoCommandHandler(
             UsuarioReconmendacionDto: new List<UsuarioReconmendacionDto> { UsuarioMapper.MapToDto(experto.Usuario!) }
         );
         
-        await emparejamientoNotificador.NotificarNuevoEmparejamiento(request.ExpertoId ?? Guid.Empty,
-            new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto });
-        
-        await emparejamientoNotificador.NotificarNuevoEmparejamiento(request.ReclutadorId ?? Guid.Empty,
-            new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador });
+        await emparejamientoNotificador.NotificarNuevoEmparejamiento(
+            reclutador.Id ?? Guid.Empty,
+            experto.Id ?? Guid.Empty,
+            new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador },
+            new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
+        );
         
         return ResultadoT<EmparejamientoDetallesDto>.Exito(emparejamientoDetallesDto);
     }

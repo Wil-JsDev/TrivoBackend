@@ -16,7 +16,9 @@ public class EmparejamientoHub(
     IMediator mediator
     ) : Hub<IEmparejamientoHub>
 {
-    public override async Task OnConnectedAsync()
+  public override async Task OnConnectedAsync()
+{
+    try
     {
         var userIdentifier = Context.UserIdentifier;
 
@@ -37,7 +39,7 @@ public class EmparejamientoHub(
             logger.LogError("UserIdentifier no es un GUID válido");
             return;
         }
-    
+
         logger.LogInformation("- UsuarioId: {UsuarioId}", usuarioId);
 
         var claims = Context.User?.Claims.ToList();
@@ -71,8 +73,8 @@ public class EmparejamientoHub(
             return;
         }
 
-        logger.LogInformation("Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
-        
+        logger.LogInformation("✅ Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
+
         var resultado = await mediator.Send(new ObtenerEmparejamientoPorUsuarioQuery
         (
             usuarioId,
@@ -83,20 +85,23 @@ public class EmparejamientoHub(
 
         if (!resultado.EsExitoso)
         {
-            logger.LogWarning("No se encontraron emparejamientos pendientes para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
-            await Clients.User(usuarioId.ToString())
-                .RecibirEmparejamiento(new List<EmparejamientoDto>()); // O lo que corresponda
-
+            logger.LogWarning("⚠️ No se encontraron emparejamientos para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
+            await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(new List<EmparejamientoDto>());
             await base.OnConnectedAsync();
             return;
         }
-        
-        await Clients.User(usuarioId.ToString())
-            .RecibirEmparejamiento(resultado.Valor);
-        
+
+        await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(resultado.Valor);
+
         await base.OnConnectedAsync();
     }
-    
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Error en OnConnectedAsync para el usuario SignalR.");
+        throw; // Opcional, si deseas dejar que la excepción burbujee
+    }
+}
+
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogInformation("Usuario desconectado: {ContextUserIdentifier}", Context.UserIdentifier);

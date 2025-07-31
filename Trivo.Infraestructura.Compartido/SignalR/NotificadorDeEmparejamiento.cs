@@ -7,15 +7,41 @@ namespace Trivo.Infraestructura.Compartido.SignalR;
 
 public class NotificadorDeEmparejamiento(IHubContext<EmparejamientoHub, IEmparejamientoHub> hubContext) : INotificadorDeEmparejamiento
 {
-    public async Task NotificarEmparejamiento(Guid usuarioId, IEnumerable<EmparejamientoDto> emparejamientos)
+    public async Task NotificarEmparejamiento(Guid reclutadorId, Guid expertoId,
+        IEnumerable<EmparejamientoDto> emparejamientosReclutador,
+        IEnumerable<EmparejamientoDto> emparejamientosExperto)
     {
-        await hubContext.Clients.User(usuarioId.ToString())
-            .RecibirEmparejamiento(emparejamientos);
+        if (reclutadorId == expertoId)
+        {
+            await hubContext.Clients.User(reclutadorId.ToString())
+                .RecibirEmparejamiento(emparejamientosReclutador);
+        }
+        else
+        {
+            await hubContext.Clients.User(reclutadorId.ToString())
+                .RecibirEmparejamiento(emparejamientosReclutador);
+
+            await hubContext.Clients.User(expertoId.ToString())
+                .RecibirEmparejamiento(emparejamientosExperto);
+        }
     }
 
-    public async Task NotificarNuevoEmparejamiento(Guid usuarioId, IEnumerable<EmparejamientoDto> emparejamientos)
+    public async Task NotificarNuevoEmparejamiento(Guid reclutadorId, Guid expertoId,
+        IEnumerable<EmparejamientoDto> emparejamientosReclutador,
+        IEnumerable<EmparejamientoDto> emparejamientosExperto)
     {
-        await hubContext.Clients.User(usuarioId.ToString())
-            .RecibirNuevoEmparejamiento(emparejamientos);
+        if (reclutadorId == expertoId)
+        {
+            await hubContext.Clients.User(reclutadorId.ToString())
+                .RecibirNuevoEmparejamiento(emparejamientosReclutador);
+        }
+        else
+        {
+            await hubContext.Clients.User(reclutadorId.ToString())
+                .RecibirNuevoEmparejamiento(emparejamientosReclutador);
+
+            await hubContext.Clients.User(expertoId.ToString())
+                .RecibirNuevoEmparejamiento(emparejamientosExperto);
+        }
     }
 }
