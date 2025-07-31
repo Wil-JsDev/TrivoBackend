@@ -1,8 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
 
@@ -24,18 +24,35 @@ public class RecomendacionUsuariosHub(
         if (!Guid.TryParse(userIdentifier, out var usuarioId))
         {
             logger.LogError("UserIdentifier no es un GUID válido");
-            // Opcional: desconectar o devolver
             return;
         }
+        
+        var httpContext = Context.GetHttpContext();
+        var query = httpContext?.Request.Query;
+
+        var numeroPaginaString = query?["numeroPagina"];
+        var tamanoPaginaString = query?["tamanoPagina"];
+        
+        var numeroPagina = int.TryParse(numeroPaginaString, out var np) ? np : 1;
+        var tamanoPagina = int.TryParse(tamanoPaginaString, out var tp) ? tp : 5;
         
         logger.LogInformation("- UsuarioId: {UsuarioId}", usuarioId);
 
         var resultado = await mediator.Send(new RecomendacionUsuariosQuery(
             usuarioId,
-            NumeroPagina: 1,
-            TamanoPagina: 9
+            NumeroPagina: numeroPagina,
+            TamanoPagina: tamanoPagina
         ));
 
+        if (!resultado.EsExitoso)
+        {
+            logger.LogWarning("No se encontraron recomendaciones para el usuario {UsuarioId}.", usuarioId);
+            await Clients.User(usuarioId.ToString()).RecibirRecomendaciones(new List<UsuarioReconmendacionDto>());
+            await base.OnConnectedAsync();
+            return;
+            
+        }
+        
         await Clients.User(usuarioId.ToString())
             .RecibirRecomendaciones(resultado.Valor.Elementos);
 
