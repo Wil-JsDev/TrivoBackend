@@ -13,4 +13,10 @@ public class NotificadorIA(IHubContext<RecomendacionUsuariosHub, IRecomendacionU
         await hubContext.Clients.User(usuarioId.ToString())
             .RecibirRecomendaciones(recomendaciones);
     }
+    public async Task NotificarNuevaRecomendacion(Guid usuarioId, IEnumerable<UsuarioReconmendacionDto>? recomendaciones)
+    {
+        await hubContext.Clients.Users(usuarioId.ToString())
+            .NotificarNuevaRecomendacion(recomendaciones);
+    }
+    
 }
