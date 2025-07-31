@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Chat;
-using Trivo.Aplicacion.DTOs.Mensaje;
-using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
@@ -14,7 +13,8 @@ namespace Trivo.Aplicacion.Modulos.Chat.Commands.Crear;
 internal class CrearChatCommandHandler(
     ILogger<CrearChatCommandHandler> logger,
     IRepositorioChat repositorioChat,
-    IRepositorioUsuario repositorioUsuario
+    IRepositorioUsuario repositorioUsuario,
+    INotificadorTiempoReal notificador
     ) : ICommandHandler<CrearChatCommand, ChatDto>
 {
     public async Task<ResultadoT<ChatDto>> Handle(CrearChatCommand request, CancellationToken cancellationToken)
@@ -35,14 +35,16 @@ internal class CrearChatCommandHandler(
 
         if (chatExistente is not null)
         {
-            logger.LogInformation("Ya existe un chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
-            return ResultadoT<ChatDto>.Exito(MapperChat.MapChatToDto(chatExistente, request.EmisorId ));
+            logger.LogWarning("Ya existe un chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
+            
+            return ResultadoT<ChatDto>.Fallo(Error.Fallo("400", "Ya existe un chat entre estos usuarios."));
         }
-        
         
         var emisor = await repositorioUsuario.ObtenerByIdAsync(request.EmisorId, cancellationToken);
         if (emisor is null)
         {
+            logger.LogWarning("El usuario emisor con ID {EmisorId} no existe.", request.EmisorId);
+            
             return ResultadoT<ChatDto>.Fallo(Error.NoEncontrado("404", "Usuario emisor no encontrado"));
         }        
         
@@ -50,9 +52,10 @@ internal class CrearChatCommandHandler(
 
         if (receptor is null)
         {
+            logger.LogWarning("El usuario receptor con ID {ReceptorId} no existe.", request.ReceptorId);
+            
             return ResultadoT<ChatDto>.Fallo(Error.NoEncontrado("404", "Usuario receptor no encontrado"));
         }
-
         
         var nuevoChat = new Dominio.Modelos.Chat
         {
@@ -62,17 +65,19 @@ internal class CrearChatCommandHandler(
             FechaRegistro = DateTime.UtcNow,
             ChatUsuarios = new List<Dominio.Modelos.ChatUsuario>
             {
-                new() { 
-                    UsuarioId = emisor.Id, 
-                    FechaIngreso = DateTime.UtcNow, 
+                new()
+                {
+                    UsuarioId = emisor.Id,
+                    FechaIngreso = DateTime.UtcNow,
                     Usuario = emisor,
-                    NombreChat = $"{receptor.Nombre} {receptor.Apellido}".Trim()  
+                    NombreChat = $"{receptor.Nombre} {receptor.Apellido}".Trim()
                 },
-                new() { 
-                    UsuarioId = receptor.Id, 
-                    FechaIngreso = DateTime.UtcNow, 
+                new()
+                {
+                    UsuarioId = receptor.Id,
+                    FechaIngreso = DateTime.UtcNow,
                     Usuario = receptor,
-                    NombreChat = $"{emisor.Nombre} {emisor.Apellido}".Trim() 
+                    NombreChat = $"{emisor.Nombre} {emisor.Apellido}".Trim()
                 }
             }
         };
@@ -80,9 +85,15 @@ internal class CrearChatCommandHandler(
         
         await repositorioChat.CrearAsync(nuevoChat, cancellationToken);
         
+
+        var resultado = MapperChat.MapChatToDto(nuevoChat, request.EmisorId);
+
+        await notificador.NotificarNuevoChat(request.EmisorId, new List<ChatDto> { resultado });
+        await notificador.NotificarNuevoChat(request.ReceptorId, new List<ChatDto> { resultado });
+
         logger.LogInformation("Se creó un nuevo chat entre {EmisorId} y {ReceptorId}", request.EmisorId, request.ReceptorId);
-        return ResultadoT<ChatDto>.Exito(MapperChat.MapChatToDto(nuevoChat, request.EmisorId));
+        
+        return ResultadoT<ChatDto>.Exito(resultado);
     }
-    
     
 }

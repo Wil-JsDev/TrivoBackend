@@ -57,6 +57,7 @@ internal sealed class ObtenerDetallesUsuarioQueryHandler(
                         Ubicacion: usuarioDetalles.Ubicacion,
                         Biografia: usuarioDetalles.Biografia,
                         FotoPerfil: usuarioDetalles.FotoPerfil,
+                        Posicion: usuarioDetalles.Posicion,
                         Habilidad: HabilidadesMapper.MapHabilidades(usuarioDetalles.UsuarioHabilidades),
                         Interes: MapperInteres.MapIntereses(usuarioDetalles.UsuarioInteres),
                         DisponibleParaProyectos: experto?.DisponibleParaProyectos,
@@ -86,6 +87,7 @@ internal sealed class ObtenerDetallesUsuarioQueryHandler(
                         Ubicacion: usuarioDetalles.Ubicacion,
                         Biografia: usuarioDetalles.Biografia,
                         FotoPerfil: usuarioDetalles.FotoPerfil,
+                        Posicion: usuarioDetalles.Posicion,
                         Habilidad: HabilidadesMapper.MapHabilidades(usuarioDetalles.UsuarioHabilidades),
                         Interes: MapperInteres.MapIntereses(usuarioDetalles.UsuarioInteres),
                         NombreEmpresa: reclutador?.NombreEmpresa
@@ -107,6 +109,7 @@ internal sealed class ObtenerDetallesUsuarioQueryHandler(
             Ubicacion: usuarioDetalles.Ubicacion,
             Biografia: usuarioDetalles.Biografia,
             FotoPerfil: usuarioDetalles.FotoPerfil,
+            Posicion: usuarioDetalles.Posicion,
             Habilidad: HabilidadesMapper.MapHabilidades(usuarioDetalles.UsuarioHabilidades),
             Interes: MapperInteres.MapIntereses(usuarioDetalles.UsuarioInteres)
         );

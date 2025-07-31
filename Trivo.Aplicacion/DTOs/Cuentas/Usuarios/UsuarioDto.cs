@@ -11,6 +11,7 @@ public sealed record UsuarioDto
     string? Email,
     string? NombreUsuario,
     string? Ubicacion,
+    string? Posicion,
     string? FotoPerfil,
     string? EstadoUsuario,
     DateTime? FechaRegistro

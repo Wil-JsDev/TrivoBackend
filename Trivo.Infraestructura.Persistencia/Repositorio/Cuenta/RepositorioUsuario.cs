@@ -81,6 +81,7 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
                 Ubicacion = u.Ubicacion,
                 Biografia = u.Biografia,
                 FotoPerfil = u.FotoPerfil,
+                Posicion = u.Posicion,
 
                 UsuarioHabilidades = u.UsuarioHabilidades!
                     .Select(uh => new UsuarioHabilidad
@@ -107,37 +108,49 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .FirstOrDefaultAsync(cancellationToken))!;
     }
 
-
-    public async Task<IEnumerable<Usuario>> FiltrarPorHabilidadesAsync(List<Guid> habilidadesIds, CancellationToken cancellationToken)
+    
+    public async Task<IEnumerable<Usuario>> FiltrarPorInteresesYHabilidadesAsync(
+        List<Guid>? interesesIds,
+        List<Guid>? habilidadesIds,
+        CancellationToken cancellationToken)
     {
-        var usuarioIds = await _trivoContexto.Set<UsuarioHabilidad>()
-            .AsNoTracking()
-            .Where(uh => habilidadesIds.Contains(uh.HabilidadId!.Value))
-            .Select(uh => uh.UsuarioId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
+        var usuarioIds = new HashSet<Guid>();
+
+        if (interesesIds is not null && interesesIds.Any())
+        {
+            var usuariosConIntereses = await _trivoContexto.Set<UsuarioInteres>()
+                .AsNoTracking()
+                .Where(ui => interesesIds.Contains(ui.InteresId!.Value))
+                .Select(ui => ui.UsuarioId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            foreach (var id in usuariosConIntereses)
+                usuarioIds.Add(id ?? Guid.Empty);
+        }
+
+        if (habilidadesIds is not null && habilidadesIds.Any())
+        {
+            var usuariosConHabilidades = await _trivoContexto.Set<UsuarioHabilidad>()
+                .AsNoTracking()
+                .Where(uh => habilidadesIds.Contains(uh.HabilidadId!.Value))
+                .Select(uh => uh.UsuarioId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            foreach (var id in usuariosConHabilidades)
+                usuarioIds.Add(id ?? Guid.Empty);
+        }
+
+        if (usuarioIds.Count == 0)
+            return [];
 
         return await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
-            .Where(u => usuarioIds.Contains(u.Id))
+            .Where(u => usuarioIds.Contains(u.Id ?? Guid.Empty))
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<Usuario>> FiltrarPorInteresesAsync(List<Guid> interesesIds, CancellationToken cancellationToken)
-    {
-        var usuarioIdsConIntereses = await _trivoContexto.Set<UsuarioInteres>()
-            .AsNoTracking()
-            .Where(ui => interesesIds.Contains(ui.InteresId!.Value))
-            .Select(ui => ui.UsuarioId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        return await _trivoContexto.Set<Usuario>()
-            .AsNoTracking()
-            .Where(u => usuarioIdsConIntereses.Contains(u.Id))
-            .ToListAsync(cancellationToken);
-       
-    }
+    
     public async Task<Usuario?> ObtenerUsuarioConInteresYHabilidades(Guid usuarioId, CancellationToken cancellationToken)
     {
         return await _trivoContexto.Set<Usuario>()

@@ -387,7 +387,6 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid?>("EmisorId")
-                        .IsRequired()
                         .HasColumnType("uuid")
                         .HasColumnName("FkEmisorId");
 
@@ -403,12 +402,18 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("ReceptorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("FKReceptorId");
+
                     b.HasKey("MensajeId")
                         .HasName("PKMensajeId");
 
                     b.HasIndex("ChatId");
 
                     b.HasIndex("EmisorId");
+
+                    b.HasIndex("ReceptorId");
 
                     b.ToTable("Mensaje", (string)null);
                 });
@@ -580,6 +585,11 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("Posicion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<string>("Ubicacion")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -742,16 +752,24 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .IsRequired()
                         .HasConstraintName("FKMensajeChat");
 
-                    b.HasOne("Trivo.Dominio.Modelos.Usuario", "Usuario")
-                        .WithMany("Mensajes")
+                    b.HasOne("Trivo.Dominio.Modelos.Usuario", "Emisor")
+                        .WithMany("MensajesEnviados")
                         .HasForeignKey("EmisorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_EmisorId");
+
+                    b.HasOne("Trivo.Dominio.Modelos.Usuario", "Receptor")
+                        .WithMany("MensajesRecibidos")
+                        .HasForeignKey("ReceptorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("FKEmisorId");
+                        .HasConstraintName("FK_ReceptorId");
 
                     b.Navigation("Chat");
 
-                    b.Navigation("Usuario");
+                    b.Navigation("Emisor");
+
+                    b.Navigation("Receptor");
                 });
 
             modelBuilder.Entity("Trivo.Dominio.Modelos.Notificacion", b =>
@@ -892,7 +910,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
 
                     b.Navigation("Interes");
 
-                    b.Navigation("Mensajes");
+                    b.Navigation("MensajesEnviados");
+
+                    b.Navigation("MensajesRecibidos");
 
                     b.Navigation("Notificaciones");
 

@@ -4,13 +4,12 @@ using Trivo.Aplicacion.DTOs.Usuario;
 
 namespace Trivo.Aplicacion.DTOs.Mensaje;
 
-public record MensajeDto(
-    Guid Id,
+public sealed record MensajeDto(
+    Guid MensajeId,
     Guid ChatId,
+    string? Contenido ,
+    string? Estado,
+    DateTime? FechaEnvio,
     Guid EmisorId,
-    string Estado,
-    string Contenido,
-    DateTime FechaEnvio, 
-    [property: JsonIgnore] 
-    Guid? ReceptorId =null
+    Guid ReceptorId
 );

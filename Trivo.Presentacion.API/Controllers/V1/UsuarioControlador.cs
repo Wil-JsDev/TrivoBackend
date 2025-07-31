@@ -11,6 +11,7 @@ using Trivo.Aplicacion.Modulos.Habilidades.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Intereses.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarBiografia;
+using Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarContrasenaAntigua;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ActualizarImagen;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.ConfirmarUsuario;
 using Trivo.Aplicacion.Modulos.Usuario.Commands.Crear;
@@ -23,13 +24,18 @@ using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerFotoDePerfil;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerHabilidades;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerInteres;
 using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
+using Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerUsuariosPorHabilidadesInteres;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/users")]
-public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo) : ControllerBase
+public class UsuarioControlador(
+    IMediator mediator,
+    IValidarCorreo validarCorreo,
+    ICodigoServicio codigoServicio
+    ) : ControllerBase
 {
 
     [HttpPost]
@@ -86,27 +92,29 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
         return BadRequest(resultado.Error);
     }
 
-    [HttpPost("forgot-password/{usuarioId}")]
-    public async Task<IActionResult> OlvidarContrasenaAsync([FromRoute] Guid usuarioId,
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> OlvidarContrasenaAsync([FromBody] OlvidarContrasenaUsuarioCommand olvidarContrasena,
         CancellationToken cancellationToken)
     {
-        OlvidarContrasenaUsuarioCommand command = new(usuarioId);
+        OlvidarContrasenaUsuarioCommand command = new(olvidarContrasena.Email);
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
-
+    
         return NotFound(resultado.Error);
     }
 
-    [HttpPost("modify-password/{usuarioId}")]
+    [HttpPost("modify-password")]
     public async Task<IActionResult> ModificarContrasenaAsync(
-        [FromRoute] Guid usuarioId,
+        [FromQuery] string email,
         [FromBody] ParametroModificarContrasenaDto parametroModificarContrasena,
         CancellationToken cancellationToken
     )
     {
-        ModificarContrasenaUsuarioCommand command = new(usuarioId, parametroModificarContrasena.Codigo,
-            parametroModificarContrasena.Contrasena, parametroModificarContrasena.ConfirmacionDeContrsena);
+        ModificarContrasenaUsuarioCommand command = new(email,
+            parametroModificarContrasena.Contrasena,
+            parametroModificarContrasena.ConfirmacionDeContrasena);
+        
         var resultado = await mediator.Send(command, cancellationToken);
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
@@ -270,6 +278,60 @@ public class UsuarioControlador(IMediator mediator, IValidarCorreo validarCorreo
             return BadRequest(resultado.Error);
 
         return Ok(resultado.Valor);
+    }
+
+    [HttpPost("filter-by-interests-and-ability")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerUsuariosPorInteresesYHabilidades(
+        [FromBody] ParametroUsuariFiltroHabilidadesInteres usuarisHabilidadesInteres,
+        [FromQuery] int numeroPagina,
+        [FromQuery] int tamanoPagina, 
+        CancellationToken cancellationToken
+        )
+    {
+        ObtenerUsuariosPorInteresesYHabilidadesQuery query = new(
+            numeroPagina,
+            tamanoPagina,
+            usuarisHabilidadesInteres.HabilidadIds,
+            usuarisHabilidadesInteres.InteresIds);
+        
+        var resultado = await mediator.Send(query, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+
+    [HttpPost("validate-code/{code}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ValidarCodigoAsync([FromRoute] string code, CancellationToken cancellationToken)
+    {
+        var resultado = await codigoServicio.ValidarCodigoAsync(code, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+    
+    [HttpPost("{userId}/change-password")]
+    [Authorize]
+    public async Task<IActionResult> CambiarContrasenaAntiguaAsync(
+        [FromRoute] Guid userId,
+        [FromBody] CambiarContrasenaAntiguaDto cambiarContrasenaAntiguaDto,
+        CancellationToken cancellationToken
+        )
+    {
+        ActualizarContrasenaAntiguaUsuarioCommand command = new(userId,
+            cambiarContrasenaAntiguaDto.AntiguaContrasena,
+            cambiarContrasenaAntiguaDto.NuevaContrasena,
+            cambiarContrasenaAntiguaDto.ConfirmacionDeContrsena);
+        
+        var resultado = await mediator.Send(command, cancellationToken);
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
     }
     
 }

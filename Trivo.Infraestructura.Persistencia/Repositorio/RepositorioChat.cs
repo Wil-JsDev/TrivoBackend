@@ -71,7 +71,7 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
 
         return new ResultadoPaginado<Chat>(chats, total, pagina, tamano);
     }
-
+    
     public async Task<Chat> ObtenerChatPorIdAsync(Guid chatId, CancellationToken cancellationToken) 
         => await trivoContexto.Set<Chat>()
             .Include(c => c.ChatUsuarios)
@@ -79,7 +79,19 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
             .Include(c => c.Mensajes)
             .Where(c => c.Id == chatId)
             .FirstOrDefaultAsync(cancellationToken);
-
+    
+    public async Task<Usuario?> ObtenerUsuarioPorIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+        => await trivoContexto.Set<Usuario>()
+            .Where(u => u.Id == usuarioId)
+            .Select(u => new Usuario
+            {
+                Id = u.Id,
+                Nombre = u.Nombre,
+                Apellido = u.Apellido,
+                FotoPerfil = u.FotoPerfil
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    
     public async Task<bool> UsuarioPerteneceAlChatAsync(Guid chatId, Guid usuarioId, CancellationToken cancellationToken)
         => await trivoContexto.Set<ChatUsuario>()
             .AnyAsync(c => c.ChatId == chatId && c.UsuarioId == usuarioId, cancellationToken);
@@ -92,14 +104,64 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
     {
         return await trivoContexto.Chat
             .Include(c => c.ChatUsuarios)
-            .ThenInclude(cu => cu.Usuario)
+                .ThenInclude(cu => cu.Usuario)
             .Include(c => c.Mensajes)
-            .ThenInclude(m => m.Usuario) 
+                .ThenInclude(m => m.Emisor)    
+            .Include(c => c.Mensajes)
+                .ThenInclude(m => m.Receptor)    
             .Where(c => c.TipoChat == TipoChat.Privado.ToString())
             .Where(c => c.ChatUsuarios.Any(cu => cu.UsuarioId == usuario1Id) &&
                         c.ChatUsuarios.Any(cu => cu.UsuarioId == usuario2Id))
             .OrderByDescending(c => c.Mensajes.Max(m => m.FechaEnvio)) 
             .FirstOrDefaultAsync(cancellationToken);
     }
-    
+
+    public async Task<Chat?> ObtenerChatConUsuariosYMensajesAsync(Guid chatId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Chat
+            .Where(c => c.Id == chatId)
+            .Select(c => new Chat
+            {
+                Id = c.Id,
+                FechaRegistro = c.FechaRegistro,
+                ChatUsuarios = c.ChatUsuarios.Select(cu => new ChatUsuario
+                {
+                    UsuarioId = cu.UsuarioId,
+                    NombreChat = cu.NombreChat,
+                    Usuario = new Usuario
+                    {
+                        Id = cu.Usuario.Id,
+                        NombreUsuario = cu.Usuario.NombreUsuario,
+                        Nombre = cu.Usuario.Nombre,
+                        Apellido = cu.Usuario.Apellido,
+                        FotoPerfil = cu.Usuario.FotoPerfil
+                    }
+                }).ToList(),
+                Mensajes = c.Mensajes
+                    .OrderByDescending(m => m.FechaEnvio)
+                    .Select(m => new Mensaje
+                    {
+                        MensajeId = m.MensajeId,
+                        Contenido = m.Contenido,
+                        FechaEnvio = m.FechaEnvio,
+                        Estado = m.Estado,
+                        Emisor = new Usuario
+                        {
+                            Id = m.Emisor.Id,
+                            Nombre = m.Emisor.Nombre,
+                            Apellido = m.Emisor.Apellido,
+                            FotoPerfil = m.Emisor.FotoPerfil
+                        },
+                        Receptor = new Usuario
+                        {
+                            Id = m.Receptor.Id,
+                            Nombre = m.Receptor.Nombre,
+                            Apellido = m.Receptor.Apellido,
+                            FotoPerfil = m.Receptor.FotoPerfil
+                        }
+                    }).ToList()
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

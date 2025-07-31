@@ -18,6 +18,7 @@ public class AutenticacionServicio(
     IOptions<JWTConfiguraciones> configuraciones, 
     IRolUsuarioServicio rolUsuarioServicio,
     IRepositorioUsuario repositorioUsuarios,
+    IRepositorioAdministrador repositorioAdministradores,
     IObtenerExpertoIdServicio obtenerExpertoIdServicio,
     IObtenerReclutadorIdServicio obtenerReclutadorIdServicio
     ) : IAutenticacionServicio
@@ -67,8 +68,34 @@ public class AutenticacionServicio(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    public async Task<ResultadoT<TokenRespuestaDto>> RefrescarTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    public string GenerarTokenAdministrador(Administrador admin)
     {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, admin.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, admin.Email!),
+            new Claim("nombreUsuario", admin.NombreUsuario!),
+            new Claim("roles", Roles.Administrador.ToString()),
+            new Claim("tipo", "access")
+        };
+
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_configuraciones.DuracionEnMinutos),
+            signingCredentials: credenciales
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    
+   public async Task<ResultadoT<TokenRespuestaDto>> RefrescarTokenAsync(string refreshToken, CancellationToken cancellationToken)
+   {
         var manejador = new JwtSecurityTokenHandler();
 
         var tokenValidado = manejador.ValidateToken(refreshToken, new TokenValidationParameters
@@ -87,28 +114,53 @@ public class AutenticacionServicio(
 
         if (jwt.Claims.FirstOrDefault(c => c.Type == "tipo")?.Value != "refresh")
             return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoAutorizado("Token.Invalido", "El token no es de tipo refresh."));
-        
-        var usuarioId = jwt.Subject;
-        var usuario = await repositorioUsuarios.ObtenerByIdAsync(Guid.Parse(usuarioId), cancellationToken);
 
-        if (usuario is null)
-            return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado."));
-        
-        var nuevoTokenAcceso = await GenerarToken(usuario, cancellationToken);
-        var nuevoRefreshToken = GenerarRefreshToken(usuario);
-        
-        return ResultadoT<TokenRespuestaDto>.Exito(new TokenRespuestaDto
+        var usuarioId = jwt.Subject;
+
+        var entidad = jwt.Claims.FirstOrDefault(c => c.Type == "entidad")?.Value;
+
+        if (entidad == Roles.Administrador.ToString())
         {
-            TokenAcceso = nuevoTokenAcceso,
-            TokenRefresco = nuevoRefreshToken,
-        });
-    }
+            var admin = await repositorioAdministradores.ObtenerByIdAsync(Guid.Parse(usuarioId), cancellationToken);
+            if (admin is null)
+                return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoEncontrado("404", "Administrador no encontrado."));
+
+            var nuevoTokenAcceso = GenerarTokenAdministrador(admin);
+            var nuevoRefreshToken = GenerarRefreshTokenAdministrador(admin);
+
+            return ResultadoT<TokenRespuestaDto>.Exito(new TokenRespuestaDto
+            {
+                TokenAcceso = nuevoTokenAcceso,
+                TokenRefresco = nuevoRefreshToken,
+            });
+        }
+
+        if (entidad == Roles.Usuario.ToString())
+        {
+            var usuario = await repositorioUsuarios.ObtenerByIdAsync(Guid.Parse(usuarioId), cancellationToken);
+            if (usuario is null)
+                return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoEncontrado("404", "Usuario no encontrado."));
+
+            var nuevoTokenAcceso = await GenerarToken(usuario, cancellationToken);
+            var nuevoRefreshToken = GenerarRefreshToken(usuario);
+
+            return ResultadoT<TokenRespuestaDto>.Exito(new TokenRespuestaDto
+            {
+                TokenAcceso = nuevoTokenAcceso,
+                TokenRefresco = nuevoRefreshToken,
+            });
+        }
+       
+        return ResultadoT<TokenRespuestaDto>.Fallo(Error.NoAutorizado("Token.Invalido", "El token no contiene información de entidad válida."));
+  }
+
     public string GenerarRefreshToken(Usuario usuario)
     {
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("entidad", Roles.Usuario.ToString()),
             new Claim("tipo", "refresh")
         };
 
@@ -126,5 +178,30 @@ public class AutenticacionServicio(
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
+    public string GenerarRefreshTokenAdministrador(Administrador admin)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, admin.Id.ToString()!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("entidad", Roles.Administrador.ToString()),
+            new Claim("tipo", "refresh")
+        };
+
+        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuraciones.Clave!));
+        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuraciones.Emisor,
+            audience: _configuraciones.Audiencia,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7),
+            signingCredentials: credenciales
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
         
 }

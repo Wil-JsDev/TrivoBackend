@@ -142,6 +142,30 @@ public class CodigoServicio(
         return Resultado.Exito();
     }
 
+    public async Task<ResultadoT<string>> ValidarCodigoAsync(string codigo, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(codigo))
+        {
+            logger.LogWarning("Se intentó validar un código vacío o nulo.");
+            
+            return ResultadoT<string>.Fallo(Error.Fallo("400", "Debe proporcionar un código válido."));
+        }
+        
+        var esValido = await repositorioCodigo.ElCodigoEsValidoAsync(codigo, cancellationToken);
+
+        if (!esValido)
+        {
+            logger.LogWarning("El código '{Codigo}' ha expirado o no es válido.", codigo);
+            
+            return ResultadoT<string>.Fallo(Error.Fallo("400", "El código ha expirado o no es válido."));
+        }
+
+        logger.LogInformation("El código '{Codigo}' fue validado correctamente.", codigo);
+        
+        return ResultadoT<string>.Exito("El código es válido.");
+    }
+    
+
     public async Task<Resultado> CodigoDisponibleAsync(string codigo, CancellationToken cancellationToken)
     {
         var codigoUsado = await repositorioCodigo.CodigoNoUsadoAsync(codigo, cancellationToken);

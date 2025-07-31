@@ -1,7 +1,8 @@
 namespace Trivo.Aplicacion.DTOs.Usuario;
 
-public sealed record UsuarioDto(    
+public sealed record UsuarioDto(
     Guid Id,
-    string Nombre,
+    string? Nombre,
+    string? Apellido,
     string? FotoPerfil
     );

@@ -26,6 +26,8 @@ public sealed class Usuario : EntidadBase
 
     public string? EstadoUsuario { get; set; }
     
+    public string? Posicion { get; set; }
+    
     // Relaciones
     public ICollection<Codigo>? Codigos { get; set; }
     
@@ -37,7 +39,8 @@ public sealed class Usuario : EntidadBase
     
     public ICollection<ChatUsuario>? ChatUsuarios { get; set; } 
     
-    public ICollection<Mensaje>? Mensajes { get; set; }
+    public ICollection<Mensaje>? MensajesEnviados { get; set; }
+    public ICollection<Mensaje>? MensajesRecibidos { get; set; }
     
     public ICollection<Notificacion>? Notificaciones { get; set; }
     

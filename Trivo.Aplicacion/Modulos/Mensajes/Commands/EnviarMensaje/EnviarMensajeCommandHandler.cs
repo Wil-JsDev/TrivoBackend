@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.DTOs.Mensaje;
+using Trivo.Aplicacion.DTOs.Usuario;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
@@ -38,7 +39,16 @@ internal sealed class EnviarMensajeCommandHandler(
         
         var emisorPertenece = await repositorioChat.UsuarioPerteneceAlChatAsync(request.ChatId,request.EmisorId, cancellationToken);
         var receptorPertenece = await repositorioChat.UsuarioPerteneceAlChatAsync(request.ChatId,request.ReceptorId, cancellationToken);
+        
+        var emisor = await repositorioChat.ObtenerUsuarioPorIdAsync(request.EmisorId, cancellationToken);
+        var receptor = await repositorioChat.ObtenerUsuarioPorIdAsync(request.ReceptorId, cancellationToken);
 
+        if (emisor == null || receptor == null)
+        {
+            logger.LogWarning("Emisor o receptor no encontrados");
+            return ResultadoT<MensajeDto>.Fallo(Error.Fallo("404", "Emisor o receptor no encontrados"));
+        }
+        
         if (!emisorPertenece || !receptorPertenece)
         {
             logger.LogWarning("El emisor o receptor no pertenece al chat {ChatId}", request.ChatId);
@@ -57,11 +67,11 @@ internal sealed class EnviarMensajeCommandHandler(
             MensajeId = Guid.NewGuid(),
             ChatId = request.ChatId,
             EmisorId = request.EmisorId,
+            ReceptorId = request.ReceptorId, 
             Contenido = request.Contenido,
             FechaEnvio = DateTime.UtcNow,
             FechaRegistro = DateTime.UtcNow,
             Estado = EstadoMensaje.Enviado.ToString()
-            
         };
 
         await repositorioMensaje.CrearAsync(mensaje, cancellationToken);
@@ -69,15 +79,16 @@ internal sealed class EnviarMensajeCommandHandler(
         var dto = new MensajeDto(
             mensaje.MensajeId.Value,
             mensaje.ChatId.Value,
-            mensaje.EmisorId.Value,
-            mensaje.Estado,
             mensaje.Contenido,
+            mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
-            request.ReceptorId
+            mensaje.EmisorId.Value,
+            mensaje.ReceptorId
+          
         );
         
-        await notificador.NotificarMensajePrivado(dto);
-        
+        await notificador.NotificarMensajePrivado(dto, dto.EmisorId);
+        await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
 
         return ResultadoT<MensajeDto>.Exito(dto);

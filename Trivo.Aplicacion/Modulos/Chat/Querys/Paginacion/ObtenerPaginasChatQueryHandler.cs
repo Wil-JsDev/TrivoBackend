@@ -4,6 +4,7 @@ using Serilog;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Chat;
 using Trivo.Aplicacion.Interfaces.Repositorio;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Aplicacion.Utilidades;
@@ -13,7 +14,8 @@ namespace Trivo.Aplicacion.Modulos.Chat.Querys.Paginacion;
 internal class ObtenerPaginasChatQueryHandler(
     ILogger<ObtenerPaginasChatQueryHandler> logger,
     IRepositorioChat repositorioChat,
-    IDistributedCache cache
+    IDistributedCache cache,
+    INotificadorTiempoReal notificador
     ): IQueryHandler<ObtenerPaginasChatQuery, ResultadoPaginado<ChatDto>>
 {
     public async Task<ResultadoT<ResultadoPaginado<ChatDto>>> Handle(ObtenerPaginasChatQuery request, CancellationToken cancellationToken)
@@ -33,16 +35,13 @@ internal class ObtenerPaginasChatQueryHandler(
 
         }
 
-        string cacheKey = $"obtener-paginas-chat-{request.UsuarioId}-{request.NumeroPagina}-{request.TamanoPagina}";
 
-        var resultadoPagina = await cache.ObtenerOCrearAsync(
-            cacheKey,
-            async () => await repositorioChat.ObtenerChatsPorUsuarioIdPaginadoAsync(
+        var resultadoPagina = 
+             await repositorioChat.ObtenerChatsPorUsuarioIdPaginadoAsync(
                 request.UsuarioId,
                 request.NumeroPagina,
                 request.TamanoPagina,
-                cancellationToken)
-        );
+                cancellationToken);
 
         var elementos = resultadoPagina.Elementos!
             .Select(chat => MapperChat.MapChatToDto(chat, request.UsuarioId)) 
@@ -63,6 +62,8 @@ internal class ObtenerPaginasChatQueryHandler(
             paginaActual: request.NumeroPagina,
             tamanioPagina: request.TamanoPagina
         );
+        
+        await notificador.NotificarChatsPaginados(request.UsuarioId, resultadoPaginado.Elementos!);
         logger.LogInformation(
             "Se obtuvo exitosamente la página {NumeroPagina} de chats. Chats total en esta página: {CantidadActividades}",
             request.NumeroPagina, elementos.Count);
