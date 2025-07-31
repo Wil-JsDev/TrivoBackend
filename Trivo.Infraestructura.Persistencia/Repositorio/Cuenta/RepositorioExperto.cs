@@ -55,4 +55,13 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
             .Include(e => e.Usuario)
             .FirstOrDefaultAsync(e => e.Id == expertoId, cancellationToken);
     }
+    public async Task<Experto?> ObtenerExpertoPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Experto>()
+            .AsNoTracking()
+            .Where(e => e.UsuarioId == usuarioId)
+            .Include(e => e.Usuario)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

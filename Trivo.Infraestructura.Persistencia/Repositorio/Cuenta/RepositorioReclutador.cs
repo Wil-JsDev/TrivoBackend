@@ -51,4 +51,14 @@ public class RepositorioReclutador(TrivoContexto trivoContexto) : RepositorioGen
             .Include(e => e.Usuario)
             .FirstOrDefaultAsync(e => e.Id == reclutadorId, cancellationToken);
     }
+    
+    public async Task<Reclutador?> ObtenerReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Reclutador>()
+            .AsNoTracking()
+            .Where(r => r.UsuarioId == usuarioId)
+            .Include(r => r.Usuario)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

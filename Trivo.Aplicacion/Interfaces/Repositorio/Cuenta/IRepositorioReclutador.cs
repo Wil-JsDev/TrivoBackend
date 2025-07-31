@@ -24,4 +24,6 @@ public interface IRepositorioReclutador: IRepositorioGenerico<Reclutador>
     Task<Reclutador?> ObtenerDetallesReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken);
     
     Task<Reclutador?> ObtenerIdAsync(Guid reclutadorId, CancellationToken cancellationToken);
+
+    Task<Reclutador?> ObtenerReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken);
 }

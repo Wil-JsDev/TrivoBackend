@@ -30,4 +30,6 @@ public interface IRepositorioExperto : IRepositorioGenerico<Experto>
     Task<Experto?> ObtenerDetallesExpertoAsync(Guid usuarioId, CancellationToken cancellationToken);
     
     Task<Experto?> ObtenerIdAsync(Guid expertoId, CancellationToken cancellationToken);
+
+    Task<Experto?> ObtenerExpertoPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken);
 }
