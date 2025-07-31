@@ -38,7 +38,7 @@ public class AutenticacionServicio(
 
         //Agregar
         var roles = await rolUsuarioServicio.ObtenerRolesAsync(usuario.Id ?? Guid.Empty, cancellationToken);
-        claims.AddRange(roles.Select(rol => new Claim("roles", rol.ToString())));
+        claims.AddRange(roles.Select(rol => new Claim(ClaimTypes.Role, rol.ToString())));
 
         // Obtener experto id si aplica
         var experto = await obtenerExpertoIdServicio.ObtenerExpertoIdAsync(usuario.Id ?? Guid.Empty, cancellationToken);
