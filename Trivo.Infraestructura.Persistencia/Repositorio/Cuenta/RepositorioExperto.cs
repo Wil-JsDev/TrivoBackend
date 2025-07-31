@@ -47,5 +47,12 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
                 .ThenInclude(u => u!.UsuarioInteres)
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
     }
-    
+
+    public async Task<Experto?> ObtenerIdAsync(Guid expertoId, CancellationToken cancellationToken)
+    {
+       return await _trivoContexto.Set<Experto>()
+            .AsNoTracking()
+            .Include(e => e.Usuario)
+            .FirstOrDefaultAsync(e => e.Id == expertoId, cancellationToken);
+    }
 }

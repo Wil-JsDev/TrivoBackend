@@ -28,4 +28,6 @@ public interface IRepositorioExperto : IRepositorioGenerico<Experto>
     Task<bool> EsUsuarioExpertoAsync(Guid usuarioId, CancellationToken cancellationToken);
 
     Task<Experto?> ObtenerDetallesExpertoAsync(Guid usuarioId, CancellationToken cancellationToken);
+    
+    Task<Experto?> ObtenerIdAsync(Guid expertoId, CancellationToken cancellationToken);
 }
