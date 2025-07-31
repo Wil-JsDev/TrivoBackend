@@ -6,6 +6,7 @@ using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
@@ -16,6 +17,7 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
     ILogger<ObtenerEmparejamientoPorUsuarioQueryHandler> logger,
     IRepositorioEmparejamiento repositorioEmparejamiento,
     IRepositorioUsuario repositorioUsuario,
+    INotificadorDeEmparejamiento emparejamientoNotificador,
     IDistributedCache cache
     ) : IQueryHandler<ObtenerEmparejamientoPorUsuarioQuery, IEnumerable<EmparejamientoDto>>
 {
@@ -45,16 +47,16 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
             return ResultadoT<IEnumerable<EmparejamientoDto>>.Fallo(Error.Fallo("400", "El rol proporcionado no es válido para emparejamientos."));
         }
 
-        var emparejamientos = await cache.ObtenerOCrearAsync(
-            $"obtener-emparejamiento-por-usuario-{request.UsuarioId}-{request.Rol}",
-            async () => await filtroEmparejamiento(cancellationToken),
-            cancellationToken: cancellationToken
-        );
-
+        var emparejamientos = await filtroEmparejamiento(cancellationToken);
+        
         var emparejamientosLista = emparejamientos.ToList();
 
         var emparejamientoDto = emparejamientosLista
             .Select(e => e.EmparejamientoDto(request.Rol))
+            .ToList();
+
+        var emparejamientoPaginadoDto = emparejamientoDto
+            .Paginar(request.NumeroPagina, request.TamanoPagina)
             .ToList();
         
         if (!emparejamientoDto.Any())
@@ -67,19 +69,21 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
         logger.LogInformation("Se recuperaron correctamente {Cantidad} emparejamientos para el usuario {UsuarioId} con rol {Rol}.",
             emparejamientosLista.Count, request.UsuarioId, request.Rol);
 
-        return ResultadoT<IEnumerable<EmparejamientoDto>>.Exito(emparejamientoDto);
+        await emparejamientoNotificador.NotificarEmparejamiento(request.UsuarioId, emparejamientoPaginadoDto);
+        
+        return ResultadoT<IEnumerable<EmparejamientoDto>>.Exito(emparejamientoPaginadoDto);
     }
     
     #region Privados
 
-    private Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>> Obtener(Guid usuarioId)
-    {
-        return new Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>>
+        private Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>> Obtener(Guid usuarioId)
         {
-            { Roles.Experto, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoExpertoAsync(usuarioId,cancellationToken) },
-            { Roles.Reclutador, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoReclutadorAsync(usuarioId,cancellationToken)}
-        };
-    }
+            return new Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>>
+            {
+                { Roles.Experto, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoExpertoAsync(usuarioId,cancellationToken) },
+                { Roles.Reclutador, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoReclutadorAsync(usuarioId,cancellationToken)}
+            };
+        }
 
     #endregion
 }
