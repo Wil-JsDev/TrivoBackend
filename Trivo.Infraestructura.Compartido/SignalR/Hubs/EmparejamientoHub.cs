@@ -31,7 +31,7 @@ public class EmparejamientoHub(
         var numeroPagina = int.TryParse(numeroPaginaString, out var np) ? np : 1;
         var tamanoPagina = int.TryParse(tamanoPaginaString, out var tp) ? tp : 5;
         
-        logger.LogInformation("🔌 Usuario conectado:");
+        logger.LogInformation("Usuario conectado:");
         logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", userIdentifier);
 
         if (!Guid.TryParse(userIdentifier, out var usuarioId))
@@ -46,13 +46,13 @@ public class EmparejamientoHub(
 
         if (claims == null || !claims.Any())
         {
-            logger.LogWarning("⚠️ No se encontraron claims en el usuario.");
+            logger.LogWarning("No se encontraron claims en el usuario.");
             return;
         }
 
         foreach (var claim in claims)
         {
-            logger.LogInformation("🧾 Claim: {Type} = {Value}", claim.Type, claim.Value);
+            logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
         }
 
         var rolesClaims = claims
@@ -62,18 +62,18 @@ public class EmparejamientoHub(
 
         if (rolesClaims.Count == 0)
         {
-            logger.LogWarning("⚠️ No se encontraron claims de roles.");
+            logger.LogWarning("No se encontraron claims de roles.");
             return;
         }
 
         Roles rol = default;
         if (!rolesClaims.Any(rc => Enum.TryParse(rc, ignoreCase: true, out rol)))
         {
-            logger.LogWarning("⚠️ Ninguno de los roles en el token es válido. Roles encontrados: {Roles}", string.Join(", ", rolesClaims));
+            logger.LogWarning("Ninguno de los roles en el token es válido. Roles encontrados: {Roles}", string.Join(", ", rolesClaims));
             return;
         }
 
-        logger.LogInformation("✅ Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
+        logger.LogInformation("Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
 
         var resultado = await mediator.Send(new ObtenerEmparejamientoPorUsuarioQuery
         (
@@ -85,7 +85,7 @@ public class EmparejamientoHub(
 
         if (!resultado.EsExitoso)
         {
-            logger.LogWarning("⚠️ No se encontraron emparejamientos para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
+            logger.LogWarning("No se encontraron emparejamientos para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
             await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(new List<EmparejamientoDto>());
             await base.OnConnectedAsync();
             return;
@@ -97,8 +97,8 @@ public class EmparejamientoHub(
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Error en OnConnectedAsync para el usuario SignalR.");
-        throw; // Opcional, si deseas dejar que la excepción burbujee
+        logger.LogError(ex, "Error en OnConnectedAsync para el usuario SignalR.");
+        throw; 
     }
 }
 
