@@ -121,11 +121,12 @@ public static class InyeccionDeDependencia
 
         #region SignalR
 
-        servicio.AddSignalR();
-        
-        servicio.AddSingleton<INotificadorIA, NotificadorIA>();
-        servicio.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-        servicio.AddTransient<INotificadorTiempoReal, NotificadorTiempoReal>();
+            servicio.AddSignalR();
+            
+            servicio.AddSingleton<INotificadorIA, NotificadorIA>();
+            servicio.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            servicio.AddTransient<INotificadorTiempoReal, NotificadorTiempoReal>();
+            servicio.AddScoped<INotificadorDeEmparejamiento, NotificadorDeEmparejamiento>();
 
         #endregion
     }

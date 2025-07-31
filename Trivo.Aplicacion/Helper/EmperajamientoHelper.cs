@@ -8,24 +8,33 @@ namespace Trivo.Aplicacion.Helper;
 
 public static class EmperajamientoHelper
 {
-    public static EmparejamientoDto EmparejamientoDto(this Emparejamiento emparejamientos, Roles rol)
+    public static EmparejamientoDto EmparejamientoDto(this Emparejamiento emparejamiento, Roles rol)
     {
         UsuarioReconmendacionDto? otroUsuarioDto = null;
 
-        if ( rol == Roles.Experto && emparejamientos.Reclutador?.Usuario is not null)
+        if (rol == Roles.Experto)
         {
-            otroUsuarioDto = UsuarioMapper.MapToDto(emparejamientos.Reclutador.Usuario);
+            if (emparejamiento.Reclutador?.Usuario != null)
+                otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Reclutador.Usuario);
         }
-        else if ( rol == Roles.Reclutador && emparejamientos.Experto?.Usuario is not null)
+        else if (rol == Roles.Reclutador)
         {
-            otroUsuarioDto = UsuarioMapper.MapToDto(emparejamientos.Experto.Usuario);
+            if (emparejamiento.Experto?.Usuario != null)
+                otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Experto.Usuario);
+        }
+
+        if (otroUsuarioDto == null)
+        {
+           Console.WriteLine($"Error - {otroUsuarioDto}");
         }
 
         return new EmparejamientoDto(
-            EmparejamientoId: emparejamientos.Id ?? Guid.Empty,
-            UsuarioReconmendacionDto: otroUsuarioDto is not null
+            EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
+            UsuarioReconmendacionDto: otroUsuarioDto != null
                 ? new List<UsuarioReconmendacionDto> { otroUsuarioDto }
                 : Enumerable.Empty<UsuarioReconmendacionDto>()
         );
     }
+
+
 }
