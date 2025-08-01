@@ -10,6 +10,6 @@ public sealed class CrearEmparejamientoCommand : ICommand<EmparejamientoDetalles
     public Guid? ReclutadorId { get; set; }
     public Guid? ExpertoId { get; set; }
     
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    // [JsonConverter(typeof(JsonStringEnumConverter))]
     public Roles? CreadoPor { get; set; }
 }

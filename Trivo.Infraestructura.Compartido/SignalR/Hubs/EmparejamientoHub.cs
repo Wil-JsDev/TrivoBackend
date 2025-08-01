@@ -17,90 +17,90 @@ public class EmparejamientoHub(
     ) : Hub<IEmparejamientoHub>
 {
   public override async Task OnConnectedAsync()
-{
-    try
     {
-        var userIdentifier = Context.UserIdentifier;
-
-        var httpContext = Context.GetHttpContext();
-        var query = httpContext?.Request.Query;
-
-        var numeroPaginaString = query?["numeroPagina"];
-        var tamanoPaginaString = query?["tamanoPagina"];
-        
-        var numeroPagina = int.TryParse(numeroPaginaString, out var np) ? np : 1;
-        var tamanoPagina = int.TryParse(tamanoPaginaString, out var tp) ? tp : 5;
-        
-        logger.LogInformation("Usuario conectado:");
-        logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", userIdentifier);
-
-        if (!Guid.TryParse(userIdentifier, out var usuarioId))
+        try
         {
-            logger.LogError("UserIdentifier no es un GUID válido");
-            return;
-        }
+            var userIdentifier = Context.UserIdentifier;
 
-        logger.LogInformation("- UsuarioId: {UsuarioId}", usuarioId);
+            var httpContext = Context.GetHttpContext();
+            var query = httpContext?.Request.Query;
 
-        var claims = Context.User?.Claims.ToList();
+            var numeroPaginaString = query?["numeroPagina"];
+            var tamanoPaginaString = query?["tamanoPagina"];
+            
+            var numeroPagina = int.TryParse(numeroPaginaString, out var np) ? np : 1;
+            var tamanoPagina = int.TryParse(tamanoPaginaString, out var tp) ? tp : 5;
+            
+            logger.LogInformation("Usuario conectado:");
+            logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", userIdentifier);
 
-        if (claims == null || !claims.Any())
-        {
-            logger.LogWarning("No se encontraron claims en el usuario.");
-            return;
-        }
+            if (!Guid.TryParse(userIdentifier, out var usuarioId))
+            {
+                logger.LogError("UserIdentifier no es un GUID válido");
+                return;
+            }
 
-        foreach (var claim in claims)
-        {
-            logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
-        }
+            logger.LogInformation("- UsuarioId: {UsuarioId}", usuarioId);
 
-        var rolesClaims = claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToList();
+            var claims = Context.User?.Claims.ToList();
 
-        if (rolesClaims.Count == 0)
-        {
-            logger.LogWarning("No se encontraron claims de roles.");
-            return;
-        }
+            if (claims == null || !claims.Any())
+            {
+                logger.LogWarning("No se encontraron claims en el usuario.");
+                return;
+            }
 
-        Roles rol = default;
-        if (!rolesClaims.Any(rc => Enum.TryParse(rc, ignoreCase: true, out rol)))
-        {
-            logger.LogWarning("Ninguno de los roles en el token es válido. Roles encontrados: {Roles}", string.Join(", ", rolesClaims));
-            return;
-        }
+            foreach (var claim in claims)
+            {
+                logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
 
-        logger.LogInformation("Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
+            var rolesClaims = claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToList();
 
-        var resultado = await mediator.Send(new ObtenerEmparejamientoPorUsuarioQuery
-        (
-            usuarioId,
-            numeroPagina,
-            tamanoPagina,
-            rol
-        ));
+            if (rolesClaims.Count == 0)
+            {
+                logger.LogWarning("No se encontraron claims de roles.");
+                return;
+            }
 
-        if (!resultado.EsExitoso)
-        {
-            logger.LogWarning("No se encontraron emparejamientos para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
-            await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(new List<EmparejamientoDto>());
+            Roles rol = default;
+            if (!rolesClaims.Any(rc => Enum.TryParse(rc, ignoreCase: true, out rol)))
+            {
+                logger.LogWarning("Ninguno de los roles en el token es válido. Roles encontrados: {Roles}", string.Join(", ", rolesClaims));
+                return;
+            }
+
+            logger.LogInformation("Usuario con rol válido conectado: {UsuarioId} - Rol: {Rol}", usuarioId, rol.ToString());
+
+            var resultado = await mediator.Send(new ObtenerEmparejamientoPorUsuarioQuery
+            (
+                usuarioId,
+                numeroPagina,
+                tamanoPagina,
+                rol
+            ));
+
+            if (!resultado.EsExitoso)
+            {
+                logger.LogWarning("No se encontraron emparejamientos para el usuario {UsuarioId} con el rol {Rol}.", usuarioId, rol);
+                await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(new List<EmparejamientoDto>());
+                await base.OnConnectedAsync();
+                return;
+            }
+
+            await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(resultado.Valor);
+
             await base.OnConnectedAsync();
-            return;
         }
-
-        await Clients.User(usuarioId.ToString()).RecibirEmparejamiento(resultado.Valor);
-
-        await base.OnConnectedAsync();
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error en OnConnectedAsync para el usuario SignalR.");
+            throw; 
+        }
     }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error en OnConnectedAsync para el usuario SignalR.");
-        throw; 
-    }
-}
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {

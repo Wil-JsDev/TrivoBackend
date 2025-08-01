@@ -32,6 +32,8 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
                 .ThenInclude(e => e!.Usuario)
                     .ThenInclude(us => us!.UsuarioInteres)!
                         .ThenInclude(ui => ui.Interes)
+            .Include(e => e.Reclutador)
+                .ThenInclude(r => r!.Usuario)
             .AsSplitQuery()
             .Where(e => e.Experto!.UsuarioId == usuarioId)
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
