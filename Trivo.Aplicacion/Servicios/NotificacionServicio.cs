@@ -129,7 +129,7 @@ public class NotificacionServicio(
         return ResultadoT<ResultadoPaginado<NotificacionDto>>.Exito(resultadoPaginado);
     }
 
-    public async Task<ResultadoT<NotificacionDto>> LeerNotificacionAsync(Guid notificacionId, CancellationToken cancellationToken)
+    public async Task<ResultadoT<NotificacionDto>> MarcarComoLeidaAsync(Guid notificacionId, CancellationToken cancellationToken)
     {
         if (notificacionId == Guid.Empty)
         {

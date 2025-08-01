@@ -13,5 +13,5 @@ public interface INotificacionServicio
         int tamanioPagina,
         CancellationToken cancellationToken);
     
-    Task<ResultadoT<NotificacionDto>> LeerNotificacionAsync(Guid notificacionId, CancellationToken cancellationToken);
+    Task<ResultadoT<NotificacionDto>> MarcarComoLeidaAsync(Guid notificacionId, CancellationToken cancellationToken);
 }
