@@ -127,7 +127,8 @@ public static class InyeccionDeDependencia
             servicio.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             servicio.AddTransient<INotificadorTiempoReal, NotificadorTiempoReal>();
             servicio.AddScoped<INotificadorDeEmparejamiento, NotificadorDeEmparejamiento>();
-
+            servicio.AddScoped<INotificadorDeNotificaciones, NotificadorDeNotificaciones>();
+            
         #endregion
     }
     
