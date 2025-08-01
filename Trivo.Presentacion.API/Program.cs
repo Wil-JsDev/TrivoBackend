@@ -88,6 +88,7 @@ try
     app.MapHub<ChatHub>("/hubs/chat");
     app.MapHub<RecomendacionUsuariosHub>("/hubs/recomendaciones");
     app.MapHub<EmparejamientoHub>("hubs/emparejamientos");
+    app.MapHub<NotificacionHub>("/hubs/notificaciones");
     
     app.Run();
 }
