@@ -28,6 +28,7 @@ internal sealed class CrearEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "La solicitud enviada no puede ser nula."));
         }
 
+        // el metodo carga las entidades de habilidades y intereses del usuario
         var reclutador = await repositorioReclutador.ObtenerIdAsync(request.ReclutadorId ?? Guid.Empty, cancellationToken);
         if (reclutador is null)
         {
@@ -36,6 +37,7 @@ internal sealed class CrearEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El reclutador especificado no fue encontrado."));
         }
 
+        // el metodo carga las entidades de habilidades y intereses del usuario
         var experto = await repositorioExperto.ObtenerIdAsync(request.ExpertoId ?? Guid.Empty, cancellationToken);
         if (experto is null)
         {

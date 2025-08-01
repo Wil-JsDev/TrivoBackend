@@ -61,6 +61,11 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
             .AsNoTracking()
             .Where(e => e.UsuarioId == usuarioId)
             .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(u => u!.Habilidad)
+            .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(u => u!.Interes)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
     }
