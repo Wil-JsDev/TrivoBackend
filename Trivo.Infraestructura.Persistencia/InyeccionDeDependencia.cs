@@ -60,8 +60,8 @@ public static class InyeccionDeDependencia
             servicio.AddScoped<IObtenerReclutadorIdServicio, ObtenerReclutadorIdServicio>();
             servicio.AddScoped<IRepositorioChat, RepositorioChat>();
             servicio.AddScoped<IRepositorioMensaje, RepositorioMensaje>();
-
-            #endregion
-
+            servicio.AddTransient<IRepositorioNotificacion, RepositorioNotificacion>();
+            
+        #endregion
     }
 }
