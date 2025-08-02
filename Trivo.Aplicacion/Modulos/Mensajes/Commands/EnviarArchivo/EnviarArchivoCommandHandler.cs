@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.DTOs.Usuario;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
@@ -65,9 +67,7 @@ internal class EnviarArchivoCommandHandler(
                 cancellationToken);
         }
         logger.LogInformation("Archivo subido exitosamente a Cloudinary. URL: {Url}", url);
-
-
-
+        
         var mensaje = new Mensaje
         {
             MensajeId = Guid.NewGuid(),
@@ -99,8 +99,9 @@ internal class EnviarArchivoCommandHandler(
         await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
         
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
-
+        
         return ResultadoT<MensajeDto>.Exito(dto);
     }
+    
     
 }

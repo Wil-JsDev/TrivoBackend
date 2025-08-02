@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.DTOs.Usuario;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
@@ -68,8 +69,6 @@ internal class EnviarImagenCommandHandler(
         }
         logger.LogInformation("Imagen subida exitosamente a Cloudinary. URL: {Url}", url);
 
-
-
         var mensaje = new Mensaje
         {
             MensajeId = Guid.NewGuid(),
@@ -85,8 +84,7 @@ internal class EnviarImagenCommandHandler(
         logger.LogInformation("Mensaje persistido en la base de datos. Id: {MensajeId}", mensaje.MensajeId);
 
         await repositorioMensaje.CrearAsync(mensaje, cancellationToken);
-
-       
+        
         var dto = new MensajeDto(
             mensaje.MensajeId.Value,
             mensaje.ChatId.Value,
@@ -102,7 +100,7 @@ internal class EnviarImagenCommandHandler(
         await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
         
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
-
+        
         return ResultadoT<MensajeDto>.Exito(dto);
     }
     

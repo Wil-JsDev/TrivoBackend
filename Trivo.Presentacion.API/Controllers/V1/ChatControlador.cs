@@ -2,9 +2,9 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Chat.Commands.Crear;
-using Trivo.Aplicacion.Modulos.Chat.Querys.Paginacion;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
+
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/chats")]

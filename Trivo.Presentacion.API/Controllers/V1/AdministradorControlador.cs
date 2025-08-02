@@ -10,9 +10,9 @@ using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosUsuarios;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
+[ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:ApiVersion}/admin")]
-[ApiController]
 public class AdministradorControlador(IMediator mediator) : ControllerBase
 {
    [HttpPost]

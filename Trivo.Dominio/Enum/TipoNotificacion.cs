@@ -1,6 +1,6 @@
 namespace Trivo.Dominio.Enum;
 
-public enum Tipo
+public enum TipoNotificacion
 {
     Mensaje,
     Match,

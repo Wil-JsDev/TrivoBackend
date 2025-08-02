@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.Modulos.Mensajes.Commands.Crear;
 using Trivo.Aplicacion.Modulos.Mensajes.Commands.EnviarArchivo;
@@ -15,6 +16,7 @@ public class MensajesControlador(IMediator mediator) : ControllerBase
 {
     
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> EnviarMensaje([FromBody] EnviarMensajeCommand command, CancellationToken cancellationToken)
     {
         var resultado = await mediator.Send(command, cancellationToken);
@@ -28,6 +30,7 @@ public class MensajesControlador(IMediator mediator) : ControllerBase
     }
     
     [HttpPost("image")]
+    [Authorize]
     public async Task<IActionResult> EnviarImagen([FromForm] EnviarImagenCommand command, CancellationToken cancellationToken)
     {
         var resultado = await mediator.Send(command, cancellationToken);
@@ -41,6 +44,7 @@ public class MensajesControlador(IMediator mediator) : ControllerBase
     }
     
     [HttpPost("file")]
+    [Authorize]
     public async Task<IActionResult> EnviarArchivo([FromForm] EnviarArchivoCommand command, CancellationToken cancellationToken)
     {
         var resultado = await mediator.Send(command, cancellationToken);

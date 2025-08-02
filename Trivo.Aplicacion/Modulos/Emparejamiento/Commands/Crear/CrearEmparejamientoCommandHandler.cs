@@ -2,8 +2,11 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
+using Trivo.Aplicacion.DTOs.Notificacion;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
@@ -110,6 +113,6 @@ internal sealed class CrearEmparejamientoCommandHandler(
            { Roles.Experto, (ExpertoEstado.Match.ToString(), ReclutadorEstado.Pendiente.ToString()) },
            { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Match.ToString()) }
        };
-   
+    
    #endregion
 }

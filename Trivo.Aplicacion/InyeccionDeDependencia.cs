@@ -24,8 +24,11 @@ public static class InyeccionDeDependencia
 
             servicio.AddScoped<ICodigoServicio, CodigoServicio>();
             servicio.AddScoped<IValidarCorreo, ValidarCorreo>();
+            servicio.AddScoped<INotificacionServicio, NotificacionServicio>();
             
         #endregion
+        
+        servicio.AddHttpContextAccessor();
         
     }
 }
