@@ -28,5 +28,7 @@ public static class InyeccionDeDependencia
             
         #endregion
         
+        servicio.AddHttpContextAccessor();
+        
     }
 }
