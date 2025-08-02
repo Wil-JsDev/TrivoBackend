@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Mensaje;
 using Trivo.Aplicacion.DTOs.Usuario;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
@@ -17,7 +18,8 @@ internal class EnviarImagenCommandHandler(
     ICloudinaryServicio cloudinaryServicio,
     IRepositorioChat repositorioChat,
     IRepositorioMensaje repositorioMensaje,
-    INotificadorTiempoReal notificador
+    INotificadorTiempoReal notificador,
+    INotificacionServicio notificacionServicio
     ): ICommandHandler<EnviarImagenCommand, MensajeDto>
 {
     public async Task<ResultadoT<MensajeDto>> Handle(EnviarImagenCommand request, CancellationToken cancellationToken)
@@ -68,8 +70,6 @@ internal class EnviarImagenCommandHandler(
         }
         logger.LogInformation("Imagen subida exitosamente a Cloudinary. URL: {Url}", url);
 
-
-
         var mensaje = new Mensaje
         {
             MensajeId = Guid.NewGuid(),
@@ -85,8 +85,7 @@ internal class EnviarImagenCommandHandler(
         logger.LogInformation("Mensaje persistido en la base de datos. Id: {MensajeId}", mensaje.MensajeId);
 
         await repositorioMensaje.CrearAsync(mensaje, cancellationToken);
-
-       
+        
         var dto = new MensajeDto(
             mensaje.MensajeId.Value,
             mensaje.ChatId.Value,
@@ -103,7 +102,53 @@ internal class EnviarImagenCommandHandler(
         
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
 
+        var resultado = await ResultadoEmisorYReceptorAsync(mensaje, cancellationToken);
+
+        if (!resultado.EsExitoso)
+        {
+            logger.LogWarning("Error al enviar notificaciones de mensaje privado. Tipo de Mensaje:{Tipo}", TipoMensaje.Imagen);
+            
+            return ResultadoT<MensajeDto>.Fallo(resultado.Error!);
+        }
+        
         return ResultadoT<MensajeDto>.Exito(dto);
     }
+    
+    #region Metodos privados
+
+        private async Task<Resultado> ResultadoEmisorYReceptorAsync(Mensaje mensaje, CancellationToken cancellationToken)
+        {
+            var resultadoEmisor = await notificacionServicio.CrearNotificacionMensajeAsync(mensaje.EmisorId ?? Guid.Empty,
+                mensaje.Emisor!.NombreCompleto(),
+                cancellationToken);
+            if (!resultadoEmisor.EsExitoso)
+            {
+                logger.LogWarning("Falló notificación al emisor. MensajeId: {MensajeId}, EmisorId: {EmisorId}, Error: {Error}", 
+                    mensaje.MensajeId, 
+                    mensaje.EmisorId,
+                    resultadoEmisor.Error);
+                    
+                return ResultadoT<MensajeDto>.Fallo(resultadoEmisor.Error!);
+            }
+                
+            var resultadoReceptor = await notificacionServicio.CrearNotificacionMensajeAsync(mensaje.ReceptorId,
+                mensaje.Receptor!.NombreCompleto(),
+                cancellationToken
+            );
+
+            if (!resultadoReceptor.EsExitoso)
+            {
+                logger.LogError("Error crítico al notificar al receptor. MensajeId: {MensajeId}, ReceptorId: {ReceptorId}, Error: {Error}", 
+                    mensaje.MensajeId, 
+                    mensaje.ReceptorId,
+                    resultadoReceptor.Error);
+                    
+                return ResultadoT<MensajeDto>.Fallo(resultadoReceptor.Error!);
+            }
+                
+            return Resultado.Exito();
+        }
+
+    #endregion
     
 }
