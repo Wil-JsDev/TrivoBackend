@@ -19,8 +19,7 @@ internal sealed class CrearEmparejamientoCommandHandler(
     IRepositorioEmparejamiento repositorioEmparejamiento,
     IRepositorioReclutador repositorioReclutador,
     IRepositorioExperto repositorioExperto,
-    INotificadorDeEmparejamiento emparejamientoNotificador,
-    INotificacionServicio notificacionServicio
+    INotificadorDeEmparejamiento emparejamientoNotificador
     ) : ICommandHandler<CrearEmparejamientoCommand, EmparejamientoDetallesDto>
 {
    public async Task<ResultadoT<EmparejamientoDetallesDto>> Handle(CrearEmparejamientoCommand request, CancellationToken cancellationToken)
@@ -103,16 +102,6 @@ internal sealed class CrearEmparejamientoCommandHandler(
             new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
         );
         
-        var resultadoNotificaciones = await NotificarAmbasPartesAsync(reclutador, experto, cancellationToken);
-        
-        if (!resultadoNotificaciones.EsExitoso)
-        {
-            logger.LogError("Emparejamiento creado pero falló el envío de notificaciones: {Error}", 
-                resultadoNotificaciones.Error);
-            
-            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "Error al enviar notificaciones."));
-        }
-        
         return ResultadoT<EmparejamientoDetallesDto>.Exito(emparejamientoDetallesDto);
     }
 
@@ -124,43 +113,6 @@ internal sealed class CrearEmparejamientoCommandHandler(
            { Roles.Experto, (ExpertoEstado.Match.ToString(), ReclutadorEstado.Pendiente.ToString()) },
            { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Match.ToString()) }
        };
-    
-    private async Task<Resultado> NotificarAmbasPartesAsync(
-        Dominio.Modelos.Reclutador reclutador,
-        Dominio.Modelos.Experto experto,
-        CancellationToken cancellationToken)
-    {
-        var resultadoReclutador = await notificacionServicio.CrearNotificacionMatchAsync(
-            reclutador.UsuarioId!.Value,
-            experto.Usuario!.NombreCompleto(),
-            cancellationToken);
-
-        if (!resultadoReclutador.EsExitoso)
-        {
-            logger.LogWarning("Error notificando al reclutador {ReclutadorId}: {Error}", 
-                reclutador.Id, resultadoReclutador.Error);
-            
-            return Resultado.Fallo(resultadoReclutador.Error!);
-        }
-
-        var resultadoExperto = await notificacionServicio.CrearNotificacionMatchAsync(
-            experto.UsuarioId!.Value,
-            reclutador.Usuario!.NombreCompleto(),
-            cancellationToken);
-
-        if (!resultadoExperto.EsExitoso)
-        {
-            logger.LogWarning("Error notificando al experto {ExpertoId}: {Error}", 
-                experto.Id, resultadoExperto.Error);
-            
-            return Resultado.Fallo(resultadoExperto.Error!);
-        }
-
-        logger.LogInformation("Notificaciones enviadas correctamente a ambas partes");
-        
-        return Resultado.Exito();
-    }     
-    
     
    #endregion
 }

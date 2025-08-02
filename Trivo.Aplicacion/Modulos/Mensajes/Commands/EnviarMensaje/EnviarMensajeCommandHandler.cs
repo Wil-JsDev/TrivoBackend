@@ -15,8 +15,7 @@ internal sealed class EnviarMensajeCommandHandler(
     ILogger<EnviarMensajeCommandHandler> logger,
     IRepositorioMensaje repositorioMensaje,
     IRepositorioChat repositorioChat,
-    INotificadorTiempoReal notificador,
-    INotificacionServicio notificacionServicio
+    INotificadorTiempoReal notificador
     ): ICommandHandler<EnviarMensajeCommand, MensajeDto>
 {
     public async Task<ResultadoT<MensajeDto>> Handle(EnviarMensajeCommand request, CancellationToken cancellationToken)
@@ -91,53 +90,8 @@ internal sealed class EnviarMensajeCommandHandler(
         await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
         
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
-
-        var resultado = await ResultadoEmisorYReceptorAsync(mensaje, cancellationToken);
-
-        if (!resultado.EsExitoso)
-        {
-            logger.LogWarning("Error al enviar notificaciones de mensaje privado. Tipo de Mensaje:{Tipo}", TipoMensaje.Archivo);
-            
-            return ResultadoT<MensajeDto>.Fallo(resultado.Error!);
-        }
         
         return ResultadoT<MensajeDto>.Exito(dto);
     }
     
-    #region Metodos privados
-
-    private async Task<Resultado> ResultadoEmisorYReceptorAsync(Mensaje mensaje, CancellationToken cancellationToken)
-    {
-        var resultadoEmisor = await notificacionServicio.CrearNotificacionMensajeAsync(mensaje.EmisorId ?? Guid.Empty,
-            mensaje.Emisor!.NombreCompleto(),
-            cancellationToken);
-        if (!resultadoEmisor.EsExitoso)
-        {
-            logger.LogWarning("Falló notificación al emisor. MensajeId: {MensajeId}, EmisorId: {EmisorId}, Error: {Error}", 
-                mensaje.MensajeId, 
-                mensaje.EmisorId,
-                resultadoEmisor.Error);
-                
-            return ResultadoT<MensajeDto>.Fallo(resultadoEmisor.Error!);
-        }
-            
-        var resultadoReceptor = await notificacionServicio.CrearNotificacionMensajeAsync(mensaje.ReceptorId,
-            mensaje.Receptor!.NombreCompleto(),
-            cancellationToken
-        );
-
-        if (!resultadoReceptor.EsExitoso)
-        {
-            logger.LogError("Error crítico al notificar al receptor. MensajeId: {MensajeId}, ReceptorId: {ReceptorId}, Error: {Error}", 
-                mensaje.MensajeId, 
-                mensaje.ReceptorId,
-                resultadoReceptor.Error);
-                
-            return ResultadoT<MensajeDto>.Fallo(resultadoReceptor.Error!);
-        }
-            
-        return Resultado.Exito();
-    }
-
-    #endregion
 }
