@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Trivo.Aplicacion.DTOs.JWT;
 using Trivo.Aplicacion.Interfaces.Servicios;
@@ -5,6 +6,7 @@ using Trivo.Aplicacion.Interfaces.Servicios;
 namespace Trivo.Presentacion.API.Controllers.V1;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
 public class AutenticacionControlador(
     IAutenticacionServicio autenticacionServicio

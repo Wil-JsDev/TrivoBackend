@@ -7,8 +7,8 @@ using Trivo.Aplicacion.Interfaces.Servicios;
 namespace Trivo.Presentacion.API.Controllers.V1;
 
 [ApiController]
-[Route("api/v{version:apiVersion}/notifications")]
 [ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/notifications")]
 public class NotificacionControlador(
     INotificacionServicio notificacionServicio
     ) : ControllerBase
