@@ -45,7 +45,7 @@ internal class ObtenerPaginasMensajesQueryHandler(
             cancellationToken);
 
         var elementos = resultadoPaginado.Elementos!
-            .Select(x => x with { MensajeId = x.MensajeId!, ChatId = x.ChatId!, Contenido = x.Contenido!, TipoMensaje = x.TipoMensaje});
+            .Select(x => x with { MensajeId = x.MensajeId!, ChatId = x.ChatId!, Contenido = x.Contenido!, TipoMensaje = x.TipoMensaje });
         
         
         if (!elementos.Any())
