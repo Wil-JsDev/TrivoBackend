@@ -9,4 +9,9 @@ public interface IRepositorioNotificacion : IRepositorioGenerico<Notificacion>
         int numeroPagina,
         int tamanoPagina,
         CancellationToken cancellationToken);
+
+    Task<Notificacion?> ObtenerPorIdYUsuarioAsync(
+        Guid notificacionId,
+        Guid usuarioId,
+        CancellationToken cancellationToken);
 }

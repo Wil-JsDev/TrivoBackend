@@ -24,4 +24,14 @@ public class RepositorioNotificacion(TrivoContexto trivoContexto) : RepositorioG
         
         return new ResultadoPaginado<Notificacion>(notificaciones, total, numeroPagina, tamanoPagina);
     }
+
+    public async Task<Notificacion?> ObtenerPorIdYUsuarioAsync(Guid notificacionId, Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Notificacion>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(n => 
+                    n.NotificacionId == notificacionId && 
+                    n.UsuarioId == usuarioId,
+                cancellationToken);
+    }
 }
