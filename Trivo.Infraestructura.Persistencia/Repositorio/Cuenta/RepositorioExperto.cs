@@ -42,9 +42,11 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
         return await _trivoContexto.Set<Experto>()
             .AsNoTracking()
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioHabilidades)
+                .ThenInclude(u => u!.UsuarioHabilidades)!
+                    .ThenInclude(uh => uh.Habilidad)
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioInteres)
+            .ThenInclude(u => u!.UsuarioInteres)!
+                .ThenInclude(u => u.Interes)
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
     }
 

@@ -2,7 +2,11 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
+using Trivo.Aplicacion.DTOs.Cuentas.Expertos;
+using Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios.IA;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
@@ -17,10 +21,12 @@ internal sealed class RecomendacionUsuariosQueryHandler(
     IRepositorioUsuario repositorioUsuario,
     IDistributedCache cache,
     IOllamaServicio ollamaServicio,
-    INotificadorIA notificadorIa
-    ) : IQueryHandler<RecomendacionUsuariosQuery, ResultadoPaginado<UsuarioReconmendacionDto>>
+    INotificadorIA notificadorIa,
+    IRepositorioExperto repositorioExperto,
+    IRepositorioReclutador repositorioReclutador
+    ) : IQueryHandler<RecomendacionUsuariosQuery, ResultadoPaginado<UsuarioRecomendacionIaDto>>
 {
-    public async Task<ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>> Handle(RecomendacionUsuariosQuery request, CancellationToken cancellationToken)
+    public async Task<ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>> Handle(RecomendacionUsuariosQuery request, CancellationToken cancellationToken)
     {
         var usuarioActual = await repositorioUsuario.ObtenerUsuarioConInteresYHabilidades(request.UsuarioId, cancellationToken);
         
@@ -28,7 +34,7 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         {
             logger.LogWarning("No se encontró el usuario con Id {UsuarioId} o no tiene intereses/habilidades registrados.", request.UsuarioId);
             
-            return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("404", "El usuario no fue encontrado o no tiene datos de intereses/habilidades."));
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Fallo(Error.Fallo("404", "El usuario no fue encontrado o no tiene datos de intereses/habilidades."));
         }
 
         var rol = await repositorioUsuario.ObtenerRolDeUsuarioAsync(usuarioActual.Id ?? Guid.Empty, cancellationToken);
@@ -50,7 +56,7 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         {
             logger.LogWarning("La IA devolvió una respuesta vacía o nula para el usuario {UsuarioId}.", usuarioActual.Id);
             
-            return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
         }
         
         logger.LogWarning("Respuesta cruda IA:\n{RespuestaIa}", respuestaIa);
@@ -74,37 +80,105 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
         
-        var cacheKey = $"recomendaciones-ia-dto-{request.UsuarioId}-pag-{request.NumeroPagina}-size-{request.TamanoPagina}";
+        if (await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken))
+        {
+            var dtoExperto = await cache.ObtenerOCrearAsync(
+                $"obtener-recomendacio-ia-experto-usuario-id-{request.UsuarioId}",
+                async () =>
+                {
+                    var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
 
-        var resultadoPaginado = await cache.ObtenerOCrearAsync(
-            cacheKey,
-            async () =>
-            {
-                var usuarioReconmendandosDtos = usuariosRecomendados
-                    .Select(UsuarioMapper.MapToDto)
-                    .ToList();
+                    var resultadoExpertoDto = usuariosRecomendados.Select(x => new ExpertoReconmendacionIaDto
+                    (
+                        ExpertoId: x.Expertos!.FirstOrDefault()!.Id ?? Guid.Empty,
+                        Nombre: x.Nombre,
+                        Apellido: x.Apellido,
+                        Ubicacion: x.Ubicacion,
+                        Biografia: x.Biografia,
+                        FotoPerfil: x.FotoPerfil,
+                        Posicion: x.Posicion,
+                        Intereses: x.UsuarioInteres?.Select(i => new InteresConIdDto(i.Interes?.Id ?? Guid.Empty, i.Interes?.Nombre ?? "")).ToList() ?? new List<InteresConIdDto>(),
+                        Habilidades: x.UsuarioHabilidades?.Select(h => new HabilidadConIdDto(h.Habilidad?.HabilidadId ?? Guid.Empty, h.Habilidad?.Nombre ?? "")).ToList() ?? new List<HabilidadConIdDto>(),
+                        DisponibleParaProyectos: experto?.DisponibleParaProyectos,
+                        Contratado: experto?.Contratado
+                    )).ToList();
 
-                var totalElementos = usuarioReconmendandosDtos.Count;
+                    var totalElementos = resultadoExpertoDto.Count();
+                    
+                    return new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                        resultadoExpertoDto,
+                        totalElementos,
+                        request.NumeroPagina,
+                        request.TamanoPagina
+                    );
+                },
+                cancellationToken: cancellationToken
+            );
+            
+            logger.LogInformation("Se obtuvieron correctamente los detalles del experto.");
 
-                var elementosPaginados = usuarioReconmendandosDtos
-                    .Paginar(request.NumeroPagina, request.TamanoPagina)
-                    .ToList();
-
-                return new ResultadoPaginado<UsuarioReconmendacionDto>(
-                    elementosPaginados,
-                    totalElementos,
-                    request.NumeroPagina,
-                    request.TamanoPagina
-                );
-            },
-            cancellationToken: cancellationToken
-        );
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(dtoExperto);
+        }
         
-        logger.LogInformation("Se obtuvieron {Cantidad} recomendaciones para el usuario {UsuarioId}.", resultadoPaginado.Elementos!.Count(), usuarioActual.Id);
+        if (await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken))
+        {
+            var resultadoReclutadorDto = await cache.ObtenerOCrearAsync(
+                $"obtener-recomendacio-ia-reclutador-usuario-id-{request.UsuarioId}",
+                async () =>
+                {
+                    var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
+
+                    var reclutadorDto = usuariosRecomendados.Select(x => new ReclutadorReconmendacionIaDto
+                    (
+                        ReclutadorId: reclutador!.Id ?? Guid.Empty,
+                        Nombre: x.Nombre,
+                        Apellido: x.Apellido,
+                        Ubicacion: x.Ubicacion,
+                        Biografia: x.Biografia,
+                        FotoPerfil: x.FotoPerfil,
+                        Posicion: x.Posicion,
+                        Intereses: x.UsuarioInteres?.Select(i => new InteresConIdDto(i.Interes?.Id ?? Guid.Empty, i.Interes?.Nombre ?? "")).ToList() ?? new List<InteresConIdDto>(),
+                        Habilidades: x.UsuarioHabilidades?.Select(h => new HabilidadConIdDto(h.Habilidad?.HabilidadId ?? Guid.Empty, h.Habilidad?.Nombre ?? "")).ToList() ?? new List<HabilidadConIdDto>(),
+                        NombreEmpresa: reclutador.NombreEmpresa
+                    )).ToList();
+                    
+                    logger.LogInformation("");
+                    
+                    var totalElementos = reclutadorDto.Count();
+
+                    return new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                        reclutadorDto,
+                        totalElementos,
+                        request.NumeroPagina,
+                        request.TamanoPagina
+                    );
+                },
+                cancellationToken: cancellationToken
+            );
+
+            logger.LogInformation("Se obtuvieron correctamente los detalles del reclutador.");
+
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoReclutadorDto);
+        }
+
+        var usuarioRecomendacionIa = paraComparar
+            .Select(UsuarioMapper.MappearRecomendacionIaDto)
+            .Paginar(request.NumeroPagina, request.TamanoPagina)
+            .ToList();
+
+        var totalElementos = usuarioRecomendacionIa.Count();
+        
+        ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginado = new
+        (
+            usuarioRecomendacionIa,
+            totalElementos,
+            request.NumeroPagina,
+            request.TamanoPagina
+        );
         
         await notificadorIa.NotificarRecomendaciones(usuarioActual.Id ?? Guid.Empty, resultadoPaginado.Elementos!.ToList());
         
-        return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Exito(resultadoPaginado);
+        return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginado);
     }
 
     #region Metodos privados

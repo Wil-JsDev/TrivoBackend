@@ -122,7 +122,7 @@ internal sealed class CrearUsuarioCommandHandler(
 
             var usuarioConRelaciones = await repositorioUsuario.ObtenerPorIdConRelacionesAsync(usuario.Id!.Value, cancellationToken);
             
-            await notificadorIa.NotificarNuevaRecomendacion(usuario.Id ?? Guid.Empty, new List<UsuarioReconmendacionDto>{ UsuarioMapper.MapToDto(usuarioConRelaciones!) });
+            await notificadorIa.NotificarNuevaRecomendacion(usuario.Id ?? Guid.Empty, new List<UsuarioRecomendacionIaDto>{ UsuarioMapper.MappearRecomendacionIaDto(usuarioConRelaciones!) });
             
             logger.LogInformation("Se ha notificador correctamente al usuario {UsuarioId}", usuarioConRelaciones!.Id);
             

@@ -47,7 +47,7 @@ public class RecomendacionUsuariosHub(
         if (!resultado.EsExitoso)
         {
             logger.LogWarning("No se encontraron recomendaciones para el usuario {UsuarioId}.", usuarioId);
-            await Clients.User(usuarioId.ToString()).RecibirRecomendaciones(new List<UsuarioReconmendacionDto>());
+            await Clients.User(usuarioId.ToString()).RecibirRecomendaciones(new List<UsuarioRecomendacionIaDto>());
             await base.OnConnectedAsync();
             return;
             

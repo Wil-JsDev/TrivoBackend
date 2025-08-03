@@ -38,9 +38,11 @@ public class RepositorioReclutador(TrivoContexto trivoContexto) : RepositorioGen
         return await _trivoContexto.Set<Reclutador>()
             .AsNoTracking()
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioHabilidades)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(u => u.Habilidad)
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioInteres)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
     }
 
