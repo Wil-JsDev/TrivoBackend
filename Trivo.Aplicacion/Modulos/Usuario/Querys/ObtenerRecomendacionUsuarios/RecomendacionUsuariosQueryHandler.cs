@@ -83,71 +83,91 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         if (await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken))
         {
             var dtoExperto = await cache.ObtenerOCrearAsync(
-                $"obtener-recomendacio-ia-experto-usuario-id-{request.UsuarioId}",
+                $"obtener-recomendacion-ia-experto-usuario-id-{request.UsuarioId}",
                 async () =>
                 {
-                    var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
+                    var expertoActual = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
 
-                    var resultadoExpertoDto = usuariosRecomendados.Select(x => new ExpertoReconmendacionIaDto
-                    (
-                        ExpertoId: x.Expertos!.FirstOrDefault()!.Id ?? Guid.Empty,
-                        Nombre: x.Nombre,
-                        Apellido: x.Apellido,
-                        Ubicacion: x.Ubicacion,
-                        Biografia: x.Biografia,
-                        FotoPerfil: x.FotoPerfil,
-                        Posicion: x.Posicion,
-                        Intereses: x.UsuarioInteres?.Select(i => new InteresConIdDto(i.Interes?.Id ?? Guid.Empty, i.Interes?.Nombre ?? "")).ToList() ?? new List<InteresConIdDto>(),
-                        Habilidades: x.UsuarioHabilidades?.Select(h => new HabilidadConIdDto(h.Habilidad?.HabilidadId ?? Guid.Empty, h.Habilidad?.Nombre ?? "")).ToList() ?? new List<HabilidadConIdDto>(),
-                        DisponibleParaProyectos: experto?.DisponibleParaProyectos,
-                        Contratado: experto?.Contratado
-                    )).ToList();
-
-                    var totalElementos = resultadoExpertoDto.Count();
+                    var recomendaciones = usuariosRecomendados.Select(x => 
+                    {
+                        var expertoRecomendado = x.Expertos?.FirstOrDefault();
                     
+                        return new ExpertoReconmendacionIaDto(
+                            ExpertoId: expertoRecomendado?.Id ?? Guid.Empty,
+                            UsuarioId: x.Id ?? Guid.Empty,
+                            Nombre: x.Nombre ?? string.Empty,
+                            Apellido: x.Apellido ?? string.Empty,
+                            Ubicacion: x.Ubicacion ?? string.Empty,
+                            Biografia: x.Biografia ?? string.Empty,
+                            FotoPerfil: x.FotoPerfil ?? string.Empty,
+                            Posicion: x.Posicion ?? string.Empty,
+                            Intereses: x.UsuarioInteres?
+                                .Where(ui => ui.Interes != null)
+                                .Select(ui => new InteresConIdDto(
+                                    ui.Interes!.Id ?? Guid.Empty, 
+                                    ui.Interes.Nombre ?? string.Empty))
+                                .ToList() ?? new List<InteresConIdDto>(),
+                            Habilidades: x.UsuarioHabilidades?
+                                .Where(uh => uh.Habilidad != null)
+                                .Select(uh => new HabilidadConIdDto(
+                                    uh.Habilidad!.HabilidadId ?? Guid.Empty, 
+                                    uh.Habilidad.Nombre ?? string.Empty))
+                                .ToList() ?? new List<HabilidadConIdDto>(),
+                            DisponibleParaProyectos: expertoRecomendado?.DisponibleParaProyectos ?? false,
+                            Contratado: expertoRecomendado?.Contratado ?? false
+                        );
+                    }).ToList();
+
                     return new ResultadoPaginado<UsuarioRecomendacionIaDto>(
-                        resultadoExpertoDto,
-                        totalElementos,
+                        recomendaciones,
+                        recomendaciones.Count,
                         request.NumeroPagina,
                         request.TamanoPagina
                     );
                 },
                 cancellationToken: cancellationToken
             );
-            
-            logger.LogInformation("Se obtuvieron correctamente los detalles del experto.");
 
+            logger.LogInformation("Recomendaciones para experto {UsuarioId} obtenidas correctamente", request.UsuarioId);
+            
             return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(dtoExperto);
         }
-        
+            
         if (await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken))
         {
             var resultadoReclutadorDto = await cache.ObtenerOCrearAsync(
-                $"obtener-recomendacio-ia-reclutador-usuario-id-{request.UsuarioId}",
+                $"obtener-recomendacion-ia-reclutador-usuario-id-{request.UsuarioId}",
                 async () =>
                 {
-                    var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
-
-                    var reclutadorDto = usuariosRecomendados.Select(x => new ReclutadorReconmendacionIaDto
-                    (
-                        ReclutadorId: reclutador!.Id ?? Guid.Empty,
-                        Nombre: x.Nombre,
-                        Apellido: x.Apellido,
-                        Ubicacion: x.Ubicacion,
-                        Biografia: x.Biografia,
-                        FotoPerfil: x.FotoPerfil,
-                        Posicion: x.Posicion,
-                        Intereses: x.UsuarioInteres?.Select(i => new InteresConIdDto(i.Interes?.Id ?? Guid.Empty, i.Interes?.Nombre ?? "")).ToList() ?? new List<InteresConIdDto>(),
-                        Habilidades: x.UsuarioHabilidades?.Select(h => new HabilidadConIdDto(h.Habilidad?.HabilidadId ?? Guid.Empty, h.Habilidad?.Nombre ?? "")).ToList() ?? new List<HabilidadConIdDto>(),
-                        NombreEmpresa: reclutador.NombreEmpresa
-                    )).ToList();
+                    var reclutadorActual = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
                     
-                    logger.LogInformation("");
+                    var recomendacionesReclutador = usuariosRecomendados.Select(x => 
+                    {
+                        var reclutadorRecomendado = x.Reclutadores?.FirstOrDefault();
+                
+                        return new ReclutadorReconmendacionIaDto(
+                            ReclutadorId: reclutadorRecomendado?.Id ?? Guid.Empty, // ID del reclutador recomendado
+                            UsuarioId: x.Id ?? Guid.Empty, // ID del usuario recomendado
+                            Nombre: x.Nombre ?? string.Empty,
+                            Apellido: x.Apellido ?? string.Empty,
+                            Ubicacion: x.Ubicacion ?? string.Empty,
+                            Biografia: x.Biografia ?? string.Empty,
+                            FotoPerfil: x.FotoPerfil ?? string.Empty,
+                            Posicion: x.Posicion ?? string.Empty,
+                            Intereses: x.UsuarioInteres?
+                                .Select(i => new InteresConIdDto(i.Interes?.Id ?? Guid.Empty, i.Interes?.Nombre ?? string.Empty))
+                                .ToList() ?? new List<InteresConIdDto>(),
+                            Habilidades: x.UsuarioHabilidades?
+                                .Select(h => new HabilidadConIdDto(h.Habilidad?.HabilidadId ?? Guid.Empty, h.Habilidad?.Nombre ?? string.Empty))
+                                .ToList() ?? new List<HabilidadConIdDto>(),
+                            NombreEmpresa: reclutadorRecomendado?.NombreEmpresa
+                        );
+                    }).ToList();
                     
-                    var totalElementos = reclutadorDto.Count();
+                    var totalElementos = recomendacionesReclutador.Count();
 
                     return new ResultadoPaginado<UsuarioRecomendacionIaDto>(
-                        reclutadorDto,
+                        recomendacionesReclutador,
                         totalElementos,
                         request.NumeroPagina,
                         request.TamanoPagina

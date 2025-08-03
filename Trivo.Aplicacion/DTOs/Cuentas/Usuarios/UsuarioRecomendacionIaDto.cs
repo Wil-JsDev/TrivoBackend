@@ -5,7 +5,7 @@ namespace Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 
 public record UsuarioRecomendacionIaDto
 (
-    // Guid UsuarioId,
+    Guid UsuarioId,
     string? Nombre,
     string? Apellido,
     string? Ubicacion,

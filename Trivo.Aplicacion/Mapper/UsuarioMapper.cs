@@ -25,6 +25,7 @@ public static class UsuarioMapper
     public static UsuarioRecomendacionIaDto MappearRecomendacionIaDto(Usuario entidad)
     {
         return new UsuarioRecomendacionIaDto(
+            UsuarioId: entidad.Id ?? Guid.Empty,
             Nombre: entidad.Nombre,
             Apellido: entidad.Apellido,
             Ubicacion: entidad.Ubicacion,

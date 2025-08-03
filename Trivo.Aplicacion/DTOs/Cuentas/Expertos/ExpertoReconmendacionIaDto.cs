@@ -7,6 +7,7 @@ namespace Trivo.Aplicacion.DTOs.Cuentas.Expertos;
 public record ExpertoReconmendacionIaDto
 (
     Guid ExpertoId,
+    Guid UsuarioId,
     string? Nombre,
     string? Apellido,
     string? Ubicacion,
@@ -17,4 +18,4 @@ public record ExpertoReconmendacionIaDto
     List<HabilidadConIdDto> Habilidades,
     bool? DisponibleParaProyectos,
     bool? Contratado
-) : UsuarioRecomendacionIaDto(Nombre, Apellido, Ubicacion ,Biografia, Posicion, FotoPerfil, Intereses, Habilidades);
+) : UsuarioRecomendacionIaDto(UsuarioId,Nombre, Apellido, Ubicacion ,Biografia, Posicion, FotoPerfil, Intereses, Habilidades);

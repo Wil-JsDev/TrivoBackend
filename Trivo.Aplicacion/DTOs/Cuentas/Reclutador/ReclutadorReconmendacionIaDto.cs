@@ -7,6 +7,7 @@ namespace Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
 public record ReclutadorReconmendacionIaDto
 (
     Guid ReclutadorId,
+    Guid UsuarioId,
     string? Nombre,
     string? Apellido,
     string? Ubicacion,
@@ -16,4 +17,4 @@ public record ReclutadorReconmendacionIaDto
     List<InteresConIdDto> Intereses,
     List<HabilidadConIdDto> Habilidades,
     string? NombreEmpresa
-) : UsuarioRecomendacionIaDto(Nombre, Apellido, Ubicacion ,Biografia, Posicion, FotoPerfil, Intereses, Habilidades);
+) : UsuarioRecomendacionIaDto(UsuarioId,Nombre, Apellido, Ubicacion ,Biografia, Posicion, FotoPerfil, Intereses, Habilidades);
