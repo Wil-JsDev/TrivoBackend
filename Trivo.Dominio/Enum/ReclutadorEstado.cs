@@ -2,7 +2,7 @@ namespace Trivo.Dominio.Enum;
 
 public enum ReclutadorEstado
 {
-    Match,
+    Completado,
     Pendiente,
     Rechazado
 }

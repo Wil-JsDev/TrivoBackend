@@ -59,5 +59,16 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
     }
-    
+
+    public async Task<Emparejamiento?> ObtenerPorIdAsync(Guid emparejamientoId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Emparejamiento>()
+            .AsNoTracking()
+            .Include(x => x.Experto)
+                .ThenInclude(e => e!.Usuario)
+            .Include(x => x.Reclutador)
+            .ThenInclude(e => e!.Usuario)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(x => x.Id == emparejamientoId, cancellationToken);
+    }
 }

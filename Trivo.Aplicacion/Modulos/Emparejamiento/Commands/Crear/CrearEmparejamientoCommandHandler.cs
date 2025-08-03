@@ -31,6 +31,20 @@ internal sealed class CrearEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "La solicitud enviada no puede ser nula."));
         }
 
+        if (request.ExpertoId == Guid.Empty || request.ReclutadorId == Guid.Empty)
+        {
+            logger.LogWarning("IDs inválidos. ReclutadorId: {ReclutadorId}, ExpertoId: {ExpertoId}", 
+                request.ReclutadorId, 
+                request.ExpertoId);
+    
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", 
+                request.ExpertoId == Guid.Empty && request.ReclutadorId == Guid.Empty 
+                    ? "Los IDs de experto y reclutador son requeridos."
+                    : request.ExpertoId == Guid.Empty 
+                        ? "El ID del experto es requerido."
+                        : "El ID del reclutador es requerido."));
+        }
+        
         // el metodo carga las entidades de habilidades y intereses del usuario
         var reclutador = await repositorioReclutador.ObtenerIdAsync(request.ReclutadorId ?? Guid.Empty, cancellationToken);
         if (reclutador is null)
@@ -110,8 +124,8 @@ internal sealed class CrearEmparejamientoCommandHandler(
     private static readonly Dictionary<Roles, (string expertoEstado, string reclutadorEstado)> EstadosPorRol =
        new()
        {
-           { Roles.Experto, (ExpertoEstado.Match.ToString(), ReclutadorEstado.Pendiente.ToString()) },
-           { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Match.ToString()) }
+           { Roles.Experto, (ExpertoEstado.Completado.ToString(), ReclutadorEstado.Pendiente.ToString()) },
+           { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Completado.ToString()) }
        };
     
    #endregion

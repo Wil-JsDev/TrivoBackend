@@ -163,6 +163,7 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <returns>Una cadena que representa el rol del usuario.</returns>
     Task<string> ObtenerRolDeUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 
+    Task<Usuario?> ObtenerRelacionesExpertosYReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken);
     
     Task<Usuario?> ObtenerPorIdConRelacionesAsync(Guid id, CancellationToken cancellationToken);
 }
