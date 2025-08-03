@@ -13,6 +13,7 @@ using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
 
@@ -39,11 +40,13 @@ internal sealed class RecomendacionUsuariosQueryHandler(
 
         var rol = await repositorioUsuario.ObtenerRolDeUsuarioAsync(usuarioActual.Id ?? Guid.Empty, cancellationToken);
         
-        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(usuarioActual.Id ?? Guid.Empty, rol, cancellationToken);
+        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(usuarioActual.Id ?? Guid.Empty,
+            rol == Roles.Reclutador.ToString() ? Roles.Experto.ToString() : rol,
+            cancellationToken);
         
         IEnumerable<Dominio.Modelos.Usuario> paraComparar = usuariosParaComparar.ToList();
-        
-        var prompt = ConstruirPrompt(usuarioActual, paraComparar.ToList());
+
+        var prompt = ConstruirPrompt(usuarioActual, paraComparar.ToList(), rol);
         
         logger.LogInformation("Prompt construido correctamente para el usuario {UsuarioId}. Enviando solicitud a la IA...", usuarioActual.Id);
         
@@ -87,9 +90,9 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             request.TamanoPagina,
             cancellationToken);
 
-        if (resultadoPorRol != null)
+        if (resultadoPorRol.EsExitoso)
         {
-            return resultadoPorRol;
+            return resultadoPorRol; 
         }
 
         // Caso por defecto de no ser experto/reclutador
@@ -132,7 +135,7 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                 .Select(x => x.Usuario)
                 .ToList();
         }
-        private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios)
+        private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios, string rolUsuario)
         {
             var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
             var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
@@ -144,22 +147,30 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                 return $"{u.Id}: {intereses} | {habilidades}";
             });
 
+            var contextoRol = rolUsuario == nameof(Roles.Reclutador)
+                ? "Eres un reclutador buscando expertos con estos intereses/habilidades:"
+                : rolUsuario == nameof(Roles.Experto)
+                    ? "Eres un experto buscando reclutadores interesados en tu perfil:"
+                    : "Busca usuarios con intereses/habilidades similares:";
+    
             var prompt = $@"
-            Recomienda los 9 usuarios más parecidos por intereses y habilidades.
+                {contextoRol}
 
-            Usuario:
-            {interesesUsuario} | {habilidadesUsuario}
+                Tus características:
+                Intereses: {interesesUsuario}
+                Habilidades: {habilidadesUsuario}
 
-            Candidatos:
-            {string.Join("\n", usuariosContexto)}
+                Candidatos disponibles (ID - Intereses | Habilidades):
+                {string.Join("\n", usuariosContexto)}
 
-            Devuelve SOLO los GUID de los más parecidos, separados por comas. NO EXPLIQUES NADA. NO DES TEXTOS. SOLO LOS ID.
+                Instrucciones:
+                1. Analiza la compatibilidad basada en intereses y habilidades
+                2. Selecciona los 9 mejores candidatos
+                3. Devuelve SOLO los IDs separados por comas
 
-            Ejemplo válido: 4ac34db1-5ce4-4631-b7ac-5afbeb03be02,a605b5bb-06ff-427b-b673-df4aafbb3277,...
-
-            Tu respuesta:
-            ";
-            return prompt.Trim();
+                Ejemplo: 123e4567-e89b-12d3-a456-426614174000,987e6543-e21b-12d3-a456-426614175000
+                ";
+                return prompt.Trim();
         }
 
         private async Task<ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>> ObtenerRecomendacionesPorRol(
@@ -214,33 +225,32 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                 int tamanoPagina,
                 CancellationToken cancellationToken)
             {
-                var cacheKey = $"obtener-recomendacion-ia-{tipoRol}-usuario-id-{usuarioId}";
+                    var cacheKey = $"obtener-recomendacion-ia-{tipoRol}-usuario-id-{usuarioId}";
 
-                var dto = await cache.ObtenerOCrearAsync(
-                    cacheKey,
-                    async () =>
-                    {
-                        await obtenerDetalles(usuarioId);
+                    var todosLosDatos = await cache.ObtenerOCrearAsync(
+                        cacheKey,
+                        async () =>
+                        {
+                            await obtenerDetalles(usuarioId);
+                            return usuariosRecomendados.Select(mapper).ToList();
+                        },
+                        cancellationToken: cancellationToken);
 
-                        var recomendaciones = usuariosRecomendados
-                            .Select(mapper)
-                            .ToList();
+                    var datosPaginados = todosLosDatos
+                        .Paginar(numeroPagina, tamanoPagina)
+                        .ToList();
 
-                        return new ResultadoPaginado<UsuarioRecomendacionIaDto>(
-                            recomendaciones,
-                            recomendaciones.Count,
-                            numeroPagina,
-                            tamanoPagina
-                        );
-                    },
-                    cancellationToken: cancellationToken
-                );
+                    var resultadoPaginado = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                        datosPaginados,
+                        todosLosDatos.Count, 
+                        numeroPagina,
+                        tamanoPagina
+                    );
 
-                logger.LogInformation("Recomendaciones para {TipoRol} {UsuarioId} obtenidas correctamente", tipoRol, usuarioId);
-                
-                return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(dto);
-            }
+                    logger.LogInformation("Recomendaciones para {TipoRol} {UsuarioId} obtenidas correctamente", tipoRol, usuarioId);
         
+                    return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginado);
+            }
         
     #endregion
 }

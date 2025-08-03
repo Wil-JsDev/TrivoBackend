@@ -198,16 +198,16 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Include(u => u.Expertos)
             .Include(u => u.Reclutadores)
             .FirstOrDefaultAsync(u => u.Id == usuarioId, cancellationToken);
-        
-        var tieneExperto = usuario!.Expertos != null & usuario.Expertos!.Any();
-        var tieneReclutador = usuario.Reclutadores != null & usuario.Reclutadores!.Any();
+    
+        var tieneExperto = usuario!.Expertos != null && usuario.Expertos!.Any();
+        var tieneReclutador = usuario.Reclutadores != null && usuario.Reclutadores!.Any();
 
         if (tieneExperto)
             return nameof(Roles.Experto);
-        
+    
         if (tieneReclutador)
             return nameof(Roles.Reclutador);
-        
+    
         return "Sin Rol";
     }
 
@@ -232,13 +232,13 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
 
         if (rol == nameof(Roles.Experto))
         {
-            // Si el usuario actual es experto => devolver usuarios que TIENEN RELACIÓN con él como reclutador
-            query = query.Where(u => u.Reclutadores!.Any());
+            // Para expertos: devolver reclutadores (usuarios que tienen relación de reclutador)
+            query = query.Where(u => u.Reclutadores != null && u.Reclutadores.Any());
         }
         else if (rol == nameof(Roles.Reclutador))
         {
-            // Si el usuario actual es reclutador => devolver usuarios que TIENEN RELACIÓN con él como experto
-            query = query.Where(u => u.Expertos!.Any());
+            // Para reclutadores: devolver expertos (usuarios que tienen relación de experto)
+            query = query.Where(u => u.Expertos != null && u.Expertos.Any());
         }
 
         return await query.AsSplitQuery().ToListAsync(cancellationToken);
