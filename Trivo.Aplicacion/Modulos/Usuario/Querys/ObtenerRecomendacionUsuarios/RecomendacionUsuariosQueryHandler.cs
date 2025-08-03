@@ -85,50 +85,107 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
 
-        if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
-        {
-            var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
-
-            var expertoReconmendando = usuariosRecomendados
-                .Select(usuario => RecomendacionMapper.MappearAExpertoDto(usuario, experto))
-                .Paginar(request.NumeroPagina, request.TamanoPagina)
-                .ToList();
-
-            var total = expertoReconmendando.Count();
-            
-            ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
-            (
-                expertoReconmendando,
-                total,
-                request.NumeroPagina,
-                request.TamanoPagina
-            );
-            
-            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
-        }
-
-        if ( await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken) )
-        {
-            var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
-
-            var reclutadorReconmendando = usuariosRecomendados
-                .Select(usuario => RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador!))
-                .Paginar(request.NumeroPagina, request.TamanoPagina)
-                .ToList();
-
-            var total = reclutadorReconmendando.Count();
-            
-            ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
-            (
-                reclutadorReconmendando,
-                total,
-                request.NumeroPagina,
-                request.TamanoPagina
-            );
-            
-            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
-        }
+        // if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
+        // {
+        //     var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
+        //
+        //     var expertoReconmendando = usuariosRecomendados
+        //         .Select(usuario => RecomendacionMapper.MappearAExpertoDto(usuario, experto))
+        //         .Paginar(request.NumeroPagina, request.TamanoPagina)
+        //         .ToList();
+        //
+        //     var total = expertoReconmendando.Count();
+        //     
+        //     ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+        //     (
+        //         expertoReconmendando,
+        //         total,
+        //         request.NumeroPagina,
+        //         request.TamanoPagina
+        //     );
+        //     
+        //     return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
+        // }
         
+
+        // if ( await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken) )
+        // {
+        //     var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
+        //
+        //     var reclutadorReconmendando = usuariosRecomendados
+        //         .Select(usuario => RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador!))
+        //         .Paginar(request.NumeroPagina, request.TamanoPagina)
+        //         .ToList();
+        //
+        //     var total = reclutadorReconmendando.Count();
+        //     
+        //     ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+        //     (
+        //         reclutadorReconmendando,
+        //         total,
+        //         request.NumeroPagina,
+        //         request.TamanoPagina
+        //     );
+        //     
+        //     return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
+        // }
+        //
+        
+        if (await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken))
+        {
+            // Obtener solo usuarios que son reclutadores para recomendar a un experto
+            var reclutadoresRecomendados = usuariosRecomendados
+                .Where(u => repositorioReclutador.EsUsuarioReclutadorAsync(u.Id.Value, cancellationToken).Result)
+                .ToList();
+        
+            var reclutadoresMapeados = new List<ReclutadorReconmendacionIaDto>();
+        
+            foreach (var usuario in reclutadoresRecomendados)
+            {
+                var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(usuario.Id.Value, cancellationToken);
+                if (reclutador != null)
+                {
+                    reclutadoresMapeados.Add(RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador));
+                }
+            }
+        
+            var resultadoPaginadoReclutadores = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                reclutadoresMapeados,
+                reclutadoresMapeados.Count,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+        
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoReclutadores);
+        }
+
+        if (await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken))
+        {
+            // Obtener solo usuarios que son expertos para recomendar a un reclutador
+            var expertosRecomendados = usuariosRecomendados
+                .Where(u => repositorioExperto.EsUsuarioExpertoAsync(u.Id!.Value, cancellationToken).Result)
+                .ToList();
+        
+            var expertosMapeados = new List<ExpertoReconmendacionIaDto>();
+        
+            foreach (var usuario in expertosRecomendados)
+            {
+                var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(usuario.Id!.Value, cancellationToken);
+                if (experto != null)
+                {
+                    expertosMapeados.Add(RecomendacionMapper.MappearAExpertoDto(usuario, experto));
+                }
+            }
+        
+            var resultadoPaginadoExpertos = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                expertosMapeados,
+                expertosMapeados.Count,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+        
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExpertos);
+        }
         // Caso por defecto de no ser experto/reclutador
         var usuarioRecomendacionIa = usuariosRecomendados
             .Select(UsuarioMapper.MappearRecomendacionIaDto)
