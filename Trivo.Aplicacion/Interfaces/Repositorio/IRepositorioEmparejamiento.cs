@@ -43,4 +43,6 @@ public interface IRepositorioEmparejamiento : IRepositorioGenerico<Emparejamient
     /// <param name="cancellationToken">Token para cancelar la operación asincrónica si es necesario.</param>
     /// <returns>Una lista de emparejamientos pendientes asociados al usuario como reclutador.</returns>
     Task<IEnumerable<Emparejamiento>> ObtenerEmparejamientosComoReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken);
+    
+    Task<Emparejamiento?> ObtenerPorIdAsync(Guid emparejamientoId, CancellationToken cancellationToken);
 }
