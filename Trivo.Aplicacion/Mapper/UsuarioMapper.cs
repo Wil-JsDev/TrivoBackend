@@ -41,7 +41,6 @@ public static class UsuarioMapper
         return usuarios.Select(MappearRecomendacionIaDto).ToList();
     }
     
-
     public static UsuarioDto MapUsuarioDto(Dominio.Modelos.Usuario usuario)
     {
         return new UsuarioDto
@@ -59,9 +58,8 @@ public static class UsuarioMapper
             FechaRegistro: usuario.FechaRegistro
         );
     }
-
-    #region Metodos Privados
-        private static List<InteresConIdDto> MappearAintereses(ICollection<UsuarioInteres>? usuarioIntereses)
+    
+        public static List<InteresConIdDto> MappearAintereses(ICollection<UsuarioInteres>? usuarioIntereses)
         {
             return usuarioIntereses?
                 .Where(ui => ui.Interes != null)
@@ -71,7 +69,7 @@ public static class UsuarioMapper
                 .ToList() ?? new List<InteresConIdDto>();
         }
 
-        private static List<HabilidadConIdDto> MappearAHabilidades(ICollection<UsuarioHabilidad>? usuarioHabilidades)
+        public static List<HabilidadConIdDto> MappearAHabilidades(ICollection<UsuarioHabilidad>? usuarioHabilidades)
         {
             return usuarioHabilidades?
                 .Where(uh => uh.Habilidad != null)
@@ -80,8 +78,5 @@ public static class UsuarioMapper
                     uh.Habilidad.Nombre ?? string.Empty))
                 .ToList() ?? new List<HabilidadConIdDto>();
         }
-        
-        
-    #endregion
     
 }
