@@ -6,9 +6,9 @@ namespace Trivo.Aplicacion.Mapper;
 
 public static class RecomendacionMapper
 {
-    public static ExpertoReconmendacionIaDto MappearAExpertoDto(Usuario usuario)
+    public static ExpertoReconmendacionIaDto MappearAExpertoDto(Usuario usuario, Experto? experto)
     {
-        var experto = usuario.Expertos?.FirstOrDefault();
+        // var experto = usuario.Expertos?.FirstOrDefault();
         
         return new ExpertoReconmendacionIaDto(
             ExpertoId: experto?.Id ?? Guid.Empty,
@@ -26,9 +26,9 @@ public static class RecomendacionMapper
         );
     }
 
-    public static ReclutadorReconmendacionIaDto MappearAReclutadorDto(Usuario usuario)
+    public static ReclutadorReconmendacionIaDto MappearAReclutadorDto(Usuario usuario, Reclutador reclutador)
     {
-        var reclutador = usuario.Reclutadores?.FirstOrDefault();
+        // var reclutador = usuario.Reclutadores?.FirstOrDefault();
         
         return new ReclutadorReconmendacionIaDto(
             ReclutadorId: reclutador?.Id ?? Guid.Empty,

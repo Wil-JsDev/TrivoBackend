@@ -40,8 +40,9 @@ internal sealed class RecomendacionUsuariosQueryHandler(
 
         var rol = await repositorioUsuario.ObtenerRolDeUsuarioAsync(usuarioActual.Id ?? Guid.Empty, cancellationToken);
         
-        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(usuarioActual.Id ?? Guid.Empty,
-            rol == Roles.Reclutador.ToString() ? Roles.Experto.ToString() : rol,
+        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(
+            usuarioActual.Id ?? Guid.Empty,
+            rol,
             cancellationToken);
         
         IEnumerable<Dominio.Modelos.Usuario> paraComparar = usuariosParaComparar.ToList();
@@ -80,23 +81,56 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         if (!usuariosRecomendados.Any())
         {
             logger.LogWarning("La IA no devolvió IDs válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
+            
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
-        
-        var resultadoPorRol = await ObtenerRecomendacionesPorRol(
-            request.UsuarioId,
-            usuariosRecomendados,
-            request.NumeroPagina,
-            request.TamanoPagina,
-            cancellationToken);
 
-        if (resultadoPorRol.EsExitoso)
+        if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
         {
-            return resultadoPorRol; 
+            var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
+
+            var expertoReconmendando = usuariosRecomendados
+                .Select(usuario => RecomendacionMapper.MappearAExpertoDto(usuario, experto))
+                .Paginar(request.NumeroPagina, request.TamanoPagina)
+                .ToList();
+
+            var total = expertoReconmendando.Count();
+            
+            ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+            (
+                expertoReconmendando,
+                total,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+            
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
         }
 
+        if ( await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken) )
+        {
+            var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
+
+            var reclutadorReconmendando = usuariosRecomendados
+                .Select(usuario => RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador!))
+                .Paginar(request.NumeroPagina, request.TamanoPagina)
+                .ToList();
+
+            var total = reclutadorReconmendando.Count();
+            
+            ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+            (
+                reclutadorReconmendando,
+                total,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+            
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
+        }
+        
         // Caso por defecto de no ser experto/reclutador
-        var usuarioRecomendacionIa = paraComparar
+        var usuarioRecomendacionIa = usuariosRecomendados
             .Select(UsuarioMapper.MappearRecomendacionIaDto)
             .Paginar(request.NumeroPagina, request.TamanoPagina)
             .ToList();
@@ -135,122 +169,54 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                 .Select(x => x.Usuario)
                 .ToList();
         }
-        private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios, string rolUsuario)
+       private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios, string rolUsuario)
         {
-            var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-            var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
 
-            var usuariosContexto = usuarios.Select((u) =>
-            {
-                var intereses = string.Join(", ", u.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-                var habilidades = string.Join(", ", u.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-                return $"{u.Id}: {intereses} | {habilidades}";
-            });
+                var usuariosContexto = usuarios.Select((u) =>
+                {
+                    var intereses = string.Join(", ", u.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                    var habilidades = string.Join(", ", u.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                    return $"{u.Id}: {intereses} | {habilidades}";
+                });
 
-            var contextoRol = rolUsuario == nameof(Roles.Reclutador)
-                ? "Eres un reclutador buscando expertos con estos intereses/habilidades:"
-                : rolUsuario == nameof(Roles.Experto)
-                    ? "Eres un experto buscando reclutadores interesados en tu perfil:"
-                    : "Busca usuarios con intereses/habilidades similares:";
-    
-            var prompt = $@"
-                {contextoRol}
+                var tipoRecomendacion = rolUsuario == nameof(Roles.Reclutador) ? "EXPERTOS" : 
+                                      rolUsuario == nameof(Roles.Experto) ? "RECLUTADORES" : 
+                                      "usuarios relevantes";
 
-                Tus características:
+                var prompt = $@"
+                ## CONTEXTO DE RECOMENDACIÓN ##
+                { (rolUsuario == nameof(Roles.Reclutador) ? 
+                    "Eres un RECLUTADOR buscando EXPERTOS que coincidan con estos requisitos:" : 
+                    rolUsuario == nameof(Roles.Experto) ? 
+                    "Eres un EXPERTO buscando RECLUTADORES interesados en tu perfil:" : 
+                    "Busca usuarios con intereses/habilidades similares:")}
+
+                ## TU PERFIL ##
                 Intereses: {interesesUsuario}
                 Habilidades: {habilidadesUsuario}
 
-                Candidatos disponibles (ID - Intereses | Habilidades):
+                ## CANDIDATOS DISPONIBLES ##
                 {string.Join("\n", usuariosContexto)}
 
-                Instrucciones:
-                1. Analiza la compatibilidad basada en intereses y habilidades
-                2. Selecciona los 9 mejores candidatos
-                3. Devuelve SOLO los IDs separados por comas
+                ## INSTRUCCIONES ESTRICTAS ##
+                1. FILTRO: Seleccionar exclusivamente {tipoRecomendacion}
+                2. CRITERIOS: Evaluar compatibilidad basada en:
+                   - Coincidencia de intereses (prioridad alta)
+                   - Complementariedad de habilidades (prioridad media)
+                3. CANTIDAD: Seleccionar exactamente los 9 mejores candidatos
+                4. FORMATO: Responder ÚNICAMENTE con los IDs válidos en formato:
+                   id1,id2,id3,...,id9
 
-                Ejemplo: 123e4567-e89b-12d3-a456-426614174000,987e6543-e21b-12d3-a456-426614175000
+                ## EJEMPLO VÁLIDO ##
+                123e4567-e89b-12d3-a456-426614174000,987e6543-e21b-12d3-a456-426614175000,...,9a8b7c6d-5e4f-3g2h-1i0j-426614175000
+
+                ## TU RESPUESTA (SOLO IDs) ##
                 ";
+
                 return prompt.Trim();
         }
-
-        private async Task<ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>> ObtenerRecomendacionesPorRol(
-            Guid usuarioId,
-            List<Dominio.Modelos.Usuario> usuariosRecomendados,
-            int numeroPagina,
-            int tamanoPagina,
-            CancellationToken cancellationToken)
-            {
-                if (await repositorioExperto.EsUsuarioExpertoAsync(usuarioId, cancellationToken))
-                {
-                    return await ObtenerRecomendacionesEspecificas(
-                        usuarioId,
-                        usuariosRecomendados,
-                        "experto",
-                        RecomendacionMapper.MappearAExpertoDto,
-                        async (id) => await repositorioExperto.ObtenerDetallesExpertoAsync(id, cancellationToken),
-                        numeroPagina,
-                        tamanoPagina,
-                        cancellationToken);
-                }
-                        
-                if (await repositorioReclutador.EsUsuarioReclutadorAsync(usuarioId, cancellationToken))
-                {
-                    return await ObtenerRecomendacionesEspecificas(
-                        usuarioId,
-                        usuariosRecomendados,
-                        "reclutador",
-                        RecomendacionMapper.MappearAReclutadorDto,
-                        async (id) => await repositorioReclutador.ObtenerDetallesReclutadorAsync(id, cancellationToken),
-                        numeroPagina,
-                        tamanoPagina,
-                        cancellationToken);
-                }
-
-                logger.LogWarning("El usuario {UsuarioId} no tiene un rol válido (experto/reclutador) para obtener recomendaciones especializadas", usuarioId);
-                return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Fallo(
-                    Error.Fallo(
-                        "400", 
-                        "El usuario no tiene un rol válido para recomendaciones especializadas. Se aplicarán recomendaciones genéricas."
-                    )
-                );
-            }
-
-            private async Task<ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>> ObtenerRecomendacionesEspecificas(
-                Guid usuarioId,
-                List<Dominio.Modelos.Usuario> usuariosRecomendados,
-                string tipoRol,
-                Func<Dominio.Modelos.Usuario, UsuarioRecomendacionIaDto> mapper,
-                Func<Guid, Task> obtenerDetalles,
-                int numeroPagina,
-                int tamanoPagina,
-                CancellationToken cancellationToken)
-            {
-                    var cacheKey = $"obtener-recomendacion-ia-{tipoRol}-usuario-id-{usuarioId}";
-
-                    var todosLosDatos = await cache.ObtenerOCrearAsync(
-                        cacheKey,
-                        async () =>
-                        {
-                            await obtenerDetalles(usuarioId);
-                            return usuariosRecomendados.Select(mapper).ToList();
-                        },
-                        cancellationToken: cancellationToken);
-
-                    var datosPaginados = todosLosDatos
-                        .Paginar(numeroPagina, tamanoPagina)
-                        .ToList();
-
-                    var resultadoPaginado = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
-                        datosPaginados,
-                        todosLosDatos.Count, 
-                        numeroPagina,
-                        tamanoPagina
-                    );
-
-                    logger.LogInformation("Recomendaciones para {TipoRol} {UsuarioId} obtenidas correctamente", tipoRol, usuarioId);
-        
-                    return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginado);
-            }
         
     #endregion
 }

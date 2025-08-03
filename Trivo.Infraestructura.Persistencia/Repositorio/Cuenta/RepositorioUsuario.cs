@@ -226,19 +226,16 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .AsNoTracking()
             .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
             .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
-            .Include(u => u.Expertos)
-            .Include(u => u.Reclutadores)
-            .Where(u => u.Id != usuarioActualId); // Excluir usuario actual
+            .Where(u => u.Id != usuarioActualId);
 
-        if (rol == nameof(Roles.Experto))
+        // Filtrado explícito por rol opuesto
+        if (rol == nameof(Roles.Reclutador))
         {
-            // Para expertos: devolver reclutadores (usuarios que tienen relación de reclutador)
-            query = query.Where(u => u.Reclutadores != null && u.Reclutadores.Any());
-        }
-        else if (rol == nameof(Roles.Reclutador))
-        {
-            // Para reclutadores: devolver expertos (usuarios que tienen relación de experto)
             query = query.Where(u => u.Expertos != null && u.Expertos.Any());
+        }
+        else if (rol == nameof(Roles.Experto))
+        {
+            query = query.Where(u => u.Reclutadores != null && u.Reclutadores.Any());
         }
 
         return await query.AsSplitQuery().ToListAsync(cancellationToken);
