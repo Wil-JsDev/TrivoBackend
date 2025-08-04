@@ -15,12 +15,18 @@ public static class EmperajamientoHelper
         if (rol == Roles.Experto)
         {
             if (emparejamiento.Reclutador?.Usuario != null)
-                otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Reclutador.Usuario);
+                // otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Reclutador.Usuario);
+                otroUsuarioDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+                    emparejamiento.Reclutador.Usuario,
+                    emparejamiento.Reclutador);
         }
         else if (rol == Roles.Reclutador)
         {
             if (emparejamiento.Experto?.Usuario != null)
-                otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Experto.Usuario);
+            // otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Experto.Usuario);
+                otroUsuarioDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+                    emparejamiento.Experto.Usuario,
+                    emparejamiento.Reclutador);
         }
 
         if (otroUsuarioDto == null)
