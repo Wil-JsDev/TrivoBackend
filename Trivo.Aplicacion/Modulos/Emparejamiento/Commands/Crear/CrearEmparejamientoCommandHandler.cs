@@ -100,13 +100,25 @@ internal sealed class CrearEmparejamientoCommandHandler(
         EmparejamientoDto emparejamientoDetallesDtoReclutador = new
         (
             EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
-            UsuarioReconmendacionDto: new List<UsuarioReconmendacionDto> { UsuarioMapper.MapToDto(reclutador.Usuario!) }
+            ReclutadotId: reclutador.Id ?? Guid.Empty,
+            ExpertoId: null,
+            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamiento.FechaRegistro,
+            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
         );
         
         EmparejamientoDto emparejamientoDetallesDtoExperto = new
         (
             EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
-            UsuarioReconmendacionDto: new List<UsuarioReconmendacionDto> { UsuarioMapper.MapToDto(experto.Usuario!) }
+            ReclutadotId: null,
+            ExpertoId: experto.Id ?? Guid.Empty,
+            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamiento.FechaRegistro,
+            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
         );
         
         await emparejamientoNotificador.NotificarNuevoEmparejamiento(

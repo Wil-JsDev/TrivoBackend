@@ -8,7 +8,7 @@ namespace Trivo.Aplicacion.Mapper;
 
 public static class UsuarioMapper
 {
-    public static UsuarioReconmendacionDto MapToDto(Dominio.Modelos.Usuario entidad)
+    public static UsuarioReconmendacionDto? MapToDto(Dominio.Modelos.Usuario entidad)
     {
         return new UsuarioReconmendacionDto(
             UsuarioId: entidad.Id ?? Guid.Empty,

@@ -30,9 +30,13 @@ public static class EmperajamientoHelper
 
         return new EmparejamientoDto(
             EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
-            UsuarioReconmendacionDto: otroUsuarioDto != null
-                ? new List<UsuarioReconmendacionDto> { otroUsuarioDto }
-                : Enumerable.Empty<UsuarioReconmendacionDto>()
+            ReclutadotId: emparejamiento.Reclutador?.Id,
+            ExpertoId: emparejamiento.Experto?.Id,
+            ExpertoEstado: string.Empty,
+            ReclutadorEstado: string.Empty,
+            EmparejamientoEstado: string.Empty,
+            FechaRegistro: DateTime.Now,
+            UsuarioReconmendacionDto: otroUsuarioDto
         );
     }
 

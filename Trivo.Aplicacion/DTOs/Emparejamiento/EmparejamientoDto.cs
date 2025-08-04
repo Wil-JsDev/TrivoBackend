@@ -5,5 +5,11 @@ namespace Trivo.Aplicacion.DTOs.Emparejamiento;
 public sealed record EmparejamientoDto
 (
     Guid EmparejamientoId,
-    IEnumerable<UsuarioReconmendacionDto> UsuarioReconmendacionDto
+    Guid? ReclutadotId,
+    Guid? ExpertoId,
+    string ExpertoEstado,
+    string ReclutadorEstado,
+    string EmparejamientoEstado,
+    DateTime? FechaRegistro,
+    UsuarioReconmendacionDto? UsuarioReconmendacionDto
 );
