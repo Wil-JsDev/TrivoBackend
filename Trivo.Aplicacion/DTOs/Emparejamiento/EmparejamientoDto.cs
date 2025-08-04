@@ -7,9 +7,9 @@ public sealed record EmparejamientoDto
     Guid EmparejamientoId,
     Guid? ReclutadotId,
     Guid? ExpertoId,
-    string ExpertoEstado,
-    string ReclutadorEstado,
-    string EmparejamientoEstado,
+    string? ExpertoEstado,
+    string? ReclutadorEstado,
+    string? EmparejamientoEstado,
     DateTime? FechaRegistro,
     UsuarioReconmendacionDto? UsuarioReconmendacionDto
 );

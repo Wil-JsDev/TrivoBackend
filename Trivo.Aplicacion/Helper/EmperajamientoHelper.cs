@@ -32,9 +32,9 @@ public static class EmperajamientoHelper
             EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
             ReclutadotId: emparejamiento.Reclutador?.Id,
             ExpertoId: emparejamiento.Experto?.Id,
-            ExpertoEstado: string.Empty,
-            ReclutadorEstado: string.Empty,
-            EmparejamientoEstado: string.Empty,
+            ExpertoEstado: emparejamiento.ExpertoEstado,
+            ReclutadorEstado: emparejamiento.ReclutadorEstado,
+            EmparejamientoEstado: emparejamiento.EmparejamientoEstado,
             FechaRegistro: DateTime.Now,
             UsuarioReconmendacionDto: otroUsuarioDto
         );
