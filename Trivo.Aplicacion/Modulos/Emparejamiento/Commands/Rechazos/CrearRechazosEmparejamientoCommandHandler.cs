@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
@@ -71,7 +72,10 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
             ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
+            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+                emparejamientoGuardado.Reclutador!.Usuario!,
+                reclutador
+            )
         );
         
         EmparejamientoDto emparejamientoDetallesDtoExperto = new
@@ -83,8 +87,18 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
             ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
+            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
+                emparejamientoGuardado.Experto!.Usuario!,
+                experto
+            )
         );
+        
+         
+        Console.WriteLine("Datos Reclutador:");
+        logger.LogInformation("Datos {ReclutadorDto}", emparejamientoDetallesDtoReclutador);
+
+        Console.WriteLine("Datos Experto:");
+        logger.LogInformation("Datos {ExpertoDto}", emparejamientoDetallesDtoExperto);
         
         await emparejamientoNotificador.NotificarNuevoEmparejamiento(
             reclutador.Id ?? Guid.Empty,

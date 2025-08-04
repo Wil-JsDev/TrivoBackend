@@ -14,7 +14,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 public class EmparejamientoControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> CrearEmparejamiento([FromBody] CrearEmparejamientoCommand emparejamientoCommand,
         CancellationToken cancellationToken)
     {

@@ -111,12 +111,12 @@ internal sealed class CrearEmparejamientoCommandHandler(
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
             UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
-                reclutador.Usuario!,
+                emparejamientoGuardado.Reclutador!.Usuario!,
                 reclutador
                 )
         );
         
-        Console.WriteLine("Datos: " + emparejamientoDetallesDtoReclutador);
+        // Console.WriteLine("Datos: " + emparejamientoDetallesDtoReclutador);
         
         EmparejamientoDto emparejamientoDetallesDtoExperto = new
         (
@@ -128,22 +128,16 @@ internal sealed class CrearEmparejamientoCommandHandler(
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
             UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
-                experto.Usuario!,
+                emparejamientoGuardado.Experto!.Usuario!,
                 experto
             )
         );
         
         Console.WriteLine("Datos Reclutador:");
-        Console.WriteLine(JsonSerializer.Serialize(emparejamientoDetallesDtoReclutador, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        }));
+        logger.LogInformation("Datos {ReclutadorDto}", emparejamientoDetallesDtoReclutador);
 
         Console.WriteLine("Datos Experto:");
-        Console.WriteLine(JsonSerializer.Serialize(emparejamientoDetallesDtoExperto, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        }));
+        logger.LogInformation("Datos {ExpertoDto}", emparejamientoDetallesDtoExperto);
         
         await emparejamientoNotificador.NotificarNuevoEmparejamiento(
             reclutador.Id ?? Guid.Empty,
