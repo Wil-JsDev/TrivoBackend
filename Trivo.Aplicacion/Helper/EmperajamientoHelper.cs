@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.Mapper;
@@ -10,41 +11,48 @@ public static class EmperajamientoHelper
 {
     public static EmparejamientoDto EmparejamientoDto(this Emparejamiento emparejamiento, Roles rol)
     {
+        Guid? expertoId = null;
+        Guid? reclutadorId = null;
         UsuarioReconmendacionDto? otroUsuarioDto = null;
 
-        if (rol == Roles.Experto)
+        if (rol == Roles.Experto && emparejamiento.Reclutador?.Usuario != null)
         {
-            if (emparejamiento.Reclutador?.Usuario != null)
-                // otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Reclutador.Usuario);
-                otroUsuarioDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
-                    emparejamiento.Reclutador.Usuario,
-                    emparejamiento.Reclutador);
-        }
-        else if (rol == Roles.Reclutador)
-        {
-            if (emparejamiento.Experto?.Usuario != null)
-            // otroUsuarioDto = UsuarioMapper.MapToDto(emparejamiento.Experto.Usuario);
-                otroUsuarioDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
-                    emparejamiento.Experto.Usuario,
-                    emparejamiento.Reclutador);
-        }
+            reclutadorId = emparejamiento.Reclutador.Id;
+            otroUsuarioDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+                emparejamiento.Reclutador.Usuario,
+                emparejamiento.Reclutador);
 
-        if (otroUsuarioDto == null)
+            Console.WriteLine($"[DEBUG - EXPERTO] ReclutadorId: {reclutadorId}");
+            Console.WriteLine($"[DEBUG - EXPERTO] Usuario recomendado: {JsonSerializer.Serialize(otroUsuarioDto, new JsonSerializerOptions { WriteIndented = true })}");
+        }
+        else if (rol == Roles.Reclutador && emparejamiento.Experto?.Usuario != null)
         {
-           Console.WriteLine($"Error - {otroUsuarioDto}");
+            expertoId = emparejamiento.Experto.Id;
+            otroUsuarioDto = EmparejamientoMapper.MappearExpertoReconmendacionDto(
+                emparejamiento.Experto.Usuario,
+                emparejamiento.Experto);
+
+            Console.WriteLine($"[DEBUG - RECLUTADOR] ExpertoId: {expertoId}");
+            Console.WriteLine($"[DEBUG - RECLUTADOR] Usuario recomendado: {JsonSerializer.Serialize(otroUsuarioDto, new JsonSerializerOptions { WriteIndented = true })}");
+        }
+        else
+        {
+            Console.WriteLine("[DEBUG] Rol no coincide o el otro usuario no está presente.");
         }
 
         return new EmparejamientoDto(
             EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
-            ReclutadotId: emparejamiento.Reclutador?.Id,
-            ExpertoId: emparejamiento.Experto?.Id,
+            ReclutadotId: reclutadorId,
+            ExpertoId: expertoId,
             ExpertoEstado: emparejamiento.ExpertoEstado,
             ReclutadorEstado: emparejamiento.ReclutadorEstado,
             EmparejamientoEstado: emparejamiento.EmparejamientoEstado,
-            FechaRegistro: DateTime.Now,
+            FechaRegistro: emparejamiento.FechaRegistro,
             UsuarioReconmendacionDto: otroUsuarioDto
         );
     }
+
+
 
 
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
@@ -65,6 +66,7 @@ internal sealed class CrearEmparejamientoCommandHandler(
         
         var emparejamiento = new Dominio.Modelos.Emparejamiento
         {
+            Id = Guid.NewGuid(),
             ReclutadorId = reclutador.Id,
             ExpertoId = experto.Id,
             EmparejamientoEstado = EmparejamientoEstado.Pendiente.ToString()
@@ -108,8 +110,13 @@ internal sealed class CrearEmparejamientoCommandHandler(
             ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
+            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+                reclutador.Usuario!,
+                reclutador
+                )
         );
+        
+        Console.WriteLine("Datos: " + emparejamientoDetallesDtoReclutador);
         
         EmparejamientoDto emparejamientoDetallesDtoExperto = new
         (
@@ -120,8 +127,23 @@ internal sealed class CrearEmparejamientoCommandHandler(
             ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
+            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
+                experto.Usuario!,
+                experto
+            )
         );
+        
+        Console.WriteLine("Datos Reclutador:");
+        Console.WriteLine(JsonSerializer.Serialize(emparejamientoDetallesDtoReclutador, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        }));
+
+        Console.WriteLine("Datos Experto:");
+        Console.WriteLine(JsonSerializer.Serialize(emparejamientoDetallesDtoExperto, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        }));
         
         await emparejamientoNotificador.NotificarNuevoEmparejamiento(
             reclutador.Id ?? Guid.Empty,

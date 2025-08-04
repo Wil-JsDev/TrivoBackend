@@ -25,50 +25,76 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
             .Include(e => e.Experto)
-                .ThenInclude(e => e!.Usuario)
-                    .ThenInclude(us => us!.UsuarioHabilidades)!
-                        .ThenInclude(uh => uh.Habilidad)
+            .ThenInclude(e => e!.Usuario)
+            .ThenInclude(us => us!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
             .Include(e => e.Experto)
-                .ThenInclude(e => e!.Usuario)
-                    .ThenInclude(us => us!.UsuarioInteres)!
-                        .ThenInclude(ui => ui.Interes)
+            .ThenInclude(e => e!.Usuario)
+            .ThenInclude(us => us!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .Include(e => e.Reclutador)
-                .ThenInclude(r => r!.Usuario)
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Include(e => e.Reclutador)
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .AsSplitQuery()
             .Where(e => e.Experto!.UsuarioId == usuarioId)
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
     }
 
+
     public async Task<IEnumerable<Emparejamiento>> ObtenerEmparejamientosComoReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken)
     {
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
             .Include(e => e.Reclutador)
-                .ThenInclude(r => r!.Usuario)
-                    .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
             .ThenInclude(uh => uh.Habilidad)
             .Include(e => e.Reclutador)
-                    .ThenInclude(r => r!.Usuario)
-                        .ThenInclude(u => u!.UsuarioInteres)!
-                            .ThenInclude(ui => ui.Interes)
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .Include(e => e.Experto)
-                .ThenInclude(ex => ex!.Usuario)
+            .ThenInclude(ex => ex!.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Include(e => e.Experto)
+            .ThenInclude(ex => ex!.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .AsSplitQuery()
             .Where(x => x.Reclutador!.UsuarioId == usuarioId)
             .Where(x => x.EmparejamientoEstado == nameof(EmparejamientoEstado.Pendiente))
             .ToListAsync(cancellationToken);
     }
 
+
     public async Task<Emparejamiento?> ObtenerPorIdAsync(Guid emparejamientoId, CancellationToken cancellationToken)
     {
         return await _trivoContexto.Set<Emparejamiento>()
             .AsNoTracking()
-            .Include(x => x.Experto)
-                .ThenInclude(e => e!.Usuario)
-            .Include(x => x.Reclutador)
+            .Include(e => e.Experto)
             .ThenInclude(e => e!.Usuario)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(x => x.Id == emparejamientoId, cancellationToken);
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Include(e => e.Experto)
+            .ThenInclude(e => e!.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
+            .Include(e => e.Reclutador)
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Include(e => e.Reclutador)
+            .ThenInclude(r => r!.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
+            .AsSplitQuery()       
+            .FirstOrDefaultAsync(e => e.Id == emparejamientoId, cancellationToken);
     }
 }

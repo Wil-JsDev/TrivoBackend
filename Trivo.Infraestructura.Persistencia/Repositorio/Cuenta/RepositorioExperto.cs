@@ -52,16 +52,15 @@ public class RepositorioExperto(TrivoContexto trivoContexto) : RepositorioGeneri
 
     public async Task<Experto?> ObtenerIdAsync(Guid expertoId, CancellationToken cancellationToken)
     {
-       return await _trivoContexto.Set<Experto>()
-           .AsNoTracking()
-           .Include(e => e.Usuario)
-           .ThenInclude(u => u!.UsuarioHabilidades)!
-           .ThenInclude(u => u!.Habilidad)
-           .Include(e => e.Usuario)
-           .ThenInclude(u => u!.UsuarioInteres)!
-           .ThenInclude(u => u!.Interes)
-           .AsSplitQuery()
-           .FirstOrDefaultAsync(e => e.Id == expertoId, cancellationToken);
+        return await _trivoContexto.Set<Experto>()
+            .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(uh => uh.Habilidad)
+            .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(e => e.Id == expertoId, cancellationToken);
     }
     public async Task<Experto?> ObtenerExpertoPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
     {

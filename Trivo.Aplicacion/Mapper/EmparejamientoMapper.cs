@@ -1,4 +1,6 @@
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Dominio.Modelos;
 
 namespace Trivo.Aplicacion.Mapper;
@@ -16,8 +18,15 @@ public static class EmparejamientoMapper
             Biografia: usuario.Biografia ?? string.Empty,
             FotoPerfil: usuario.FotoPerfil ?? string.Empty,
             Posicion: usuario.Posicion ?? string.Empty,
-            Intereses: UsuarioMapper.MappearAintereses(usuario.UsuarioInteres),
-            Habilidades: UsuarioMapper.MappearAHabilidades(usuario.UsuarioHabilidades),
+            Intereses: usuario.UsuarioInteres?.Select(ui => new InteresConIdDto(
+                InteresId:ui.Interes?.Id ?? Guid.Empty,
+                Nombre: ui.Interes?.Nombre ?? string.Empty
+            )).ToList() ?? new List<InteresConIdDto>(),
+            
+            Habilidades: usuario.UsuarioHabilidades?.Select(uh => new HabilidadConIdDto(
+                HabilidadId: uh.Habilidad!.HabilidadId ?? Guid.Empty,
+                Nombre: uh.Habilidad?.Nombre ?? string.Empty
+            )).ToList() ?? new List<HabilidadConIdDto>(),
             DisponibleParaProyectos: experto?.DisponibleParaProyectos ?? false,
             Contratado: experto?.Contratado ?? false
         );
@@ -34,8 +43,15 @@ public static class EmparejamientoMapper
             Biografia: usuario.Biografia ?? string.Empty,
             FotoPerfil: usuario.FotoPerfil ?? string.Empty,
             Posicion: usuario.Posicion ?? string.Empty,
-            Intereses: UsuarioMapper.MappearAintereses(usuario.UsuarioInteres),
-            Habilidades: UsuarioMapper.MappearAHabilidades(usuario.UsuarioHabilidades),
+            Intereses: usuario.UsuarioInteres?.Select(ui => new InteresConIdDto(
+                InteresId:ui.Interes?.Id ?? Guid.Empty,
+                Nombre: ui.Interes?.Nombre ?? string.Empty
+            )).ToList() ?? new List<InteresConIdDto>(),
+            
+            Habilidades: usuario.UsuarioHabilidades?.Select(uh => new HabilidadConIdDto(
+                HabilidadId: uh.Habilidad!.HabilidadId ?? Guid.Empty,
+                Nombre: uh.Habilidad?.Nombre ?? string.Empty
+            )).ToList() ?? new List<HabilidadConIdDto>(),
             NombreEmpresa: reclutador?.NombreEmpresa
         );
     }
