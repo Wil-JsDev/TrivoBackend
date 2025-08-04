@@ -56,30 +56,32 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
         
         await repositorioEmparejamiento.CrearAsync(emparejamiento, cancellationToken);
     
+        var emparejamientoGuardado = await repositorioEmparejamiento.ObtenerPorIdAsync(emparejamiento.Id ?? Guid.Empty, cancellationToken);
+        
         logger.LogInformation("Se registró el rechazo del emparejamiento entre el reclutador {ReclutadorId} y el experto {ExpertoId}.",
             reclutador.Id, experto.Id);
         
         EmparejamientoDto emparejamientoDetallesDtoReclutador = new
         (
-            EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
+            EmparejamientoId: emparejamientoGuardado!.Id ?? Guid.Empty,
             ReclutadotId: reclutador.Id ?? Guid.Empty,
             ExpertoId: null,
-            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
-            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
-            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
-            FechaRegistro: emparejamiento.FechaRegistro,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro,
             UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
         );
         
         EmparejamientoDto emparejamientoDetallesDtoExperto = new
         (
-            EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
+            EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
             ReclutadotId: null,
             ExpertoId: experto.Id ?? Guid.Empty,
-            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
-            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
-            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
-            FechaRegistro: emparejamiento.FechaRegistro,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro,
             UsuarioReconmendacionDto:  UsuarioMapper.MapToDto(reclutador.Usuario!)
         );
         
