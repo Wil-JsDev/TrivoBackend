@@ -38,6 +38,7 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
     
         var emparejamiento = new Dominio.Modelos.Emparejamiento
         {
+            Id = Guid.NewGuid(),
             ReclutadorId = reclutador.Id,
             ExpertoId = experto.Id,
             EmparejamientoEstado = EmparejamientoEstado.Rechazado.ToString()
