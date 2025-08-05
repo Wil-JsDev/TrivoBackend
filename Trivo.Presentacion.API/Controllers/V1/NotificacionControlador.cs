@@ -14,30 +14,17 @@ public class NotificacionControlador(
     ) : ControllerBase
 {
 
-    [HttpPost("match")]
+    [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CrearNotificacionMatchAsync([FromBody] ParametroNotificacion parametroNotificacion,
+    public async Task<IActionResult> CrearNotificacionMatchAsync([FromBody] CrearNotificacionDto parametroNotificacion,
         CancellationToken cancellationToken)
     {
-        var resultado = await notificacionServicio.CrearNotificacionMatchAsync(parametroNotificacion.UsuarioId,
-            parametroNotificacion.NombreUsuario!,
-            cancellationToken);
 
-        if (resultado.EsExitoso)
-            return Ok(resultado.Valor);
+        var resultado = await notificacionServicio.CrearNotificacionDeTipoAsync(parametroNotificacion.UsuarioId,
+            parametroNotificacion.Tipo,
+            parametroNotificacion.Contenido,
+            cancellationToken);
         
-        return BadRequest(resultado.Error);
-    }
-    
-    [HttpPost("messages")]
-    [Authorize]
-    public async Task<IActionResult> CrearNotificacionMensajeAsync([FromBody] ParametroNotificacion parametroNotificacion,
-        CancellationToken cancellationToken)
-    {
-        var resultado = await notificacionServicio.CrearNotificacionMensajeAsync(parametroNotificacion.UsuarioId,
-            parametroNotificacion.NombreUsuario!,
-            cancellationToken);
-
         if (resultado.EsExitoso)
             return Ok(resultado.Valor);
         
