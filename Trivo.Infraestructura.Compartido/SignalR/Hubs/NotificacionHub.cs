@@ -105,19 +105,19 @@ public class NotificacionHub(
         logger.LogInformation("Usuario conectado:");
         logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", usuarioIdString);
         
-        await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
+        // await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
         
-        // var resultado = await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
-        // if (!resultado.EsExitoso)
-        // {
-        //     logger.LogWarning("Error al obtener notificaciones para usuario {UsuarioId}: {Error}", 
-        //         usuarioId, resultado.Error);
-        //     
-        //     // await Clients.Caller.RecibirError(resultado.Error?.Mensaje ?? "Error al obtener notificaciones");
-        //     return;
-        // }
-        // // Envía las notificaciones al cliente que hizo la solicitud
-        // await Clients.Caller.RecibirNotificacion(resultado.Valor.Elementos!);
+        var resultado = await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
+        if (!resultado.EsExitoso)
+        {
+            logger.LogWarning("Error al obtener notificaciones para usuario {UsuarioId}: {Error}", 
+                usuarioId, resultado.Error);
+            
+            // await Clients.Caller.RecibirError(resultado.Error?.Mensaje ?? "Error al obtener notificaciones");
+            return;
+        }
+        // Envía las notificaciones al cliente que hizo la solicitud
+        await Clients.Caller.RecibirNotificacion(resultado.Valor.Elementos!);
     }
     
 }
