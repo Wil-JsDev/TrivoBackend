@@ -8,5 +8,6 @@ public interface IRepositorioMensaje: IRepositorioGenerico<Mensaje>
 {
     Task<Mensaje?> ObtenerUltimoMensajePorChatIdAsync(Guid chatId, CancellationToken cancellationToken);
     Task<ResultadoPaginado<MensajeDto>> ObtenerMensajePorChatIdPaginadoAsync(Guid chatId, int pagina, int tamano, CancellationToken cancellationToken);
-
+    
+    Task<Mensaje?> ObtenerUsuarioQuePerteneceElMensajeAsync(Guid mensajeId, CancellationToken cancellationToken);
 }

@@ -32,4 +32,32 @@ public static class ReporteMapper
             )
         );
     }
+    
+    // public static ReporteDto MapToReporteDto(Reporte reporte)
+    // {
+    //     if (reporte == null) return null;
+    //
+    //     // Ejemplo: Si el reporte es sobre el emisor del mensaje (quien lo envió)
+    //     bool incluirEmisorEnMensajeDto = true; // Cambia a `false` si necesitas al receptor
+    //
+    //     return new ReporteDto(
+    //         reporte.ReporteId ?? Guid.Empty,
+    //         reporte.ReportadoPor,
+    //         reporte.MensajeId,
+    //         reporte.Nota,
+    //         reporte.EstadoReporte,
+    //         reporte.Mensaje != null 
+    //             ? MensajeDtoParaReporte(reporte.Mensaje, incluirEmisorEnMensajeDto) 
+    //             : null,
+    //         reporte.UsuarioReportadoPor != null 
+    //             ? new UsuarioDtoParaReporte(
+    //                 reporte.UsuarioReportadoPor.UsuarioId,
+    //                 reporte.UsuarioReportadoPor.Nombre,
+    //                 reporte.UsuarioReportadoPor.Apellido
+    //             ) 
+    //             : null
+    //     );
+    // }
+    //
+    
 }

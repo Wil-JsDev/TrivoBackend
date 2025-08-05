@@ -13,7 +13,8 @@ public sealed record MensajeDtoParaReporte
 public sealed record UsuarioDtoParaReporte
 (
     Guid UsuarioId,
-    string Nombre
+    string Nombre,
+    string Apellido
 );
 
 public sealed record ReporteDto
