@@ -1,3 +1,5 @@
+using Trivo.Aplicacion.DTOs.Cuentas.Expertos;
+using Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 
 namespace Trivo.Aplicacion.DTOs.Emparejamiento;
@@ -11,5 +13,6 @@ public sealed record EmparejamientoDto
     string? ReclutadorEstado,
     string? EmparejamientoEstado,
     DateTime? FechaRegistro,
-    UsuarioReconmendacionDto? UsuarioReconmendacionDto
+    ExpertoReconmendacionIaDto? ExpertoDto,
+    ReclutadorReconmendacionIaDto? ReclutadorDto
 );
