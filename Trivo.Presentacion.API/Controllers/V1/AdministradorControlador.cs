@@ -7,6 +7,7 @@ using Trivo.Aplicacion.Modulos.Administrador.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeUsuariosActivos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosUsuarios;
+using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUsuariosBaneados;
 
 namespace Trivo.Presentacion.API.Controllers.V1;
 
@@ -74,6 +75,14 @@ public class AdministradorControlador(IMediator mediator) : ControllerBase
       
       return Ok(resultado.Valor);
    }
-   
-   
+
+   [HttpGet("banned-users")]
+   public async Task<IActionResult> ObtenerUltimos10BaneosDeUsuariosAsync(CancellationToken cancellationToken)
+   {
+      var resultado = await mediator.Send(new ObtenerUltimos10UsuariosBaneadosQuery(), cancellationToken);
+      if (!resultado.EsExitoso)
+         return BadRequest(resultado.Error);
+      
+      return Ok(resultado.Valor);
+   }
 }
