@@ -14,7 +14,7 @@ public static class NotificacionMapper
             Tipo = dto.Tipo.ToString(),
             Contenido = dto.Contenido,
             Leida = false,
-            FechaLeida = null
+            FechaLeida = DateTime.UtcNow
         };
     }
     public static NotificacionDto MapearNotificacionDto(Notificacion entidad)
