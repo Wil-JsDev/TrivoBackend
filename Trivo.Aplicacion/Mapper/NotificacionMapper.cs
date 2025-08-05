@@ -11,7 +11,7 @@ public static class NotificacionMapper
         {
             NotificacionId = Guid.NewGuid(),
             UsuarioId = dto.UsuarioId,
-            Tipo = dto.Tipo.ToString(),
+            Tipo = dto.TipoNotificacion,
             Contenido = dto.Contenido,
             Leida = false,
             FechaLeida = DateTime.UtcNow
