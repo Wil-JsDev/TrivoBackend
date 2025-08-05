@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
@@ -63,23 +62,17 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
         logger.LogInformation("Se registró el rechazo del emparejamiento entre el reclutador {ReclutadorId} y el experto {ExpertoId}.",
             reclutador.Id, experto.Id);
         
-        EmparejamientoDto emparejamientoDetallesDtoReclutador = new
-        (
-            EmparejamientoId: emparejamientoGuardado!.Id ?? Guid.Empty,
-            ReclutadotId: reclutador.Id ?? Guid.Empty,
-            ExpertoId: null,
-            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
-            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
-            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
-            FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
-                emparejamientoGuardado.Reclutador!.Usuario!,
-                reclutador
-            )
+        var expertoMapeado = RecomendacionMapper.MappearAExpertoDto(
+            emparejamientoGuardado.Experto!.Usuario!,
+            experto
         );
         
-        EmparejamientoDto emparejamientoDetallesDtoExperto = new
-        (
+        var reclutadorMapeado = RecomendacionMapper.MappearAReclutadorDto(
+            emparejamientoGuardado.Reclutador!.Usuario!,
+            reclutador
+        );
+        
+        var emparejamientoDetallesDtoExperto = new EmparejamientoDto(
             EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
             ReclutadotId: null,
             ExpertoId: experto.Id ?? Guid.Empty,
@@ -87,18 +80,21 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
             ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
             ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
             FechaRegistro: emparejamientoGuardado.FechaRegistro,
-            UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
-                emparejamientoGuardado.Experto!.Usuario!,
-                experto
-            )
+            ExpertoDto: expertoMapeado,
+            ReclutadorDto: reclutadorMapeado
         );
         
-         
-        Console.WriteLine("Datos Reclutador:");
-        logger.LogInformation("Datos {ReclutadorDto}", emparejamientoDetallesDtoReclutador);
-
-        Console.WriteLine("Datos Experto:");
-        logger.LogInformation("Datos {ExpertoDto}", emparejamientoDetallesDtoExperto);
+        var emparejamientoDetallesDtoReclutador = new EmparejamientoDto(
+            EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+            ReclutadotId: null,
+            ExpertoId: experto.Id ?? Guid.Empty,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro,
+            ExpertoDto: expertoMapeado,
+            ReclutadorDto: reclutadorMapeado
+        );
         
         await emparejamientoNotificador.NotificarNuevoEmparejamiento(
             reclutador.Id ?? Guid.Empty,
@@ -106,6 +102,50 @@ internal sealed class CrearRechazosEmparejamientoCommandHandler(
             new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador },
             new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
         );
+        
+        // EmparejamientoDto emparejamientoDetallesDtoReclutador = new
+        // (
+        //     EmparejamientoId: emparejamientoGuardado!.Id ?? Guid.Empty,
+        //     ReclutadotId: reclutador.Id ?? Guid.Empty,
+        //     ExpertoId: null,
+        //     EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+        //     ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+        //     ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+        //     FechaRegistro: emparejamientoGuardado.FechaRegistro,
+        //     UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+        //         emparejamientoGuardado.Reclutador!.Usuario!,
+        //         reclutador
+        //     )
+        // );
+        //
+        // EmparejamientoDto emparejamientoDetallesDtoExperto = new
+        // (
+        //     EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+        //     ReclutadotId: null,
+        //     ExpertoId: experto.Id ?? Guid.Empty,
+        //     EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+        //     ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+        //     ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+        //     FechaRegistro: emparejamientoGuardado.FechaRegistro,
+        //     UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
+        //         emparejamientoGuardado.Experto!.Usuario!,
+        //         experto
+        //     )
+        // );
+        //
+         
+        Console.WriteLine("Datos Reclutador:");
+        logger.LogInformation("Datos {ReclutadorDto}", emparejamientoDetallesDtoReclutador);
+
+        Console.WriteLine("Datos Experto:");
+        logger.LogInformation("Datos {ExpertoDto}", emparejamientoDetallesDtoExperto);
+        
+        // await emparejamientoNotificador.NotificarNuevoEmparejamiento(
+        //     reclutador.Id ?? Guid.Empty,
+        //     experto.Id ?? Guid.Empty,
+        //     new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador },
+        //     new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
+        // );
         
         return ResultadoT<string>.Exito("El emparejamiento ha sido rechazado.");
     }

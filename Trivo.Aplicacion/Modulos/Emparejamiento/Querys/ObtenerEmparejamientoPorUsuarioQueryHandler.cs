@@ -55,28 +55,83 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
 
         var emparejamientos = await filtroEmparejamiento(cancellationToken);
 
-        // IEnumerable<Dominio.Modelos.Emparejamiento> enumerable = emparejamientos.ToList();
-        // var emparejamientosLista = enumerable.ToList();
+        #region Solucion anterior
+
+            // IEnumerable<Dominio.Modelos.Emparejamiento> enumerable = emparejamientos.ToList();
+            // var emparejamientosLista = enumerable.ToList();
+            
+            // List<EmparejamientoDto> emparejamientoDto;
+            //
+            // var enumerable = emparejamientos.ToList();
+            // if (request.Rol == Roles.Experto)
+            // {
+            //     // Yo soy experto, muestro datos del reclutador
+            //     emparejamientoDto = enumerable.Select(e =>
+            //     {
+            //         var reclutadorMapeado = RecomendacionMapper.MappearAReclutadorDto(
+            //             e.Reclutador!.Usuario!,
+            //             e.Reclutador!
+            //         );
+            //         
+            //         Console.WriteLine("Datos Reclutador:");
+            //         Console.WriteLine(JsonSerializer.Serialize(reclutadorMapeado, new JsonSerializerOptions
+            //         {
+            //             WriteIndented = true
+            //         }));
+            //         
+            //         return new EmparejamientoDto(
+            //             EmparejamientoId: e.Id ?? Guid.Empty,
+            //             ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+            //             ExpertoId: e.Experto!.Id ?? Guid.Empty,
+            //             ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+            //             ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+            //             EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+            //             FechaRegistro: e.FechaRegistro,
+            //             UsuarioReconmendacionDto: reclutadorMapeado
+            //         );
+            //     }).ToList();
+            // }
+            // else if (request.Rol == Roles.Reclutador)
+            // {
+            //     // Yo soy reclutador, muestro datos del experto
+            //     emparejamientoDto = enumerable.Select(e =>
+            //     {
+            //         var expertoMapeado = RecomendacionMapper.MappearAExpertoDto(
+            //             e!.Experto!.Usuario!,
+            //             e.Experto);
+            //
+            //         Console.WriteLine("Datos Experto:");
+            //         Console.WriteLine(JsonSerializer.Serialize(expertoMapeado, new JsonSerializerOptions
+            //         {
+            //             WriteIndented = true
+            //         }));
+            //         
+            //         return new EmparejamientoDto(
+            //             EmparejamientoId: e.Id ?? Guid.Empty,
+            //             ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+            //             ExpertoId: e.Experto!.Id ?? Guid.Empty,
+            //             ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+            //             ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+            //             EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+            //             FechaRegistro: e.FechaRegistro,
+            //             UsuarioReconmendacionDto: expertoMapeado
+            //         );
+            //     }).ToList();
+            // }
+            // else
+            // {
+            //     emparejamientoDto = new List<EmparejamientoDto>();
+            // }
+            //
+
+        #endregion
         
         List<EmparejamientoDto> emparejamientoDto;
-
+        var enumerable = emparejamientos.ToList();
         if (request.Rol == Roles.Experto)
         {
-            // Yo soy experto, muestro datos del reclutador
-            emparejamientoDto = emparejamientos.Select(e =>
-            {
-                var reclutadorDto = EmparejamientoMapper.MappearReclutadorReconmendacionDto(
-                    e.Reclutador!.Usuario!,
-                    e.Reclutador
-                );
-
-                Console.WriteLine("Datos Reclutador:");
-                Console.WriteLine(JsonSerializer.Serialize(reclutadorDto, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                }));
-                
-                return new EmparejamientoDto(
+            emparejamientoDto = enumerable.Select(e =>
+                new EmparejamientoDto(
                     EmparejamientoId: e.Id ?? Guid.Empty,
                     ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
                     ExpertoId: e.Experto!.Id ?? Guid.Empty,
@@ -84,27 +139,15 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
                     ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
                     EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
                     FechaRegistro: e.FechaRegistro,
-                    UsuarioReconmendacionDto: reclutadorDto
-                );
-            }).ToList();
+                    ExpertoDto: null,
+                    ReclutadorDto: RecomendacionMapper.MappearAReclutadorDto(e.Reclutador!.Usuario!, e.Reclutador!)
+                )
+            ).ToList();
         }
         else if (request.Rol == Roles.Reclutador)
         {
-            // Yo soy reclutador, muestro datos del experto
-            emparejamientoDto = emparejamientos.Select(e =>
-            {
-                var expertoDto = EmparejamientoMapper.MappearExpertoReconmendacionDto(
-                    e.Experto!.Usuario!,
-                    e.Experto
-                );
-
-                Console.WriteLine("Datos Experto:");
-                Console.WriteLine(JsonSerializer.Serialize(expertoDto, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                }));
-                
-                return new EmparejamientoDto(
+            emparejamientoDto = enumerable.Select(e =>
+                new EmparejamientoDto(
                     EmparejamientoId: e.Id ?? Guid.Empty,
                     ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
                     ExpertoId: e.Experto!.Id ?? Guid.Empty,
@@ -112,21 +155,21 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
                     ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
                     EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
                     FechaRegistro: e.FechaRegistro,
-                    UsuarioReconmendacionDto: expertoDto
-                );
-            }).ToList();
+                    ExpertoDto: RecomendacionMapper.MappearAExpertoDto(e.Experto!.Usuario!, e.Experto!),
+                    ReclutadorDto: null
+                )
+            ).ToList();
         }
         else
         {
             emparejamientoDto = new List<EmparejamientoDto>();
         }
-        
         var emparejamientoPaginadoDto = emparejamientoDto
             .Paginar(request.NumeroPagina, request.TamanoPagina)
             .ToList();
         
         logger.LogInformation("Se recuperaron correctamente {Cantidad} emparejamientos para el usuario {UsuarioId} con rol {Rol}.",
-            emparejamientos.Count(), request.UsuarioId, request.Rol);
+            enumerable.Count(), request.UsuarioId, request.Rol);
         
         if (!emparejamientoDto.Any())
         {
@@ -136,7 +179,7 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
         }
         
         logger.LogInformation("Se recuperaron correctamente {Cantidad} emparejamientos para el usuario {UsuarioId} con rol {Rol}.",
-            emparejamientos.Count(), request.UsuarioId, request.Rol);
+            enumerable.Count(), request.UsuarioId, request.Rol);
 
         if (reclutador is null || experto is null)
         {
