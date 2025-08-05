@@ -120,30 +120,57 @@ public class NotificacionServicio(
         return ResultadoT<NotificacionDto>.Exito(notificacionDto);
     }
     
-    public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMatchAsync(
-        Guid usuarioId, 
-        string nombreRemitente,
-        CancellationToken cancellationToken)
-    {
-        var contenido = $"{nombreRemitente} ha mostrado interés en tu perfil";
-        return await CrearNotificacionDeTipoAsync(
-            usuarioId, 
-            TipoNotificacion.Match, 
-            contenido, 
-            cancellationToken);
-    }
+    // public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMatchAsync(
+    //     Guid usuarioId, 
+    //     string nombreRemitente,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var contenido = $"{nombreRemitente} ha mostrado interés en tu perfil";
+    //     return await CrearNotificacionDeTipoAsync(
+    //         usuarioId, 
+    //         TipoNotificacion.Match, 
+    //         contenido, 
+    //         cancellationToken);
+    // }
 
-    public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMensajeAsync(
-        Guid usuarioId, 
-        string nombreRemitente,
+    // public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMensajeAsync(
+    //     Guid usuarioId, 
+    //     string nombreRemitente,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var contenido = $"Tienes un nuevo mensaje de {nombreRemitente}";
+    //     return await CrearNotificacionDeTipoAsync(
+    //         usuarioId, 
+    //         TipoNotificacion.Mensaje, 
+    //         contenido, 
+    //         cancellationToken);
+    // }
+    public async Task<ResultadoT<NotificacionDto>> CrearNotificacionDeTipoAsync(Guid usuarioId,
+        string? tipoNotificacion,
+        string? contenido,
         CancellationToken cancellationToken)
     {
-        var contenido = $"Tienes un nuevo mensaje de {nombreRemitente}";
-        return await CrearNotificacionDeTipoAsync(
-            usuarioId, 
-            TipoNotificacion.Mensaje, 
-            contenido, 
-            cancellationToken);
+        var notificacionDto = new CrearNotificacionDto(
+            UsuarioId: usuarioId,
+            TipoNotificacion: tipoNotificacion,
+            Contenido: contenido
+        );
+    
+        if (usuarioId == Guid.Empty)
+        {
+            logger.LogWarning("Intento de crear notificación con UsuarioId vacío");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400", "UsuarioId no puede estar vacío"));
+        }
+
+        if (string.IsNullOrEmpty(tipoNotificacion))
+        {
+            logger.LogInformation("El tipo de notificacion esta vacio");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400","El tipo de notificacion no puede estar vacio"));
+        }
+        
+        return await CrearNotificacionInternaAsync(notificacionDto, cancellationToken);
     }
     
     #region Metodos Privados
@@ -179,27 +206,6 @@ public class NotificacionServicio(
             return ResultadoT<NotificacionDto>.Exito(notificacionDto);
         }
         
-        private async Task<ResultadoT<NotificacionDto>> CrearNotificacionDeTipoAsync(
-            Guid usuarioId,
-            TipoNotificacion tipo,
-            string contenido,
-            CancellationToken cancellationToken)
-        {
-            var notificacionDto = new CrearNotificacionDto(
-                UsuarioId: usuarioId,
-                Tipo: tipo,
-                Contenido: contenido
-            );
-        
-            if (usuarioId == Guid.Empty)
-            {
-                logger.LogWarning("Intento de crear notificación con UsuarioId vacío");
-                
-                return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400", "UsuarioId no puede estar vacío"));
-            }
-            
-            return await CrearNotificacionInternaAsync(notificacionDto, cancellationToken);
-        }
         
         private async Task NotificarYLoggear(Guid usuarioId, NotificacionDto notificacionDto)
         {
