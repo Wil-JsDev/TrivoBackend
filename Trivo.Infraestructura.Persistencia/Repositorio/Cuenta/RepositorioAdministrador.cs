@@ -59,14 +59,14 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         _trivoContexto.Set<Administrador>().Update(admin);
         await _trivoContexto.SaveChangesAsync();
     }
-   public async Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosBan(
+   public async Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosReportes(
        int numeroPagina,
        int tamanoPagina,
        CancellationToken cancellationToken)
    {
        var consulta = _trivoContexto.Set<Reporte>()
            .AsNoTracking()
-           .Where(x => x.EstadoReporte == EstadoReporte.Resuelto.ToString())
+           .Where(x => x.EstadoReporte == EstadoReporte.Pendiente.ToString())
            .Include(x => x.Mensaje)!
            .ThenInclude(m => m.Emisor)
            .Include(x => x.Mensaje)!
@@ -101,7 +101,16 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
 
        return new ResultadoPaginado<Usuario>(usuarios, total, numeroPagina, tamanoPagina);
    }
-
+   public async Task<IEnumerable<Usuario>> ObtenerUltimos10UsuariosBaneadosAsync(CancellationToken cancellationToken)
+   {
+       return await _trivoContexto.Set<Usuario>()
+           .AsNoTracking()
+           .Where(x => x.EstadoUsuario == nameof(EstadoUsuario.Baneado))
+           .OrderByDescending(x => x.FechaRegistro)
+           .Take(10)
+           .ToListAsync(cancellationToken);
+   }
+   
    public async Task<ResultadoPaginado<Emparejamiento>> ObtenerPaginadoUltimosEmparejamientosAsync(
        int numeroPagina,
        int tamanoPagina,

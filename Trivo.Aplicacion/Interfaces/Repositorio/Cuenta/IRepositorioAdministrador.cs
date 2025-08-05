@@ -9,11 +9,13 @@ public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
 
     Task DesbanearUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
 
-    Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosBan(
+    Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosReportes(
         int numeroPagina,
         int tamanoPagina,
         CancellationToken cancellationToken);
 
+    Task<IEnumerable<Usuario>> ObtenerUltimos10UsuariosBaneadosAsync(CancellationToken cancellationToken);
+    
     Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken);
 
     Task<Administrador> BuscarPorEmailAsync(string email, CancellationToken cancellationToken);
@@ -30,8 +32,7 @@ public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
         int numeroPagina,
         int tamanoPagina,
         CancellationToken cancellationToken);
-
-
+    
     Task<ResultadoPaginado<Emparejamiento>> ObtenerPaginadoUltimosEmparejamientosAsync(
         int numeroPagina,
         int tamanoPagina,
