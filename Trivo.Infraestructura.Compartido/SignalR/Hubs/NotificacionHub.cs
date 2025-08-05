@@ -102,6 +102,9 @@ public class NotificacionHub(
             return;
         }
         
+        logger.LogInformation("Usuario conectado:");
+        logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", usuarioIdString);
+        
         await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
         
         // var resultado = await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
