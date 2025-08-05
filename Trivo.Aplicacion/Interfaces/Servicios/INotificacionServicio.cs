@@ -26,7 +26,7 @@ public interface INotificacionServicio
     //     CancellationToken cancellationToken);
 
     Task<ResultadoT<NotificacionDto>> CrearNotificacionDeTipoAsync(Guid usuarioId,
-        TipoNotificacion? tipo,
+        string? tipoNotificacion,
         string? contenido,
         CancellationToken cancellationToken);
 }

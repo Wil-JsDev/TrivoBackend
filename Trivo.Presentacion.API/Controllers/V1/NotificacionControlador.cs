@@ -21,7 +21,7 @@ public class NotificacionControlador(
     {
 
         var resultado = await notificacionServicio.CrearNotificacionDeTipoAsync(parametroNotificacion.UsuarioId,
-            parametroNotificacion.Tipo,
+            parametroNotificacion.TipoNotificacion,
             parametroNotificacion.Contenido,
             cancellationToken);
         

@@ -146,13 +146,13 @@ public class NotificacionServicio(
     //         cancellationToken);
     // }
     public async Task<ResultadoT<NotificacionDto>> CrearNotificacionDeTipoAsync(Guid usuarioId,
-        TipoNotificacion? tipo,
+        string? tipoNotificacion,
         string? contenido,
         CancellationToken cancellationToken)
     {
         var notificacionDto = new CrearNotificacionDto(
             UsuarioId: usuarioId,
-            Tipo: tipo,
+            TipoNotificacion: tipoNotificacion,
             Contenido: contenido
         );
     
@@ -161,6 +161,13 @@ public class NotificacionServicio(
             logger.LogWarning("Intento de crear notificación con UsuarioId vacío");
             
             return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400", "UsuarioId no puede estar vacío"));
+        }
+
+        if (string.IsNullOrEmpty(tipoNotificacion))
+        {
+            logger.LogInformation("El tipo de notificacion esta vacio");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400","El tipo de notificacion no puede estar vacio"));
         }
         
         return await CrearNotificacionInternaAsync(notificacionDto, cancellationToken);
