@@ -118,6 +118,11 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
    {
        var consulta = _trivoContexto.Set<Emparejamiento>()
            .AsNoTracking()
+           .Include(em => em.Reclutador)
+                .ThenInclude(re => re!.Usuario)
+           .Include(em => em.Experto)
+                .ThenInclude(ex => ex!.Usuario)
+           .AsSplitQuery()
            .OrderByDescending(x => x.FechaRegistro);
        
        var total = await consulta.CountAsync(cancellationToken);
