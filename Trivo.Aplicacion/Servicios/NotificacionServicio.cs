@@ -187,7 +187,7 @@ public class NotificacionServicio(
         var notificacionDto = NotificacionMapper.MapearNotificacionDto(notificacion);
         
         await notificador.NotificarNotificacionEliminada(usuarioId, notificacionId);
-        await notificador.NotificarNotificacion(usuarioId, new List<NotificacionDto> { notificacionDto });
+        // await notificador.NotificarNotificacion(usuarioId, new List<NotificacionDto> { notificacionDto });
 
         logger.LogInformation("Notificacion eliminada correctamente en tiempo real");
         
