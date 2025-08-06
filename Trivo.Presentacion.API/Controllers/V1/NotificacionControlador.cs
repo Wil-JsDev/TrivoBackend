@@ -31,6 +31,19 @@ public class NotificacionControlador(
         return BadRequest(resultado.Error);
     }
 
+    [HttpDelete("{notificationId}")]
+    public async Task<IActionResult> EliminarNotificacionAsync([FromRoute] Guid notificationId,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await notificacionServicio.EliminarNotificacionAsync(notificationId,
+            cancellationToken);
+        
+        if (resultado.EsExitoso)
+            return Ok(resultado.Valor);
+        
+        return BadRequest(resultado.Error);
+    }
+        
     [HttpPut("{notificationId}/users/{userId}")]
     [Authorize]
     public async Task<IActionResult> MarcarNotificacionComoLeidaAsync(

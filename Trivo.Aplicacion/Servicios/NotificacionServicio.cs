@@ -172,7 +172,26 @@ public class NotificacionServicio(
         
         return await CrearNotificacionInternaAsync(notificacionDto, cancellationToken);
     }
-    
+
+    public async Task<ResultadoT<NotificacionDto>> EliminarNotificacionAsync(Guid notificacionId,
+        CancellationToken cancellationToken)
+    {
+        var notificacion = await repositorioNotificacion.ObtenerByIdAsync(notificacionId, cancellationToken);
+        if (notificacion is null)
+        {
+            logger.LogInformation("No existe una notificacion con este id " + notificacionId);
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.NoEncontrado("404", "No existe una notificacion con este id " + notificacionId));
+        }
+        
+        await repositorioNotificacion.EliminarAsync(notificacion, cancellationToken);
+        
+        logger.LogInformation("Notificacion eliminada correctamente");
+        
+        return ResultadoT<NotificacionDto>.Exito(NotificacionMapper.MapearNotificacionDto(notificacion));
+    }
+        
+        
     #region Metodos Privados
     
         private async Task<ResultadoT<NotificacionDto>> CrearNotificacionInternaAsync(CrearNotificacionDto notificacion, CancellationToken cancellationToken)
