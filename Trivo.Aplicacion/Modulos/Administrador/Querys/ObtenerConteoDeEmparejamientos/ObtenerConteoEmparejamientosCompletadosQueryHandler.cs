@@ -20,7 +20,7 @@ internal sealed class ObtenerConteoEmparejamientosCompletadosQueryHandler(
         {
             logger.LogWarning("No se encontraron emparejamientos completados.");
             
-            return ResultadoT<ConteoEmparejamientoCompletadosDto>.Fallo(Error.NoEncontrado("404",""));
+            return ResultadoT<ConteoEmparejamientoCompletadosDto>.Fallo(Error.NoEncontrado("404","No se encontraron match completados"));
         }
         
         logger.LogInformation("Se encontraron {ConteoEmparejamiento} emparejamientos completados.", conteoEmparejamiento);
