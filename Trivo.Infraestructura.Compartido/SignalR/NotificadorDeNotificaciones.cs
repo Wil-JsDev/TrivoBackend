@@ -21,15 +21,15 @@ public class NotificadorDeNotificaciones(
             .RecibirNotificacion(notificacion);
     }
 
-    public async Task NotificarNotificacionMarcadaComoLeida(Guid usuarioId, Guid notificacionId)
+    public async Task NotificarNotificacionMarcadaComoLeida(Guid usuarioId, Guid notificacionId, NotificacionDto notificacion)
     {
         await hub.Clients.User(usuarioId.ToString())
-            .NotificacionMarcadaComoLeida(notificacionId);
+            .NotificacionMarcadaComoLeida(notificacionId, notificacion);
     }
     
-    public async Task NotificarNotificacionEliminada(Guid usuarioId, Guid notificacionId)
+    public async Task NotificarNotificacionEliminada(Guid usuarioId, Guid notificacionId, NotificacionDto notificacion )
     {
         await hub.Clients.Users(usuarioId.ToString())
-            .NotificarNotificacionEliminada(notificacionId);
+            .NotificarNotificacionEliminada(notificacionId, notificacion);
     }
 }

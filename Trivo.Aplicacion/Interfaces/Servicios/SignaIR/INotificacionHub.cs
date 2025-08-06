@@ -8,9 +8,9 @@ public interface INotificacionHub
     
     Task RecibirNotificacion(IEnumerable<NotificacionDto> notificacion);
     
-    Task NotificacionMarcadaComoLeida(Guid notificacionId);
+    Task NotificacionMarcadaComoLeida(Guid notificacionId, NotificacionDto notificacion);
     
-    Task NotificarNotificacionEliminada(Guid notificacionId);
+    Task NotificarNotificacionEliminada(Guid notificacionId, NotificacionDto notificacion);
     
     // Task NotificarNotificacion(Guid usuarioId, NotificacionDto notificacion);
 }

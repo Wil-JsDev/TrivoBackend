@@ -74,7 +74,7 @@ public class NotificacionHub(
                 return;
             }
 
-            await Clients.User(usuarioId.ToString()).NotificacionMarcadaComoLeida(notificacionId);
+            await Clients.User(usuarioId.ToString()).NotificacionMarcadaComoLeida(notificacionId, resultado.Valor);
             
             logger.LogInformation("Notificación {NotificacionId} marcada como leída exitosamente", notificacionId);
         }
@@ -106,7 +106,7 @@ public class NotificacionHub(
                 return;
             }
     
-            await Clients.Users(usuarioId.ToString()).NotificarNotificacionEliminada(notificacionId);
+            await Clients.Users(usuarioId.ToString()).NotificarNotificacionEliminada(notificacionId, resultado.Valor);
     
             logger.LogInformation("Notificación {NotificacionId} eliminada correctamente por el usuario {UsuarioId}", notificacionId, usuarioId);
         }
