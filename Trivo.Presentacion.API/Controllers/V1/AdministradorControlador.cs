@@ -8,6 +8,7 @@ using Trivo.Aplicacion.Modulos.Administrador.Commands.DesbanearUsuario;
 using Trivo.Aplicacion.Modulos.Administrador.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeUsuariosActivos;
+using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosUsuarios;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUsuariosBaneados;
 
@@ -112,6 +113,21 @@ public class AdministradorControlador(IMediator mediator) : ControllerBase
       
       return Ok(resultado.Valor);
    }
-   
+
+   [HttpGet("last-match")]
+   [Authorize(Roles = "Administrador")]
+   public async Task<IActionResult> ObtenerUltimosEmparejamientosAsync(
+      [FromQuery] int numeroPagina,
+      [FromQuery] int tamanoPagina,
+      CancellationToken cancellationToken
+      )
+   {
+      ObtenerUltimosEmparejamientosQuery query = new(numeroPagina, tamanoPagina);
+      var resultado = await mediator.Send(query, cancellationToken);
+      if (resultado.EsExitoso)
+         return Ok(resultado.Valor);
+
+      return BadRequest(resultado.Error);
+   }
    
 }
