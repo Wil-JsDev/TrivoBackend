@@ -110,7 +110,7 @@ public class NotificacionServicio(
         var notificacionDto = NotificacionMapper.MapearNotificacionDto(notificacionEntidad);
 
         await notificador.NotificarNotificacionMarcadaComoLeida(usuarioId, notificacionId);
-        await notificador.NotificarNotificacion(usuarioId, new List<NotificacionDto> { notificacionDto });
+        // await notificador.NotificarNotificacion(usuarioId, new List<NotificacionDto> { notificacionDto });
 
         logger.LogInformation("Notificación {NotificacionId} actualizada a estado 'leído' para usuario {UsuarioId}", 
             notificacionId, usuarioId);
