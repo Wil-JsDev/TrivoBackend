@@ -13,8 +13,8 @@ public sealed record MensajeDtoParaReporte
 public sealed record UsuarioDtoParaReporte
 (
     Guid UsuarioId,
-    string Nombre,
-    string Apellido
+    string? Nombre,
+    string? Apellido
 );
 
 public sealed record ReporteDto
@@ -25,5 +25,6 @@ public sealed record ReporteDto
     string? Nota,
     string? EstadoReporte,
     MensajeDtoParaReporte? Mensaje, // Informacion del mensaje reportado con la informacion del usuario que lo reporto
-    UsuarioDtoParaReporte? UsuarioReportadoPor  // Información del usuario que hizo el reporte
+    UsuarioDtoParaReporte? UsuarioReportadoPor, // Usuario que hizo el reporte
+    UsuarioDtoParaReporte? UsuarioReportado     // Usuario que fue reportado
 );
