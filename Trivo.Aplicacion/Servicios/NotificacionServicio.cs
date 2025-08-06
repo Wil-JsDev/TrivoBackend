@@ -7,8 +7,6 @@ using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Aplicacion.Utilidades;
-using Trivo.Dominio.Enum;
-using Trivo.Dominio.Modelos;
 
 namespace Trivo.Aplicacion.Servicios;
 
@@ -120,31 +118,6 @@ public class NotificacionServicio(
         return ResultadoT<NotificacionDto>.Exito(notificacionDto);
     }
     
-    // public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMatchAsync(
-    //     Guid usuarioId, 
-    //     string nombreRemitente,
-    //     CancellationToken cancellationToken)
-    // {
-    //     var contenido = $"{nombreRemitente} ha mostrado interés en tu perfil";
-    //     return await CrearNotificacionDeTipoAsync(
-    //         usuarioId, 
-    //         TipoNotificacion.Match, 
-    //         contenido, 
-    //         cancellationToken);
-    // }
-
-    // public async Task<ResultadoT<NotificacionDto>> CrearNotificacionMensajeAsync(
-    //     Guid usuarioId, 
-    //     string nombreRemitente,
-    //     CancellationToken cancellationToken)
-    // {
-    //     var contenido = $"Tienes un nuevo mensaje de {nombreRemitente}";
-    //     return await CrearNotificacionDeTipoAsync(
-    //         usuarioId, 
-    //         TipoNotificacion.Mensaje, 
-    //         contenido, 
-    //         cancellationToken);
-    // }
     public async Task<ResultadoT<NotificacionDto>> CrearNotificacionDeTipoAsync(Guid usuarioId,
         string? tipoNotificacion,
         string? contenido,
@@ -174,6 +147,7 @@ public class NotificacionServicio(
     }
 
     public async Task<ResultadoT<NotificacionDto>> EliminarNotificacionAsync(Guid notificacionId,
+        Guid usuarioId,
         CancellationToken cancellationToken)
     {
         var notificacion = await repositorioNotificacion.ObtenerByIdAsync(notificacionId, cancellationToken);
@@ -183,10 +157,39 @@ public class NotificacionServicio(
             
             return ResultadoT<NotificacionDto>.Fallo(Error.NoEncontrado("404", "No existe una notificacion con este id " + notificacionId));
         }
+
+        if (notificacionId == Guid.Empty)
+        {
+            logger.LogWarning("Intento de eliminar una notificacion fallido");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400", "NotificacionId debe de ser un Guid valido"));
+        }
+        
+        if (usuarioId == Guid.Empty)
+        {
+            logger.LogWarning("Intento de crear notificación con UsuarioId vacío");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.Fallo("400", "UsuarioId no puede estar vacío"));
+        }
+        
+        var usuario = await repositorioUsuario.ObtenerByIdAsync(usuarioId, cancellationToken);
+        if (usuario is null)
+        {
+            logger.LogWarning("");
+            
+            return ResultadoT<NotificacionDto>.Fallo(Error.NoEncontrado("404", $"No existe un usuario con este id {usuarioId}"));
+        }
         
         await repositorioNotificacion.EliminarAsync(notificacion, cancellationToken);
         
         logger.LogInformation("Notificacion eliminada correctamente");
+        
+        var notificacionDto = NotificacionMapper.MapearNotificacionDto(notificacion);
+        
+        await notificador.NotificarNotificacionEliminada(usuarioId, notificacionId);
+        await notificador.NotificarNotificacion(usuarioId, new List<NotificacionDto> { notificacionDto });
+
+        logger.LogInformation("Notificacion eliminada correctamente en tiempo real");
         
         return ResultadoT<NotificacionDto>.Exito(NotificacionMapper.MapearNotificacionDto(notificacion));
     }

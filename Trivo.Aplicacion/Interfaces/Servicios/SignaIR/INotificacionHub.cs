@@ -10,5 +10,7 @@ public interface INotificacionHub
     
     Task NotificacionMarcadaComoLeida(Guid notificacionId);
     
+    Task NotificarNotificacionEliminada(Guid notificacionId);
+    
     // Task NotificarNotificacion(Guid usuarioId, NotificacionDto notificacion);
 }

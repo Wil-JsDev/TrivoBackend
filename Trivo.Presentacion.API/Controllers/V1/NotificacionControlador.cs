@@ -31,11 +31,13 @@ public class NotificacionControlador(
         return BadRequest(resultado.Error);
     }
 
-    [HttpDelete("{notificationId}")]
+    [HttpDelete("{notificationId}/users/{userId}")]
     public async Task<IActionResult> EliminarNotificacionAsync([FromRoute] Guid notificationId,
+       [FromRoute] Guid userId,
         CancellationToken cancellationToken)
     {
         var resultado = await notificacionServicio.EliminarNotificacionAsync(notificationId,
+            userId,
             cancellationToken);
         
         if (resultado.EsExitoso)

@@ -84,6 +84,37 @@ public class NotificacionHub(
             // await Clients.Caller.RecibirError(Error.Fallo("500", "Error interno del servidor"));
         }
     }
+
+    public async Task EliminarNotificacion(Guid notificacionId)
+    {
+        try
+        {
+            if (!Guid.TryParse(Context.UserIdentifier, out var usuarioId))
+            {
+                logger.LogWarning("Intento de eliminar una notificación con UserIdentifier inválido: {UserIdentifier}", Context.UserIdentifier);
+                return;
+            }
+
+            logger.LogInformation("El usuario {UsuarioId} está intentando eliminar la notificación {NotificacionId}", usuarioId, notificacionId);
+    
+            var resultado = await notificacionServicio.EliminarNotificacionAsync(notificacionId, usuarioId, CancellationToken.None);
+            if (!resultado.EsExitoso)
+            {
+                logger.LogWarning("Falló la eliminación de la notificación {NotificacionId} por el usuario {UsuarioId}", 
+                    notificacionId, usuarioId);
+        
+                return;
+            }
+    
+            await Clients.Users(usuarioId.ToString()).NotificarNotificacionEliminada(notificacionId);
+    
+            logger.LogInformation("Notificación {NotificacionId} eliminada correctamente por el usuario {UsuarioId}", notificacionId, usuarioId);
+        }
+        catch (Exception ex)
+        {
+           logger.LogError(ex, "Error inesperado al elimnar la notificacion {NotificacionId}", notificacionId);
+        }
+    }
     
     public override Task OnDisconnectedAsync(Exception? exception)
     {

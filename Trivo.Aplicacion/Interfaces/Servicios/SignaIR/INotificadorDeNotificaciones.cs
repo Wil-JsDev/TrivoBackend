@@ -10,4 +10,5 @@ public interface INotificadorDeNotificaciones
     
     Task NotificarNotificacionMarcadaComoLeida(Guid usuarioId,Guid notificacionId);
     
+    Task NotificarNotificacionEliminada(Guid usuarioId,Guid notificacionId);
 }

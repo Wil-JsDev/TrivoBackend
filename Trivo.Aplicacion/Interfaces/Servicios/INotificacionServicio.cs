@@ -16,6 +16,7 @@ public interface INotificacionServicio
         CancellationToken cancellationToken);
 
     Task<ResultadoT<NotificacionDto>> EliminarNotificacionAsync(Guid notificacionId,
+        Guid usuarioId,
         CancellationToken cancellationToken);
     
     // Task<ResultadoT<NotificacionDto>> CrearNotificacionMatchAsync(

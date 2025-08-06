@@ -26,4 +26,10 @@ public class NotificadorDeNotificaciones(
         await hub.Clients.User(usuarioId.ToString())
             .NotificacionMarcadaComoLeida(notificacionId);
     }
+    
+    public async Task NotificarNotificacionEliminada(Guid usuarioId, Guid notificacionId)
+    {
+        await hub.Clients.Users(usuarioId.ToString())
+            .NotificarNotificacionEliminada(notificacionId);
+    }
 }
