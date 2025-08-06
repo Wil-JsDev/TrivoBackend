@@ -2,7 +2,9 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Trivo.Aplicacion.Modulos.Administrador.Commands.BanearUsuarios;
 using Trivo.Aplicacion.Modulos.Administrador.Commands.CrearAdministrador;
+using Trivo.Aplicacion.Modulos.Administrador.Commands.DesbanearUsuario;
 using Trivo.Aplicacion.Modulos.Administrador.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeUsuariosActivos;
@@ -77,6 +79,7 @@ public class AdministradorControlador(IMediator mediator) : ControllerBase
    }
 
    [HttpGet("banned-users")]
+   [Authorize(Roles = "Administrador")]
    public async Task<IActionResult> ObtenerUltimos10BaneosDeUsuariosAsync(CancellationToken cancellationToken)
    {
       var resultado = await mediator.Send(new ObtenerUltimos10UsuariosBaneadosQuery(), cancellationToken);
@@ -85,4 +88,30 @@ public class AdministradorControlador(IMediator mediator) : ControllerBase
       
       return Ok(resultado.Valor);
    }
+
+   [HttpPut("users/{userId}/ban")]
+   [Authorize(Roles = "Administrador")]
+   public async Task<IActionResult> BanearUsuarioAsync([FromRoute] Guid userId, CancellationToken cancellationToken)
+   {
+      BanearUsuariosCommand banearUsuariosCommand = new(userId);
+      var resultado = await mediator.Send(banearUsuariosCommand, cancellationToken);
+      if (!resultado.EsExitoso)
+         return BadRequest(resultado.Error);
+      
+      return Ok(resultado.Valor);
+   }
+   
+   [HttpPut("users/{userId}/unban")]
+   [Authorize(Roles = "Administrador")]
+   public async Task<IActionResult> DesbanearUsuarioAsync([FromRoute] Guid userId, CancellationToken cancellationToken)
+   {
+      DesbanearUsuarioCommand command = new(userId);
+      var resultado = await mediator.Send(command, cancellationToken);
+      if (!resultado.EsExitoso)
+         return BadRequest(resultado.Error);
+      
+      return Ok(resultado.Valor);
+   }
+   
+   
 }
