@@ -175,7 +175,7 @@ public class NotificacionServicio(
         var usuario = await repositorioUsuario.ObtenerByIdAsync(usuarioId, cancellationToken);
         if (usuario is null)
         {
-            logger.LogWarning("");
+            logger.LogWarning("No existe un usuario con este Id {UsuarioId}", usuarioId);
             
             return ResultadoT<NotificacionDto>.Fallo(Error.NoEncontrado("404", $"No existe un usuario con este id {usuarioId}"));
         }
