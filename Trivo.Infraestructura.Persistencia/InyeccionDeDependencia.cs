@@ -61,6 +61,7 @@ public static class InyeccionDeDependencia
             servicio.AddScoped<IRepositorioChat, RepositorioChat>();
             servicio.AddScoped<IRepositorioMensaje, RepositorioMensaje>();
             servicio.AddTransient<IRepositorioNotificacion, RepositorioNotificacion>();
+            servicio.AddTransient<IRepositorioReporte, RepositorioReporte>();
             
         #endregion
     }
