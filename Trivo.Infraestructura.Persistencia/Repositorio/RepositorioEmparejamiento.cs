@@ -100,7 +100,7 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
 
     public async Task ActualizarEstadoEmparejamientoAsync(Emparejamiento emparejamiento, CancellationToken cancellationToken)
     {
-        var empejamientoActualizar = _trivoContexto.Set<Emparejamiento>().FirstOrDefault(x => x.Id == emparejamiento.Id);
-        _trivoContexto.Set<Emparejamiento>().Update(empejamientoActualizar!);
+        // var empejamientoActualizar = _trivoContexto.Set<Emparejamiento>().FirstOrDefault(x => x.Id == emparejamiento.Id);
+        _trivoContexto.Set<Emparejamiento>().Update(emparejamiento);
     }
 }
