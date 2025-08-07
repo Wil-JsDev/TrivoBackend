@@ -44,4 +44,16 @@ public class NotificadorDeEmparejamiento(IHubContext<EmparejamientoHub, IEmparej
                 .RecibirNuevoEmparejamiento(emparejamientosExperto);
         }
     }
+    public async Task NotificarEmparejamientoCompletado(Guid usuarioId, Guid emparejamientoId, EmparejamientoDetallesDto emparejamientoDto)
+    {
+        await hubContext.Clients.User(usuarioId.ToString())
+            .RecibirEmparejamientoCompletado(emparejamientoId,emparejamientoDto);
+    }
+
+    public async Task NotificarEmparejamientoRechazado(Guid usuarioId, Guid emparejamientoId, EmparejamientoDetallesDto emparejamientoDto)
+    {
+        await hubContext.Clients.User(usuarioId.ToString())
+            .RecibirEmparejamientoRechazado(emparejamientoId,emparejamientoDto);   
+    }
+    
 }

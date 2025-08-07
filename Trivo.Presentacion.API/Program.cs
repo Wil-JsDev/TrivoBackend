@@ -40,7 +40,7 @@ try
     {
         options.AddPolicy("AllowFrontendDev", policy =>
         {
-            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:3000")
+            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:3000","http://localhost:3008")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();

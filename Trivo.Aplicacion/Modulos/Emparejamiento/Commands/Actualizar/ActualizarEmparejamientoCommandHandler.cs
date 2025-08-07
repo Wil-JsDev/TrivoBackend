@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.Interfaces.Repositorio;
-using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
 
@@ -10,7 +10,8 @@ namespace Trivo.Aplicacion.Modulos.Emparejamiento.Commands.Actualizar;
 
 internal sealed class ActualizarEmparejamientoCommandHandler(
     ILogger<ActualizarEmparejamientoCommandHandler> logger,
-    IRepositorioEmparejamiento emparejamientoRepositorio
+    IRepositorioEmparejamiento emparejamientoRepositorio,
+    INotificadorDeEmparejamiento emparejamientoNotificador
     ) : ICommandHandler<ActualizarEmparejamientoCommand, EmparejamientoDetallesDto>
 {
     public async Task<ResultadoT<EmparejamientoDetallesDto>> Handle(ActualizarEmparejamientoCommand request, CancellationToken cancellationToken)
@@ -30,35 +31,108 @@ internal sealed class ActualizarEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El emparejamiento no existe"));
         }
         
-        if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Experto)
+        if (request.FaltaPorEmparejamiento is FaltaPorEmparejamiento.Experto or FaltaPorEmparejamiento.Reclutador)
         {
-            // emparejamiento.ExpertoEstado = request.Estado.ToString();
-            // emparejamiento.ReclutadorEstado = request.Estado.ToString();
-            await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
-            
-            var resultadoDtoExperto = MapearADetallesDto(emparejamiento);
-        
-            return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoExperto);
+            await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado, cancellationToken);
+
+            var dto = MapearADetallesDto(emparejamiento);
+
+            if (request.Estado is EstadoDeActualizacionEmparejamiento.Completado or EstadoDeActualizacionEmparejamiento.Rechazado)
+            {
+                await NotificarSegunEstadoAsync(request.UsuarioId, emparejamiento.Id ?? Guid.Empty, dto, request.Estado.Value);
+            }
+
+            logger.LogInformation("Emparejamiento {EmparejamientoId} actualizado por {FaltaPor}: nuevo estado {Estado}",
+                emparejamiento.Id, request.FaltaPorEmparejamiento, request.Estado);
+
+            return ResultadoT<EmparejamientoDetallesDto>.Exito(dto);
         }
+
+        var resultadoDto = MapearADetallesDto(emparejamiento);
         
-        if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Reclutador)
-        {
-            // emparejamiento.ReclutadorEstado = request.Estado.ToString();
-            // emparejamiento.ExpertoEstado = request.Estado.ToString();
-            // emparejamiento.EmparejamientoEstado = request.Estado.ToString();
-            // emparejamiento.FechaActualizacion = DateTime.UtcNow;
-            await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
-            
-            var resultadoDtoReclutador = MapearADetallesDto(emparejamiento);
+        return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDto);
         
-            return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoReclutador);
-        }
-        var resultadoDtoGeneral = MapearADetallesDto(emparejamiento);
-        
-        return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoGeneral);
+        #region solucion anterior
+
+             // if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Experto)
+        // {
+        //     // emparejamiento.ExpertoEstado = request.Estado.ToString();
+        //     // emparejamiento.ReclutadorEstado = request.Estado.ToString();
+        //     await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
+        //     
+        //     var resultadoDtoExperto = MapearADetallesDto(emparejamiento);
+        //
+        //     // if (request.Estado == EstadoDeActualizacionEmparejamiento.Completado)
+        //     // {
+        //     //    await emparejamientoNotificador.NotificarEmparejamientoCompletado(request.UsuarioId,
+        //     //         emparejamiento.Id ?? Guid.Empty,
+        //     //         resultadoDtoExperto);
+        //     // }
+        //     //
+        //     // if (request.Estado == EstadoDeActualizacionEmparejamiento.Rechazado)
+        //     // {
+        //     //     await emparejamientoNotificador.NotificarEmparejamientoRechazado(request.UsuarioId,
+        //     //         emparejamiento.Id ?? Guid.Empty,
+        //     //         resultadoDtoExperto);
+        //     // }
+        //     
+        //     if (request.Estado is EstadoDeActualizacionEmparejamiento.Completado or EstadoDeActualizacionEmparejamiento.Rechazado)
+        //     {
+        //         await NotificarSegunEstadoAsync(request.UsuarioId, emparejamiento.Id ?? Guid.Empty, resultadoDtoExperto, request.Estado.Value);
+        //     }
+        //     
+        //     return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoExperto);
+        // }
+        //
+        // if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Reclutador)
+        // {
+        //     // emparejamiento.ReclutadorEstado = request.Estado.ToString();
+        //     // emparejamiento.ExpertoEstado = request.Estado.ToString();
+        //     // emparejamiento.EmparejamientoEstado = request.Estado.ToString();
+        //     // emparejamiento.FechaActualizacion = DateTime.UtcNow;
+        //     await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
+        //     
+        //     var resultadoDtoReclutador = MapearADetallesDto(emparejamiento);
+        //
+        //     // if (request.Estado == EstadoDeActualizacionEmparejamiento.Completado)
+        //     // {
+        //     //     await emparejamientoNotificador.NotificarEmparejamientoCompletado(request.UsuarioId,
+        //     //         emparejamiento.Id ?? Guid.Empty,
+        //     //         resultadoDtoReclutador);
+        //     // }
+        //     //
+        //     // if (request.Estado == EstadoDeActualizacionEmparejamiento.Rechazado)
+        //     // {
+        //     //     await emparejamientoNotificador.NotificarEmparejamientoRechazado(request.UsuarioId,
+        //     //         emparejamiento.Id ?? Guid.Empty,
+        //     //         resultadoDtoReclutador);
+        //     // }
+        //     
+        //     if (request.Estado is EstadoDeActualizacionEmparejamiento.Completado or EstadoDeActualizacionEmparejamiento.Rechazado)
+        //     {
+        //         await NotificarSegunEstadoAsync(request.UsuarioId, emparejamiento.Id ?? Guid.Empty, resultadoDtoReclutador, request.Estado.Value);
+        //     }
+        //     
+        //     return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoReclutador);
+        // }
+        // var resultadoDtoGeneral = MapearADetallesDto(emparejamiento);
+        //
+        // return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoGeneral);
+
+        #endregion
+       
     }
 
     #region Metodos privados
+        private Task NotificarSegunEstadoAsync(Guid usuarioId, Guid emparejamientoId, EmparejamientoDetallesDto dto, EstadoDeActualizacionEmparejamiento estado)
+        {
+            return estado switch
+            {
+                EstadoDeActualizacionEmparejamiento.Completado => emparejamientoNotificador.NotificarEmparejamientoCompletado(usuarioId, emparejamientoId, dto),
+                EstadoDeActualizacionEmparejamiento.Rechazado => emparejamientoNotificador.NotificarEmparejamientoRechazado(usuarioId, emparejamientoId, dto),
+                _ => Task.CompletedTask
+            };
+        }
     
         private EmparejamientoDetallesDto MapearADetallesDto(Dominio.Modelos.Emparejamiento emparejamiento)
         {

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
+using Trivo.Aplicacion.Modulos.Emparejamiento.Commands.Actualizar;
 using Trivo.Aplicacion.Modulos.Emparejamiento.Querys;
 using Trivo.Dominio.Enum;
 
@@ -102,6 +103,37 @@ public class EmparejamientoHub(
         }
     }
 
+  /*
+    public async Task EmparejamientoCompletado(Guid emparejamientoId)
+    {
+        if ( !Guid.TryParse(Context.UserIdentifier, out var usuarioId) )
+        {
+            logger.LogWarning("Intento de marcar notificación con UserIdentifier inválido: {UserIdentifier}", Context.UserIdentifier);
+            return;
+        }
+        
+      logger.LogInformation("");
+
+      ActualizarEmparejamientoCommand command = new(emparejamientoId,
+          usuarioId,
+          FaltaPorEmparejamiento.Experto,
+          EstadoDeActualizacionEmparejamiento.Completado);
+      
+      var resultado = await mediator.Send(command, CancellationToken.None);
+
+      if (!resultado.EsExitoso)
+      {
+          logger.LogWarning("");
+          
+          return;
+      }
+      
+      await Clients.Users(usuarioId.ToString()).RecibirEmparejamientoCompletado(emparejamientoId, resultado.Valor);
+      
+      logger.LogInformation("");
+      
+    }
+    */
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         logger.LogInformation("Usuario desconectado: {ContextUserIdentifier}", Context.UserIdentifier);

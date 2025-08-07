@@ -11,4 +11,12 @@ public interface INotificadorDeEmparejamiento
     Task NotificarNuevoEmparejamiento(Guid reclutadorId, Guid expertoId,
         IEnumerable<EmparejamientoDto> emparejamientosReclutador,
         IEnumerable<EmparejamientoDto> emparejamientosExperto);
+
+    Task NotificarEmparejamientoCompletado(Guid usuarioId,
+        Guid emparejamientoId,
+        EmparejamientoDetallesDto emparejamientoDto);
+
+    Task NotificarEmparejamientoRechazado(Guid usuarioId,
+        Guid emparejamientoId,
+        EmparejamientoDetallesDto emparejamientoDto);
 }
