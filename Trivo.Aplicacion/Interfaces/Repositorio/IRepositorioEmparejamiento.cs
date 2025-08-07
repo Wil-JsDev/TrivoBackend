@@ -45,4 +45,6 @@ public interface IRepositorioEmparejamiento : IRepositorioGenerico<Emparejamient
     Task<IEnumerable<Emparejamiento>> ObtenerEmparejamientosComoReclutadorAsync(Guid usuarioId, CancellationToken cancellationToken);
     
     Task<Emparejamiento?> ObtenerPorIdAsync(Guid emparejamientoId, CancellationToken cancellationToken);
+
+    Task ActualizarEstadoEmparejamientoAsync(Emparejamiento emparejamiento, CancellationToken cancellationToken);
 }

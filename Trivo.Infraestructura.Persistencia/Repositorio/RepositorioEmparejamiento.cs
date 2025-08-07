@@ -97,4 +97,10 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
             .AsSplitQuery()       
             .FirstOrDefaultAsync(e => e.Id == emparejamientoId, cancellationToken);
     }
+
+    public async Task ActualizarEstadoEmparejamientoAsync(Emparejamiento emparejamiento, CancellationToken cancellationToken)
+    {
+        var empejamientoActualizar = _trivoContexto.Set<Emparejamiento>().FirstOrDefault(x => x.Id == emparejamiento.Id);
+        _trivoContexto.Set<Emparejamiento>().Update(empejamientoActualizar!);
+    }
 }

@@ -44,7 +44,7 @@ internal sealed class ActualizarEmparejamientoCommandHandler(
 
         emparejamiento.FechaActualizacion = DateTime.UtcNow;
         emparejamiento.EmparejamientoEstado = request.Estado.ToString();
-        await emparejamientoRepositorio.ActualizarAsync(emparejamiento, cancellationToken);
+        await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(emparejamiento, cancellationToken);
         
         var resultadoDto = MapearADetallesDto(emparejamiento);
         
