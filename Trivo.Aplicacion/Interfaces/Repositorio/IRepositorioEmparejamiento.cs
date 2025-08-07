@@ -46,5 +46,6 @@ public interface IRepositorioEmparejamiento : IRepositorioGenerico<Emparejamient
     
     Task<Emparejamiento?> ObtenerPorIdAsync(Guid emparejamientoId, CancellationToken cancellationToken);
 
-    Task ActualizarEstadoEmparejamientoAsync(Emparejamiento emparejamiento, CancellationToken cancellationToken);
+    Task ActualizarEstadoEmparejamientoAsync(Guid emparejamientoId, EstadoDeActualizacionEmparejamiento? estado,
+        CancellationToken cancellationToken);
 }

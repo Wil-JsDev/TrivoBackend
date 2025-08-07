@@ -14,7 +14,7 @@ namespace Trivo.Presentacion.API.Controllers.V1;
 public class EmparejamientoControlador(IMediator mediator) : ControllerBase
 {
     [HttpPost]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> CrearEmparejamiento([FromBody] CrearEmparejamientoCommand emparejamientoCommand,
         CancellationToken cancellationToken)
     {
@@ -26,7 +26,7 @@ public class EmparejamientoControlador(IMediator mediator) : ControllerBase
     }
 
     [HttpPut]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> ActualizarEstadoEmparejamientoAsync(
         [FromBody] ActualizarEmparejamientoCommand command,
         CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ public class EmparejamientoControlador(IMediator mediator) : ControllerBase
     }
     
     [HttpPost("reject")]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> RechazarEmparejamientoAsync([FromBody] CrearRechazosEmparejamientoCommand command,
         CancellationToken cancellationToken)
     {

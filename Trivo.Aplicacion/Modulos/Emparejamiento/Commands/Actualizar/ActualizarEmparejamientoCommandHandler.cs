@@ -32,23 +32,30 @@ internal sealed class ActualizarEmparejamientoCommandHandler(
         
         if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Experto)
         {
-            emparejamiento.ExpertoEstado = request.Estado.ToString();
-            emparejamiento.ReclutadorEstado = request.Estado.ToString();
+            // emparejamiento.ExpertoEstado = request.Estado.ToString();
+            // emparejamiento.ReclutadorEstado = request.Estado.ToString();
+            await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
+            
+            var resultadoDtoExperto = MapearADetallesDto(emparejamiento);
+        
+            return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoExperto);
         }
         
         if (request.FaltaPorEmparejamiento == FaltaPorEmparejamiento.Reclutador)
         {
-            emparejamiento.ReclutadorEstado = request.Estado.ToString();
-            emparejamiento.ExpertoEstado = request.Estado.ToString();
+            // emparejamiento.ReclutadorEstado = request.Estado.ToString();
+            // emparejamiento.ExpertoEstado = request.Estado.ToString();
+            // emparejamiento.EmparejamientoEstado = request.Estado.ToString();
+            // emparejamiento.FechaActualizacion = DateTime.UtcNow;
+            await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(request.EmparejamientoId, request.Estado  ,cancellationToken);
+            
+            var resultadoDtoReclutador = MapearADetallesDto(emparejamiento);
+        
+            return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoReclutador);
         }
-
-        emparejamiento.FechaActualizacion = DateTime.UtcNow;
-        emparejamiento.EmparejamientoEstado = request.Estado.ToString();
-        await emparejamientoRepositorio.ActualizarEstadoEmparejamientoAsync(emparejamiento, cancellationToken);
+        var resultadoDtoGeneral = MapearADetallesDto(emparejamiento);
         
-        var resultadoDto = MapearADetallesDto(emparejamiento);
-        
-        return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDto);
+        return ResultadoT<EmparejamientoDetallesDto>.Exito(resultadoDtoGeneral);
     }
 
     #region Metodos privados

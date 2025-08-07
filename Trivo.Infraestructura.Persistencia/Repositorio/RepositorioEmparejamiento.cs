@@ -98,9 +98,19 @@ public class RepositorioEmparejamiento(TrivoContexto trivoContexto) : Repositori
             .FirstOrDefaultAsync(e => e.Id == emparejamientoId, cancellationToken);
     }
 
-    public async Task ActualizarEstadoEmparejamientoAsync(Emparejamiento emparejamiento, CancellationToken cancellationToken)
+    public async Task ActualizarEstadoEmparejamientoAsync(Guid emparejamientoId,
+        EstadoDeActualizacionEmparejamiento? estado, CancellationToken cancellationToken)
     {
-        // var empejamientoActualizar = _trivoContexto.Set<Emparejamiento>().FirstOrDefault(x => x.Id == emparejamiento.Id);
-        _trivoContexto.Set<Emparejamiento>().Update(emparejamiento);
+        var emparejamiento = await _trivoContexto.Set<Emparejamiento>()
+            .FirstOrDefaultAsync(e => e.Id == emparejamientoId, cancellationToken);
+
+        emparejamiento!.EmparejamientoEstado = estado.ToString();
+        emparejamiento.ExpertoEstado = estado.ToString();
+        emparejamiento.ReclutadorEstado = estado.ToString();
+        emparejamiento.FechaActualizacion = DateTime.UtcNow;
+        
+        _trivoContexto.Update(emparejamiento);
+
+        await GuardarAsync(cancellationToken);
     }
 }
