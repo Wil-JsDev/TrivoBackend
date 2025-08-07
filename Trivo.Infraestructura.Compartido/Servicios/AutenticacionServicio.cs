@@ -70,12 +70,15 @@ public class AutenticacionServicio(
     
     public string GenerarTokenAdministrador(Administrador admin)
     {
+        var nombreCompleto = $"{admin.Nombre} {admin.Apellido}";
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, admin.Id.ToString()!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, admin.Email!),
             new Claim("nombreUsuario", admin.NombreUsuario!),
+            new Claim("nombreCompleto", nombreCompleto),
+            new Claim("fotoPerfil", admin.FotoPerfil!),
             new Claim("roles", Roles.Administrador.ToString()),
             new Claim("tipo", "access")
         };
