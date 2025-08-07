@@ -11,10 +11,6 @@ public class ActualizarEmparejamientoValidacion : AbstractValidator<ActualizarEm
             .NotEmpty().WithMessage("El ID de emparejamiento es requerido")
             .WithErrorCode("400");
 
-        RuleFor(x => x.UsuarioId)
-            .NotEmpty().WithMessage("El ID de usuario es requerido")
-            .WithErrorCode("400");
-
         RuleFor(x => x.FaltaPorEmparejamiento)
             .NotNull().WithMessage("Debe especificar quién realiza la actualización (Experto o Reclutador)")
             .IsInEnum().WithMessage("Rol no válido para la actualización")

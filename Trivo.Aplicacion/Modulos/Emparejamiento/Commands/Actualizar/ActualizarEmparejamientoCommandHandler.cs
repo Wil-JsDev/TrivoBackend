@@ -10,20 +10,11 @@ namespace Trivo.Aplicacion.Modulos.Emparejamiento.Commands.Actualizar;
 
 internal sealed class ActualizarEmparejamientoCommandHandler(
     ILogger<ActualizarEmparejamientoCommandHandler> logger,
-    IRepositorioUsuario usuarioRepositorio,
     IRepositorioEmparejamiento emparejamientoRepositorio
     ) : ICommandHandler<ActualizarEmparejamientoCommand, EmparejamientoDetallesDto>
 {
     public async Task<ResultadoT<EmparejamientoDetallesDto>> Handle(ActualizarEmparejamientoCommand request, CancellationToken cancellationToken)
     {
-        var usuario = await usuarioRepositorio.ObtenerRelacionesExpertosYReclutadorPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
-        if (usuario is null)
-        {
-            logger.LogInformation("Usuario no encontrado {UsuarioId}", request.UsuarioId);
-            
-            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
-        }
-        
         if (request.EmparejamientoId == Guid.Empty)
         {
             logger.LogWarning("Se recibió un EmparejamientoId vacío (Guid.Empty) en la solicitud");
