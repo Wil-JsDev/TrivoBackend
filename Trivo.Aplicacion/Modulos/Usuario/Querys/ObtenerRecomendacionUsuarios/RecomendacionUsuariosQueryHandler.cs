@@ -83,6 +83,11 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             logger.LogWarning("La IA no devolvió IDs válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
             
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
+            if ( !usuariosRecomendados.Any())
+            {
+                logger.LogInformation("logica de respaldo aplicada");
+                 usuariosRecomendados = paraComparar.ToList();
+            }
         }
 
         // if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
