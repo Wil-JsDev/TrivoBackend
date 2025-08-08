@@ -145,9 +145,29 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
         if (usuarioIds.Count == 0)
             return [];
 
+        // return await _trivoContexto.Set<Usuario>()
+        //     .AsNoTracking()
+        //     .Where(u => usuarioIds.Contains(u.Id ?? Guid.Empty))
+        //     .ToListAsync(cancellationToken);
+        // return await _trivoContexto.Set<Usuario>()
+        //     .AsNoTracking()
+        //     .Where(u => usuarioIds.Contains(u.Id ?? Guid.Empty))
+        //     .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
+        //     .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+        //     .Include(u => u.Reclutadores)
+        //     .Include(u => u.Expertos)
+        //     .ToListAsync(cancellationToken);
+        
         return await _trivoContexto.Set<Usuario>()
             .AsNoTracking()
             .Where(u => usuarioIds.Contains(u.Id ?? Guid.Empty))
+            .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+
+            // Join a Reclutador y su navegación
+            .Include(u => u.Reclutadores) // Cambia por las props reales
+            // Join a Experto y su navegación
+            .Include(u => u.Expertos) // Cambia por las props reales
             .ToListAsync(cancellationToken);
     }
     

@@ -10,4 +10,4 @@ public sealed record ObtenerUsuariosPorInteresesYHabilidadesQuery
     int TamanoPagina,
     List<Guid> HabilidadesIds,
     List<Guid> InteresesIds
-) : IQuery<ResultadoPaginado<UsuarioReconmendacionDto>>;
+) : IQuery<ResultadoPaginado<UsuarioReconmendacionInteresHabilidadDto>>;

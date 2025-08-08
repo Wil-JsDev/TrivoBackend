@@ -281,7 +281,7 @@ public class UsuarioControlador(
     }
 
     [HttpPost("filter-by-interests-and-ability")]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> ObtenerUsuariosPorInteresesYHabilidades(
         [FromBody] ParametroUsuariFiltroHabilidadesInteres usuarisHabilidadesInteres,
         [FromQuery] int numeroPagina,
