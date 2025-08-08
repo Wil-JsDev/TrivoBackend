@@ -9,4 +9,4 @@ public sealed record RecomendacionUsuariosQuery
     Guid UsuarioId,
     int NumeroPagina,
     int TamanoPagina
-) : IQuery<ResultadoPaginado<UsuarioReconmendacionDto>>;
+) : IQuery<ResultadoPaginado<UsuarioRecomendacionIaDto>>;

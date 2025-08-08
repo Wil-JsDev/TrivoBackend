@@ -13,6 +13,8 @@ public sealed class Mensaje
     
     public string? Contenido { get; set; }
     
+    public string? Tipo { get; set; }
+    
     public string? Estado { get; set; }
     
     public DateTime? FechaEnvio { get; set; }

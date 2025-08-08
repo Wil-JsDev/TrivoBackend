@@ -23,7 +23,6 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
         return chats;
     }
 
-
     public async Task<ResultadoPaginado<Chat>> ObtenerChatsPorUsuarioIdPaginadoAsync(
         Guid usuarioId, int pagina, int tamano, CancellationToken cancellationToken)
     {
@@ -63,7 +62,8 @@ public class RepositorioChat(TrivoContexto trivoContexto) : RepositorioGenerico<
                         FechaEnvio = m.FechaEnvio,
                         Estado = m.Estado,
                         EmisorId = m.EmisorId,
-                        ChatId = m.ChatId
+                        ChatId = m.ChatId,
+                        Tipo = m.Tipo
                     }).ToList()
             })
             .AsNoTracking()

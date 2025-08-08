@@ -1,11 +1,9 @@
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
-using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.DTOs.Mensaje;
-using Trivo.Aplicacion.DTOs.Usuario;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
-using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
@@ -71,7 +69,8 @@ internal sealed class EnviarMensajeCommandHandler(
             Contenido = request.Contenido,
             FechaEnvio = DateTime.UtcNow,
             FechaRegistro = DateTime.UtcNow,
-            Estado = EstadoMensaje.Enviado.ToString()
+            Estado = EstadoMensaje.Enviado.ToString(),
+            Tipo = TipoMensaje.Texto.ToString()
         };
 
         await repositorioMensaje.CrearAsync(mensaje, cancellationToken);
@@ -83,14 +82,16 @@ internal sealed class EnviarMensajeCommandHandler(
             mensaje.Estado,
             mensaje.FechaEnvio ?? DateTime.UtcNow,
             mensaje.EmisorId.Value,
-            mensaje.ReceptorId
-          
+            mensaje.ReceptorId,
+            mensaje.Tipo
         );
         
         await notificador.NotificarMensajePrivado(dto, dto.EmisorId);
         await notificador.NotificarMensajePrivado(dto, dto.ReceptorId);
+        
         logger.LogInformation("Mensaje enviado de {EmisorId} a {ReceptorId}", request.EmisorId);
-
+        
         return ResultadoT<MensajeDto>.Exito(dto);
     }
+    
 }

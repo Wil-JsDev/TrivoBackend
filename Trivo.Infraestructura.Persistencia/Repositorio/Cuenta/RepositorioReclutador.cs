@@ -38,10 +38,35 @@ public class RepositorioReclutador(TrivoContexto trivoContexto) : RepositorioGen
         return await _trivoContexto.Set<Reclutador>()
             .AsNoTracking()
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioHabilidades)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(u => u.Habilidad)
             .Include(e => e.Usuario)
-                .ThenInclude(u => u!.UsuarioInteres)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(ui => ui.Interes)
             .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId, cancellationToken);
     }
 
+    public async Task<Reclutador?> ObtenerIdAsync(Guid reclutadorId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Reclutador>()
+            .AsNoTracking()
+            .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioHabilidades)!
+            .ThenInclude(u => u!.Habilidad)
+            .Include(e => e.Usuario)
+            .ThenInclude(u => u!.UsuarioInteres)!
+            .ThenInclude(u => u!.Interes)
+            .AsSplitQuery()       
+            .FirstOrDefaultAsync(e => e.Id == reclutadorId, cancellationToken);
+    }
+    
+    public async Task<Reclutador?> ObtenerReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Reclutador>()
+            .AsNoTracking()
+            .Where(r => r.UsuarioId == usuarioId)
+            .Include(r => r.Usuario)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

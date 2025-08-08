@@ -5,6 +5,8 @@ using Trivo.Aplicacion.DTOs.Email;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
+using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
 using Trivo.Dominio.Modelos;
@@ -17,7 +19,8 @@ internal sealed class CrearUsuarioCommandHandler(
     ICodigoServicio codigoServicio,
     ICloudinaryServicio cloudinaryServicio,
     ILogger<CrearUsuarioCommandHandler> logger,
-    IRepositorioUsuarioInteres repositorioUsuarioInteres
+    IRepositorioUsuarioInteres repositorioUsuarioInteres,
+    INotificadorIA notificadorIa
     
     ) : ICommandHandler<CrearUsuarioCommand, UsuarioDto>
 {
@@ -102,8 +105,6 @@ internal sealed class CrearUsuarioCommandHandler(
                 await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken);
             }
             
-            // await repositorioUsuarioInteres.CrearMultiplesUsuarioInteresAsync(relacionesInteres, cancellationToken); // This 
-            
             UsuarioDto usuarioDto = new
             (
                 UsuarioId: usuario.Id,
@@ -119,6 +120,12 @@ internal sealed class CrearUsuarioCommandHandler(
                 FechaRegistro: usuario.FechaRegistro
             );
 
+            var usuarioConRelaciones = await repositorioUsuario.ObtenerPorIdConRelacionesAsync(usuario.Id!.Value, cancellationToken);
+            
+            await notificadorIa.NotificarNuevaRecomendacion(usuario.Id ?? Guid.Empty, new List<UsuarioRecomendacionIaDto>{ UsuarioMapper.MappearRecomendacionIaDto(usuarioConRelaciones!) });
+            
+            logger.LogInformation("Se ha notificador correctamente al usuario {UsuarioId}", usuarioConRelaciones!.Id);
+            
             return ResultadoT<UsuarioDto>.Exito(usuarioDto);
     }
 }

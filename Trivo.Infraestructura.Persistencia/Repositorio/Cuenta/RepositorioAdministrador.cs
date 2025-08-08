@@ -32,6 +32,17 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         
         await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
+    public async Task<int> ObtenerConteoUsuariosReportados(CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Reporte>()
+            .AsNoTracking()
+            .Where(r => r.Usuario != null) // Verificar que haya usuarios reportados
+            // .Where(r => r.EstadoReporte == EstadoReporte.Resuelto.ToString())
+            .Select(r => r.Usuario!)       
+            .Select(u => u.Id)           
+            .Distinct()                    // Quitar duplicados
+            .CountAsync(cancellationToken);
+    }
     
     public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken) =>
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);
@@ -59,14 +70,14 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         _trivoContexto.Set<Administrador>().Update(admin);
         await _trivoContexto.SaveChangesAsync();
     }
-   public async Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosBan(
+   public async Task<ResultadoPaginado<Reporte>> ObtenerPaginadoUltimosReportes(
        int numeroPagina,
        int tamanoPagina,
        CancellationToken cancellationToken)
    {
        var consulta = _trivoContexto.Set<Reporte>()
            .AsNoTracking()
-           .Where(x => x.EstadoReporte == EstadoReporte.Resuelto.ToString())
+           .Where(x => x.EstadoReporte == EstadoReporte.Pendiente.ToString())
            .Include(x => x.Mensaje)!
            .ThenInclude(m => m.Emisor)
            .Include(x => x.Mensaje)!
@@ -101,7 +112,16 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
 
        return new ResultadoPaginado<Usuario>(usuarios, total, numeroPagina, tamanoPagina);
    }
-
+   public async Task<IEnumerable<Usuario>> ObtenerUltimos10UsuariosBaneadosAsync(CancellationToken cancellationToken)
+   {
+       return await _trivoContexto.Set<Usuario>()
+           .AsNoTracking()
+           .Where(x => x.EstadoUsuario == nameof(EstadoUsuario.Baneado))
+           .OrderByDescending(x => x.FechaRegistro)
+           .Take(10)
+           .ToListAsync(cancellationToken);
+   }
+   
    public async Task<ResultadoPaginado<Emparejamiento>> ObtenerPaginadoUltimosEmparejamientosAsync(
        int numeroPagina,
        int tamanoPagina,
@@ -109,6 +129,11 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
    {
        var consulta = _trivoContexto.Set<Emparejamiento>()
            .AsNoTracking()
+           .Include(em => em.Reclutador)
+                .ThenInclude(re => re!.Usuario)
+           .Include(em => em.Experto)
+                .ThenInclude(ex => ex!.Usuario)
+           .AsSplitQuery()
            .OrderByDescending(x => x.FechaRegistro);
        
        var total = await consulta.CountAsync(cancellationToken);

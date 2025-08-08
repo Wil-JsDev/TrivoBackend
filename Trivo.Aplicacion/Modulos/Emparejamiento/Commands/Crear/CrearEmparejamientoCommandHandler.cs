@@ -1,8 +1,17 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
+using Trivo.Aplicacion.DTOs.Cuentas.Expertos;
+using Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
+using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Emparejamiento;
+using Trivo.Aplicacion.DTOs.Notificacion;
+using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
+using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
 
@@ -12,7 +21,8 @@ internal sealed class CrearEmparejamientoCommandHandler(
     ILogger<CrearEmparejamientoCommandHandler> logger,
     IRepositorioEmparejamiento repositorioEmparejamiento,
     IRepositorioReclutador repositorioReclutador,
-    IRepositorioExperto repositorioExperto
+    IRepositorioExperto repositorioExperto,
+    INotificadorDeEmparejamiento emparejamientoNotificador
     ) : ICommandHandler<CrearEmparejamientoCommand, EmparejamientoDetallesDto>
 {
    public async Task<ResultadoT<EmparejamientoDetallesDto>> Handle(CrearEmparejamientoCommand request, CancellationToken cancellationToken)
@@ -24,7 +34,22 @@ internal sealed class CrearEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "La solicitud enviada no puede ser nula."));
         }
 
-        var reclutador = await repositorioReclutador.ObtenerByIdAsync(request.ReclutadorId ?? Guid.Empty, cancellationToken);
+        if (request.ExpertoId == Guid.Empty || request.ReclutadorId == Guid.Empty)
+        {
+            logger.LogWarning("IDs inválidos. ReclutadorId: {ReclutadorId}, ExpertoId: {ExpertoId}", 
+                request.ReclutadorId, 
+                request.ExpertoId);
+    
+            return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", 
+                request.ExpertoId == Guid.Empty && request.ReclutadorId == Guid.Empty 
+                    ? "Los IDs de experto y reclutador son requeridos."
+                    : request.ExpertoId == Guid.Empty 
+                        ? "El ID del experto es requerido."
+                        : "El ID del reclutador es requerido."));
+        }
+        
+        // el metodo carga las entidades de habilidades y intereses del usuario
+        var reclutador = await repositorioReclutador.ObtenerIdAsync(request.ReclutadorId ?? Guid.Empty, cancellationToken);
         if (reclutador is null)
         {
             logger.LogWarning("No se encontró el reclutador con ID {ReclutadorId}.", request.ReclutadorId);
@@ -32,7 +57,8 @@ internal sealed class CrearEmparejamientoCommandHandler(
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.NoEncontrado("404", "El reclutador especificado no fue encontrado."));
         }
 
-        var experto = await repositorioExperto.ObtenerByIdAsync(request.ExpertoId ?? Guid.Empty, cancellationToken);
+        // el metodo carga las entidades de habilidades y intereses del usuario
+        var experto = await repositorioExperto.ObtenerIdAsync(request.ExpertoId ?? Guid.Empty, cancellationToken);
         if (experto is null)
         {
             logger.LogWarning("No se encontró el experto con ID {ExpertoId}.", request.ExpertoId);
@@ -42,37 +68,133 @@ internal sealed class CrearEmparejamientoCommandHandler(
         
         var emparejamiento = new Dominio.Modelos.Emparejamiento
         {
+            Id = Guid.NewGuid(),
             ReclutadorId = reclutador.Id,
             ExpertoId = experto.Id,
             EmparejamientoEstado = EmparejamientoEstado.Pendiente.ToString()
         };
         
-        if (!Enum.TryParse(request.CreadoPor, ignoreCase: true, out Roles rolCreador) || !EstadosPorRol.TryGetValue(rolCreador, out var valor))
+        if (!request.CreadoPor.HasValue || !EstadosPorRol.TryGetValue(request.CreadoPor.Value, out var valor))
         {
+            logger.LogWarning("El rol de creador es inválido. Rol: {RolCreador}.", request.CreadoPor);
+    
             return ResultadoT<EmparejamientoDetallesDto>.Fallo(Error.Fallo("400", "Rol de creador inválido."));
         }
-
+        
         var (estadoExperto, estadoReclutador) = valor;
         emparejamiento.ExpertoEstado = estadoExperto;
         emparejamiento.ReclutadorEstado = estadoReclutador;
         
         await repositorioEmparejamiento.CrearAsync(emparejamiento, cancellationToken);
         
+        var emparejamientoGuardado = await repositorioEmparejamiento.ObtenerPorIdAsync(emparejamiento.Id ?? Guid.Empty, cancellationToken);
+        
         logger.LogInformation("Se creó un nuevo emparejamiento entre el reclutador {ReclutadorId} y el experto {ExpertoId}.",
             emparejamiento.ReclutadorId, emparejamiento.ExpertoId);
 
-        EmparejamientoDetallesDto empresaDto = new
+        EmparejamientoDetallesDto emparejamientoDetallesDto = new
         (
-            EmparejamientoId: emparejamiento.Id ?? Guid.Empty,
-            ReclutadotId: emparejamiento.ReclutadorId ?? Guid.Empty,
-            ExpertoId: emparejamiento.ExpertoId ?? Guid.Empty,
-            ExpertoEstado: emparejamiento.ExpertoEstado ?? string.Empty,
-            ReclutadorEstado: emparejamiento.ReclutadorEstado ?? string.Empty,
-            EmparejamientoEstado: emparejamiento.EmparejamientoEstado ?? string.Empty,
-            FechaRegistro: emparejamiento.FechaRegistro
+            EmparejamientoId: emparejamientoGuardado!.Id ?? Guid.Empty,
+            ReclutadotId: emparejamientoGuardado.ReclutadorId ?? Guid.Empty,
+            ExpertoId: emparejamientoGuardado.ExpertoId ?? Guid.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro
         );
         
-        return ResultadoT<EmparejamientoDetallesDto>.Exito(empresaDto);
+        var expertoMapeado = RecomendacionMapper.MappearAExpertoDto(
+            emparejamientoGuardado.Experto!.Usuario!,
+            experto
+        );
+        
+        var reclutadorMapeado = RecomendacionMapper.MappearAReclutadorDto(
+            emparejamientoGuardado.Reclutador!.Usuario!,
+            reclutador
+        );
+        
+        var emparejamientoDetallesDtoExperto = new EmparejamientoDto(
+            EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+            ReclutadotId: null,
+            ExpertoId: experto.Id ?? Guid.Empty,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro,
+            ExpertoDto: expertoMapeado,
+            ReclutadorDto: reclutadorMapeado
+        );
+        
+        var emparejamientoDetallesDtoReclutador = new EmparejamientoDto(
+            EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+            ReclutadotId: null,
+            ExpertoId: experto.Id ?? Guid.Empty,
+            EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+            ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+            ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+            FechaRegistro: emparejamientoGuardado.FechaRegistro,
+            ExpertoDto: expertoMapeado,
+            ReclutadorDto: reclutadorMapeado
+        );
+
+        
+        await emparejamientoNotificador.NotificarNuevoEmparejamiento(
+            reclutador.Id ?? Guid.Empty,
+            experto.Id ?? Guid.Empty,
+            new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador },
+            new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
+        );
+        
+        // Hacer validacion con el CreadoPor para validar si es experto retornar un experto y igual con reclutador retornar un reclutador.
+        // Usar el dto de la ia
+        // Para el filtro
+        
+        // EmparejamientoDto emparejamientoDetallesDtoReclutador = new
+        // (
+        //     EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+        //     ReclutadotId: reclutador.Id ?? Guid.Empty,
+        //     ExpertoId: null,
+        //     EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+        //     ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+        //     ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+        //     FechaRegistro: emparejamientoGuardado.FechaRegistro,
+        //     UsuarioReconmendacionDto:  EmparejamientoMapper.MappearReclutadorReconmendacionDto(
+        //         emparejamientoGuardado.Reclutador!.Usuario!,
+        //         reclutador
+        //         )
+        // );
+        
+        // Console.WriteLine("Datos: " + emparejamientoDetallesDtoReclutador);
+        
+        // EmparejamientoDto emparejamientoDetallesDtoExperto = new
+        // (
+        //     EmparejamientoId: emparejamientoGuardado.Id ?? Guid.Empty,
+        //     ReclutadotId: null,
+        //     ExpertoId: experto.Id ?? Guid.Empty,
+        //     EmparejamientoEstado: emparejamientoGuardado.EmparejamientoEstado ?? string.Empty,
+        //     ExpertoEstado: emparejamientoGuardado.ExpertoEstado ?? string.Empty,
+        //     ReclutadorEstado: emparejamientoGuardado.ReclutadorEstado ?? string.Empty,
+        //     FechaRegistro: emparejamientoGuardado.FechaRegistro,
+        // UsuarioReconmendacionDto:  EmparejamientoMapper.MappearExpertoReconmendacionDto(
+        //         emparejamientoGuardado.Experto!.Usuario!,
+        //         experto
+        //     )
+        // );
+        
+        Console.WriteLine("Datos Reclutador:");
+        logger.LogInformation("Datos {ReclutadorDto}", emparejamientoDetallesDtoReclutador);
+
+        Console.WriteLine("Datos Experto:");
+        logger.LogInformation("Datos {ExpertoDto}", emparejamientoDetallesDtoExperto);
+        
+        // await emparejamientoNotificador.NotificarNuevoEmparejamiento(
+        //     reclutador.Id ?? Guid.Empty,
+        //     experto.Id ?? Guid.Empty,
+        //     new List<EmparejamientoDto> { emparejamientoDetallesDtoReclutador },
+        //     new List<EmparejamientoDto> { emparejamientoDetallesDtoExperto }
+        // );
+        
+        return ResultadoT<EmparejamientoDetallesDto>.Exito(emparejamientoDetallesDto);
     }
 
    #region Metodos Privados
@@ -80,9 +202,9 @@ internal sealed class CrearEmparejamientoCommandHandler(
     private static readonly Dictionary<Roles, (string expertoEstado, string reclutadorEstado)> EstadosPorRol =
        new()
        {
-           { Roles.Experto, (ExpertoEstado.Match.ToString(), ReclutadorEstado.Pendiente.ToString()) },
-           { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Match.ToString()) }
+           { Roles.Experto, (ExpertoEstado.Completado.ToString(), ReclutadorEstado.Pendiente.ToString()) },
+           { Roles.Reclutador, (ExpertoEstado.Pendiente.ToString(), ReclutadorEstado.Completado.ToString()) }
        };
-   
+    
    #endregion
 }

@@ -2,12 +2,13 @@ using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 using Trivo.Aplicacion.DTOs.Habilidades;
 using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Dominio.Enum;
+using Trivo.Dominio.Modelos;
 
 namespace Trivo.Aplicacion.Mapper;
 
 public static class UsuarioMapper
 {
-    public static UsuarioReconmendacionDto MapToDto(Dominio.Modelos.Usuario entidad)
+    public static UsuarioReconmendacionDto? MapToDto(Dominio.Modelos.Usuario entidad)
     {
         return new UsuarioReconmendacionDto(
             UsuarioId: entidad.Id ?? Guid.Empty,
@@ -21,6 +22,25 @@ public static class UsuarioMapper
         );
     }
 
+    public static UsuarioRecomendacionIaDto MappearRecomendacionIaDto(Usuario entidad)
+    {
+        return new UsuarioRecomendacionIaDto(
+            UsuarioId: entidad.Id ?? Guid.Empty,
+            Nombre: entidad.Nombre,
+            Apellido: entidad.Apellido,
+            Ubicacion: entidad.Ubicacion,
+            Biografia: entidad.Biografia,
+            Posicion: entidad.Posicion,
+            FotoPerfil: entidad.FotoPerfil,
+            Intereses: MappearAintereses( entidad.UsuarioInteres ),
+            Habilidades: MappearAHabilidades( entidad.UsuarioHabilidades )
+        );
+    }
+    public static List<UsuarioRecomendacionIaDto> MappearListaARecomendacionDto(IEnumerable<Usuario> usuarios)
+    {
+        return usuarios.Select(MappearRecomendacionIaDto).ToList();
+    }
+    
     public static UsuarioDto MapUsuarioDto(Dominio.Modelos.Usuario usuario)
     {
         return new UsuarioDto
@@ -39,6 +59,24 @@ public static class UsuarioMapper
         );
     }
     
-    
+        public static List<InteresConIdDto> MappearAintereses(ICollection<UsuarioInteres>? usuarioIntereses)
+        {
+            return usuarioIntereses?
+                .Where(ui => ui.Interes != null)
+                .Select(ui => new InteresConIdDto(
+                    ui.Interes!.Id ?? Guid.Empty,
+                    ui.Interes.Nombre ?? string.Empty))
+                .ToList() ?? new List<InteresConIdDto>();
+        }
+
+        public static List<HabilidadConIdDto> MappearAHabilidades(ICollection<UsuarioHabilidad>? usuarioHabilidades)
+        {
+            return usuarioHabilidades?
+                .Where(uh => uh.Habilidad != null)
+                .Select(uh => new HabilidadConIdDto(
+                    uh.Habilidad!.HabilidadId ?? Guid.Empty,
+                    uh.Habilidad.Nombre ?? string.Empty))
+                .ToList() ?? new List<HabilidadConIdDto>();
+        }
     
 }

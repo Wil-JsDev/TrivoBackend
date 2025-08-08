@@ -2,13 +2,18 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
+using Trivo.Aplicacion.DTOs.Cuentas.Expertos;
+using Trivo.Aplicacion.DTOs.Cuentas.Reclutador;
 using Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
+using Trivo.Aplicacion.DTOs.Habilidades;
+using Trivo.Aplicacion.DTOs.Intereses;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
 using Trivo.Aplicacion.Interfaces.Servicios.IA;
 using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Paginacion;
 using Trivo.Aplicacion.Utilidades;
+using Trivo.Dominio.Enum;
 
 namespace Trivo.Aplicacion.Modulos.Usuario.Querys.ObtenerRecomendacionUsuarios;
 
@@ -17,10 +22,12 @@ internal sealed class RecomendacionUsuariosQueryHandler(
     IRepositorioUsuario repositorioUsuario,
     IDistributedCache cache,
     IOllamaServicio ollamaServicio,
-    INotificadorIA notificadorIa
-    ) : IQueryHandler<RecomendacionUsuariosQuery, ResultadoPaginado<UsuarioReconmendacionDto>>
+    INotificadorIA notificadorIa,
+    IRepositorioExperto repositorioExperto,
+    IRepositorioReclutador repositorioReclutador
+    ) : IQueryHandler<RecomendacionUsuariosQuery, ResultadoPaginado<UsuarioRecomendacionIaDto>>
 {
-    public async Task<ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>> Handle(RecomendacionUsuariosQuery request, CancellationToken cancellationToken)
+    public async Task<ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>> Handle(RecomendacionUsuariosQuery request, CancellationToken cancellationToken)
     {
         var usuarioActual = await repositorioUsuario.ObtenerUsuarioConInteresYHabilidades(request.UsuarioId, cancellationToken);
         
@@ -28,16 +35,19 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         {
             logger.LogWarning("No se encontró el usuario con Id {UsuarioId} o no tiene intereses/habilidades registrados.", request.UsuarioId);
             
-            return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("404", "El usuario no fue encontrado o no tiene datos de intereses/habilidades."));
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Fallo(Error.Fallo("404", "El usuario no fue encontrado o no tiene datos de intereses/habilidades."));
         }
 
         var rol = await repositorioUsuario.ObtenerRolDeUsuarioAsync(usuarioActual.Id ?? Guid.Empty, cancellationToken);
         
-        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(usuarioActual.Id ?? Guid.Empty, rol, cancellationToken);
+        var usuariosParaComparar = await repositorioUsuario.ObtenerUsuariosObjetivoAsync(
+            usuarioActual.Id ?? Guid.Empty,
+            rol,
+            cancellationToken);
         
         IEnumerable<Dominio.Modelos.Usuario> paraComparar = usuariosParaComparar.ToList();
-        
-        var prompt = ConstruirPrompt(usuarioActual, paraComparar.ToList());
+
+        var prompt = ConstruirPrompt(usuarioActual, paraComparar.ToList(), rol);
         
         logger.LogInformation("Prompt construido correctamente para el usuario {UsuarioId}. Enviando solicitud a la IA...", usuarioActual.Id);
         
@@ -50,7 +60,7 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         {
             logger.LogWarning("La IA devolvió una respuesta vacía o nula para el usuario {UsuarioId}.", usuarioActual.Id);
             
-            return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Fallo(Error.Fallo("500", "La IA devolvió una respuesta vacía o inválida."));
         }
         
         logger.LogWarning("Respuesta cruda IA:\n{RespuestaIa}", respuestaIa);
@@ -71,40 +81,130 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         if (!usuariosRecomendados.Any())
         {
             logger.LogWarning("La IA no devolvió IDs válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
+            
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
         }
-        
-        var cacheKey = $"recomendaciones-ia-dto-{request.UsuarioId}-pag-{request.NumeroPagina}-size-{request.TamanoPagina}";
 
-        var resultadoPaginado = await cache.ObtenerOCrearAsync(
-            cacheKey,
-            async () =>
+        // if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
+        // {
+        //     var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(request.UsuarioId, cancellationToken);
+        //
+        //     var expertoReconmendando = usuariosRecomendados
+        //         .Select(usuario => RecomendacionMapper.MappearAExpertoDto(usuario, experto))
+        //         .Paginar(request.NumeroPagina, request.TamanoPagina)
+        //         .ToList();
+        //
+        //     var total = expertoReconmendando.Count();
+        //     
+        //     ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+        //     (
+        //         expertoReconmendando,
+        //         total,
+        //         request.NumeroPagina,
+        //         request.TamanoPagina
+        //     );
+        //     
+        //     return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
+        // }
+        
+
+        // if ( await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken) )
+        // {
+        //     var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(request.UsuarioId, cancellationToken);
+        //
+        //     var reclutadorReconmendando = usuariosRecomendados
+        //         .Select(usuario => RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador!))
+        //         .Paginar(request.NumeroPagina, request.TamanoPagina)
+        //         .ToList();
+        //
+        //     var total = reclutadorReconmendando.Count();
+        //     
+        //     ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginadoExperto = new
+        //     (
+        //         reclutadorReconmendando,
+        //         total,
+        //         request.NumeroPagina,
+        //         request.TamanoPagina
+        //     );
+        //     
+        //     return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExperto);
+        // }
+        //
+        
+        if (await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken))
+        {
+            // Obtener solo usuarios que son reclutadores para recomendar a un experto
+            var reclutadoresRecomendados = usuariosRecomendados
+                .Where(u => repositorioReclutador.EsUsuarioReclutadorAsync(u.Id.Value, cancellationToken).Result)
+                .ToList();
+        
+            var reclutadoresMapeados = new List<ReclutadorReconmendacionIaDto>();
+        
+            foreach (var usuario in reclutadoresRecomendados)
             {
-                var usuarioReconmendandosDtos = usuariosRecomendados
-                    .Select(UsuarioMapper.MapToDto)
-                    .ToList();
-
-                var totalElementos = usuarioReconmendandosDtos.Count;
-
-                var elementosPaginados = usuarioReconmendandosDtos
-                    .Paginar(request.NumeroPagina, request.TamanoPagina)
-                    .ToList();
-
-                return new ResultadoPaginado<UsuarioReconmendacionDto>(
-                    elementosPaginados,
-                    totalElementos,
-                    request.NumeroPagina,
-                    request.TamanoPagina
-                );
-            },
-            cancellationToken: cancellationToken
-        );
+                var reclutador = await repositorioReclutador.ObtenerDetallesReclutadorAsync(usuario.Id.Value, cancellationToken);
+                if (reclutador != null)
+                {
+                    reclutadoresMapeados.Add(RecomendacionMapper.MappearAReclutadorDto(usuario, reclutador));
+                }
+            }
         
-        logger.LogInformation("Se obtuvieron {Cantidad} recomendaciones para el usuario {UsuarioId}.", resultadoPaginado.Elementos!.Count(), usuarioActual.Id);
+            var resultadoPaginadoReclutadores = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                reclutadoresMapeados,
+                reclutadoresMapeados.Count,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+        
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoReclutadores);
+        }
+
+        if (await repositorioReclutador.EsUsuarioReclutadorAsync(request.UsuarioId, cancellationToken))
+        {
+            // Obtener solo usuarios que son expertos para recomendar a un reclutador
+            var expertosRecomendados = usuariosRecomendados
+                .Where(u => repositorioExperto.EsUsuarioExpertoAsync(u.Id!.Value, cancellationToken).Result)
+                .ToList();
+        
+            var expertosMapeados = new List<ExpertoReconmendacionIaDto>();
+        
+            foreach (var usuario in expertosRecomendados)
+            {
+                var experto = await repositorioExperto.ObtenerDetallesExpertoAsync(usuario.Id!.Value, cancellationToken);
+                if (experto != null)
+                {
+                    expertosMapeados.Add(RecomendacionMapper.MappearAExpertoDto(usuario, experto));
+                }
+            }
+        
+            var resultadoPaginadoExpertos = new ResultadoPaginado<UsuarioRecomendacionIaDto>(
+                expertosMapeados,
+                expertosMapeados.Count,
+                request.NumeroPagina,
+                request.TamanoPagina
+            );
+        
+            return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginadoExpertos);
+        }
+        // Caso por defecto de no ser experto/reclutador
+        var usuarioRecomendacionIa = usuariosRecomendados
+            .Select(UsuarioMapper.MappearRecomendacionIaDto)
+            .Paginar(request.NumeroPagina, request.TamanoPagina)
+            .ToList();
+
+        var totalElementos = usuarioRecomendacionIa.Count();
+        
+        ResultadoPaginado<UsuarioRecomendacionIaDto> resultadoPaginado = new
+        (
+            usuarioRecomendacionIa,
+            totalElementos,
+            request.NumeroPagina,
+            request.TamanoPagina
+        );
         
         await notificadorIa.NotificarRecomendaciones(usuarioActual.Id ?? Guid.Empty, resultadoPaginado.Elementos!.ToList());
         
-        return ResultadoT<ResultadoPaginado<UsuarioReconmendacionDto>>.Exito(resultadoPaginado);
+        return ResultadoT<ResultadoPaginado<UsuarioRecomendacionIaDto>>.Exito(resultadoPaginado);
     }
 
     #region Metodos privados
@@ -126,36 +226,54 @@ internal sealed class RecomendacionUsuariosQueryHandler(
                 .Select(x => x.Usuario)
                 .ToList();
         }
-        private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios)
+       private string ConstruirPrompt(Dominio.Modelos.Usuario usuarioActual, List<Dominio.Modelos.Usuario> usuarios, string rolUsuario)
         {
-            var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-            var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                var interesesUsuario = string.Join(", ", usuarioActual.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                var habilidadesUsuario = string.Join(", ", usuarioActual.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
 
-            var usuariosContexto = usuarios.Select((u) =>
-            {
-                var intereses = string.Join(", ", u.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-                var habilidades = string.Join(", ", u.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
-                return $"{u.Id}: {intereses} | {habilidades}";
-            });
+                var usuariosContexto = usuarios.Select((u) =>
+                {
+                    var intereses = string.Join(", ", u.UsuarioInteres?.Select(i => i.Interes?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                    var habilidades = string.Join(", ", u.UsuarioHabilidades?.Select(h => h.Habilidad?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)) ?? Array.Empty<string>());
+                    return $"{u.Id}: {intereses} | {habilidades}";
+                });
 
-            var prompt = $@"
-            Recomienda los 9 usuarios más parecidos por intereses y habilidades.
+                var tipoRecomendacion = rolUsuario == nameof(Roles.Reclutador) ? "EXPERTOS" : 
+                                      rolUsuario == nameof(Roles.Experto) ? "RECLUTADORES" : 
+                                      "usuarios relevantes";
 
-            Usuario:
-            {interesesUsuario} | {habilidadesUsuario}
+                var prompt = $@"
+                ## CONTEXTO DE RECOMENDACIÓN ##
+                { (rolUsuario == nameof(Roles.Reclutador) ? 
+                    "Eres un RECLUTADOR buscando EXPERTOS que coincidan con estos requisitos:" : 
+                    rolUsuario == nameof(Roles.Experto) ? 
+                    "Eres un EXPERTO buscando RECLUTADORES interesados en tu perfil:" : 
+                    "Busca usuarios con intereses/habilidades similares:")}
 
-            Candidatos:
-            {string.Join("\n", usuariosContexto)}
+                ## TU PERFIL ##
+                Intereses: {interesesUsuario}
+                Habilidades: {habilidadesUsuario}
 
-            Devuelve SOLO los GUID de los más parecidos, separados por comas. NO EXPLIQUES NADA. NO DES TEXTOS. SOLO LOS ID.
+                ## CANDIDATOS DISPONIBLES ##
+                {string.Join("\n", usuariosContexto)}
 
-            Ejemplo válido: 4ac34db1-5ce4-4631-b7ac-5afbeb03be02,a605b5bb-06ff-427b-b673-df4aafbb3277,...
+                ## INSTRUCCIONES ESTRICTAS ##
+                1. FILTRO: Seleccionar exclusivamente {tipoRecomendacion}
+                2. CRITERIOS: Evaluar compatibilidad basada en:
+                   - Coincidencia de intereses (prioridad alta)
+                   - Complementariedad de habilidades (prioridad media)
+                3. CANTIDAD: Seleccionar exactamente los 9 mejores candidatos
+                4. FORMATO: Responder ÚNICAMENTE con los IDs válidos en formato:
+                   id1,id2,id3,...,id9
 
-            Tu respuesta:
-            ";
-            return prompt.Trim();
+                ## EJEMPLO VÁLIDO ##
+                123e4567-e89b-12d3-a456-426614174000,987e6543-e21b-12d3-a456-426614175000,...,9a8b7c6d-5e4f-3g2h-1i0j-426614175000
+
+                ## TU RESPUESTA (SOLO IDs) ##
+                ";
+
+                return prompt.Trim();
         }
-
         
     #endregion
 }

@@ -1,5 +1,3 @@
-using Trivo.Dominio.Enum;
-
 namespace Trivo.Aplicacion.DTOs.Cuentas.Usuarios;
 
 public sealed record UsuarioDto

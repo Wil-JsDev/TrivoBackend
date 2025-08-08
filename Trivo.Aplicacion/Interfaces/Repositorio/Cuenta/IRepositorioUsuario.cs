@@ -162,4 +162,8 @@ public interface IRepositorioUsuario: IRepositorioGenerico<Usuario>
     /// <param name="cancellationToken">Token para cancelar la operación asincrónica.</param>
     /// <returns>Una cadena que representa el rol del usuario.</returns>
     Task<string> ObtenerRolDeUsuarioAsync(Guid usuarioId, CancellationToken cancellationToken);
+
+    Task<Usuario?> ObtenerRelacionesExpertosYReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken);
+    
+    Task<Usuario?> ObtenerPorIdConRelacionesAsync(Guid id, CancellationToken cancellationToken);
 }

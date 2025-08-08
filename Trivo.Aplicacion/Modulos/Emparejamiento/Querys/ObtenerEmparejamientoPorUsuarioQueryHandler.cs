@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Trivo.Aplicacion.Abstracciones.Mensajes;
@@ -6,6 +7,7 @@ using Trivo.Aplicacion.DTOs.Emparejamiento;
 using Trivo.Aplicacion.Helper;
 using Trivo.Aplicacion.Interfaces.Repositorio;
 using Trivo.Aplicacion.Interfaces.Repositorio.Cuenta;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
 using Trivo.Aplicacion.Mapper;
 using Trivo.Aplicacion.Utilidades;
 using Trivo.Dominio.Enum;
@@ -16,6 +18,9 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
     ILogger<ObtenerEmparejamientoPorUsuarioQueryHandler> logger,
     IRepositorioEmparejamiento repositorioEmparejamiento,
     IRepositorioUsuario repositorioUsuario,
+    INotificadorDeEmparejamiento emparejamientoNotificador,
+    IRepositorioExperto repositorioExperto,
+    IRepositorioReclutador repositorioReclutador,
     IDistributedCache cache
     ) : IQueryHandler<ObtenerEmparejamientoPorUsuarioQuery, IEnumerable<EmparejamientoDto>>
 {
@@ -35,7 +40,10 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
             
             return ResultadoT<IEnumerable<EmparejamientoDto>>.Fallo(Error.NoEncontrado("404", "El usuario no existe"));
         }
+        var reclutador = await repositorioReclutador.ObtenerReclutadorPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
 
+        var experto = await repositorioExperto.ObtenerExpertoPorUsuarioIdAsync(request.UsuarioId, cancellationToken);
+        
         var estrategiasEmparejamiento = Obtener(request.UsuarioId);
 
         if (!estrategiasEmparejamiento.TryGetValue(request.Rol, out var filtroEmparejamiento))
@@ -45,17 +53,123 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
             return ResultadoT<IEnumerable<EmparejamientoDto>>.Fallo(Error.Fallo("400", "El rol proporcionado no es válido para emparejamientos."));
         }
 
-        var emparejamientos = await cache.ObtenerOCrearAsync(
-            $"obtener-emparejamiento-por-usuario-{request.UsuarioId}-{request.Rol}",
-            async () => await filtroEmparejamiento(cancellationToken),
-            cancellationToken: cancellationToken
-        );
+        var emparejamientos = await filtroEmparejamiento(cancellationToken);
 
-        var emparejamientosLista = emparejamientos.ToList();
+        #region Solucion anterior
 
-        var emparejamientoDto = emparejamientosLista
-            .Select(e => e.EmparejamientoDto(request.Rol))
+            // IEnumerable<Dominio.Modelos.Emparejamiento> enumerable = emparejamientos.ToList();
+            // var emparejamientosLista = enumerable.ToList();
+            
+            // List<EmparejamientoDto> emparejamientoDto;
+            //
+            // var enumerable = emparejamientos.ToList();
+            // if (request.Rol == Roles.Experto)
+            // {
+            //     // Yo soy experto, muestro datos del reclutador
+            //     emparejamientoDto = enumerable.Select(e =>
+            //     {
+            //         var reclutadorMapeado = RecomendacionMapper.MappearAReclutadorDto(
+            //             e.Reclutador!.Usuario!,
+            //             e.Reclutador!
+            //         );
+            //         
+            //         Console.WriteLine("Datos Reclutador:");
+            //         Console.WriteLine(JsonSerializer.Serialize(reclutadorMapeado, new JsonSerializerOptions
+            //         {
+            //             WriteIndented = true
+            //         }));
+            //         
+            //         return new EmparejamientoDto(
+            //             EmparejamientoId: e.Id ?? Guid.Empty,
+            //             ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+            //             ExpertoId: e.Experto!.Id ?? Guid.Empty,
+            //             ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+            //             ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+            //             EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+            //             FechaRegistro: e.FechaRegistro,
+            //             UsuarioReconmendacionDto: reclutadorMapeado
+            //         );
+            //     }).ToList();
+            // }
+            // else if (request.Rol == Roles.Reclutador)
+            // {
+            //     // Yo soy reclutador, muestro datos del experto
+            //     emparejamientoDto = enumerable.Select(e =>
+            //     {
+            //         var expertoMapeado = RecomendacionMapper.MappearAExpertoDto(
+            //             e!.Experto!.Usuario!,
+            //             e.Experto);
+            //
+            //         Console.WriteLine("Datos Experto:");
+            //         Console.WriteLine(JsonSerializer.Serialize(expertoMapeado, new JsonSerializerOptions
+            //         {
+            //             WriteIndented = true
+            //         }));
+            //         
+            //         return new EmparejamientoDto(
+            //             EmparejamientoId: e.Id ?? Guid.Empty,
+            //             ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+            //             ExpertoId: e.Experto!.Id ?? Guid.Empty,
+            //             ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+            //             ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+            //             EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+            //             FechaRegistro: e.FechaRegistro,
+            //             UsuarioReconmendacionDto: expertoMapeado
+            //         );
+            //     }).ToList();
+            // }
+            // else
+            // {
+            //     emparejamientoDto = new List<EmparejamientoDto>();
+            // }
+            //
+
+        #endregion
+        
+        List<EmparejamientoDto> emparejamientoDto;
+        var enumerable = emparejamientos.ToList();
+        if (request.Rol == Roles.Experto)
+        {
+            emparejamientoDto = enumerable.Select(e =>
+                new EmparejamientoDto(
+                    EmparejamientoId: e.Id ?? Guid.Empty,
+                    ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+                    ExpertoId: e.Experto!.Id ?? Guid.Empty,
+                    ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+                    ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+                    EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+                    FechaRegistro: e.FechaRegistro,
+                    ExpertoDto: null,
+                    ReclutadorDto: RecomendacionMapper.MappearAReclutadorDto(e.Reclutador!.Usuario!, e.Reclutador!)
+                )
+            ).ToList();
+        }
+        else if (request.Rol == Roles.Reclutador)
+        {
+            emparejamientoDto = enumerable.Select(e =>
+                new EmparejamientoDto(
+                    EmparejamientoId: e.Id ?? Guid.Empty,
+                    ReclutadotId: e.Reclutador!.Id ?? Guid.Empty,
+                    ExpertoId: e.Experto!.Id ?? Guid.Empty,
+                    ExpertoEstado: e.ExpertoEstado ?? string.Empty,
+                    ReclutadorEstado: e.ReclutadorEstado ?? string.Empty,
+                    EmparejamientoEstado: e.EmparejamientoEstado ?? string.Empty,
+                    FechaRegistro: e.FechaRegistro,
+                    ExpertoDto: RecomendacionMapper.MappearAExpertoDto(e.Experto!.Usuario!, e.Experto!),
+                    ReclutadorDto: null
+                )
+            ).ToList();
+        }
+        else
+        {
+            emparejamientoDto = new List<EmparejamientoDto>();
+        }
+        var emparejamientoPaginadoDto = emparejamientoDto
+            .Paginar(request.NumeroPagina, request.TamanoPagina)
             .ToList();
+        
+        logger.LogInformation("Se recuperaron correctamente {Cantidad} emparejamientos para el usuario {UsuarioId} con rol {Rol}.",
+            enumerable.Count(), request.UsuarioId, request.Rol);
         
         if (!emparejamientoDto.Any())
         {
@@ -65,21 +179,36 @@ internal sealed class ObtenerEmparejamientoPorUsuarioQueryHandler(
         }
         
         logger.LogInformation("Se recuperaron correctamente {Cantidad} emparejamientos para el usuario {UsuarioId} con rol {Rol}.",
-            emparejamientosLista.Count, request.UsuarioId, request.Rol);
+            enumerable.Count(), request.UsuarioId, request.Rol);
 
-        return ResultadoT<IEnumerable<EmparejamientoDto>>.Exito(emparejamientoDto);
+        if (reclutador is null || experto is null)
+        {
+            logger.LogInformation("La notificación fue enviada solo a uno de los usuarios debido a que el otro no aplica para este contexto (reclutador o experto es null).");
+        }
+        else
+        {
+            await emparejamientoNotificador.NotificarEmparejamiento(
+                reclutador.Id!.Value,
+                experto.Id!.Value,
+                emparejamientoPaginadoDto,
+                emparejamientoPaginadoDto
+            );
+            logger.LogInformation("Se notificó exitosamente a ambos usuarios (reclutador y experto) por SignalR.");
+        }
+        
+        return ResultadoT<IEnumerable<EmparejamientoDto>>.Exito(emparejamientoPaginadoDto);
     }
     
     #region Privados
 
-    private Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>> Obtener(Guid usuarioId)
-    {
-        return new Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>>
+        private Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>> Obtener(Guid usuarioId)
         {
-            { Roles.Experto, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoExpertoAsync(usuarioId,cancellationToken) },
-            { Roles.Reclutador, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoReclutadorAsync(usuarioId,cancellationToken)}
-        };
-    }
+            return new Dictionary<Roles, Func<CancellationToken, Task<IEnumerable<Dominio.Modelos.Emparejamiento>>>>
+            {
+                { Roles.Experto, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoExpertoAsync(usuarioId,cancellationToken) },
+                { Roles.Reclutador, async cancellationToken => await repositorioEmparejamiento.ObtenerEmparejamientosComoReclutadorAsync(usuarioId,cancellationToken)}
+            };
+        }
 
     #endregion
 }

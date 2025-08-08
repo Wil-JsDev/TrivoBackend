@@ -35,7 +35,8 @@ public class MapperChat
             ultimoMensaje.Estado ?? string.Empty,
             ultimoMensaje.FechaEnvio ?? DateTime.UtcNow,
             ultimoMensaje.EmisorId!.Value,
-            ultimoMensaje.ReceptorId
+            ultimoMensaje.ReceptorId,
+            ultimoMensaje.Tipo
         );
     }
 

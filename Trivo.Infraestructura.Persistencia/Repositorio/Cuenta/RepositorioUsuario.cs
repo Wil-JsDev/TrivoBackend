@@ -198,17 +198,37 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .Include(u => u.Expertos)
             .Include(u => u.Reclutadores)
             .FirstOrDefaultAsync(u => u.Id == usuarioId, cancellationToken);
-        
-        var tieneExperto = usuario!.Expertos != null & usuario.Expertos!.Any();
-        var tieneReclutador = usuario.Reclutadores != null & usuario.Reclutadores!.Any();
+    
+        var tieneExperto = usuario!.Expertos != null && usuario.Expertos!.Any();
+        var tieneReclutador = usuario.Reclutadores != null && usuario.Reclutadores!.Any();
 
         if (tieneExperto)
             return nameof(Roles.Experto);
-        
+    
         if (tieneReclutador)
             return nameof(Roles.Reclutador);
-        
+    
         return "Sin Rol";
+    }
+
+    public async Task<Usuario?> ObtenerRelacionesExpertosYReclutadorPorUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.Reclutadores)
+            .Include(u => u.Expertos)
+            .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+            .Include(ui => ui.UsuarioInteres)!.ThenInclude(i => i.Interes)
+            .FirstOrDefaultAsync(x => x.Id == usuarioId, cancellationToken);
+    }
+
+    public async Task<Usuario?> ObtenerPorIdConRelacionesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Usuario>()
+            .AsNoTracking()
+            .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
+            .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
     
     public async Task<IEnumerable<Usuario>> ObtenerUsuariosObjetivoAsync(Guid usuarioActualId, string rol, CancellationToken cancellationToken)
@@ -217,19 +237,16 @@ public class RepositorioUsuario(TrivoContexto trivoContexto) :
             .AsNoTracking()
             .Include(u => u.UsuarioInteres)!.ThenInclude(ui => ui.Interes)
             .Include(u => u.UsuarioHabilidades)!.ThenInclude(uh => uh.Habilidad)
-            .Include(u => u.Expertos)
-            .Include(u => u.Reclutadores)
-            .Where(u => u.Id != usuarioActualId); // Excluir usuario actual
+            .Where(u => u.Id != usuarioActualId);
 
-        if (rol == nameof(Roles.Experto))
+        // Filtrado explícito por rol opuesto
+        if (rol == nameof(Roles.Reclutador))
         {
-            // Si el usuario actual es experto => devolver usuarios que TIENEN RELACIÓN con él como reclutador
-            query = query.Where(u => u.Reclutadores!.Any());
+            query = query.Where(u => u.Expertos != null && u.Expertos.Any());
         }
-        else if (rol == nameof(Roles.Reclutador))
+        else if (rol == nameof(Roles.Experto))
         {
-            // Si el usuario actual es reclutador => devolver usuarios que TIENEN RELACIÓN con él como experto
-            query = query.Where(u => u.Expertos!.Any());
+            query = query.Where(u => u.Reclutadores != null && u.Reclutadores.Any());
         }
 
         return await query.AsSplitQuery().ToListAsync(cancellationToken);

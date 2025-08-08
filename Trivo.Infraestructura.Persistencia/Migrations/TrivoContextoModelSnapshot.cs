@@ -406,6 +406,9 @@ namespace Trivo.Infraestructura.Persistencia.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("FKReceptorId");
 
+                    b.Property<string>("Tipo")
+                        .HasColumnType("varchar(50)");
+
                     b.HasKey("MensajeId")
                         .HasName("PKMensajeId");
 

@@ -55,15 +55,21 @@ public class RepositorioMensaje(TrivoContexto trivoContexto): RepositorioGeneric
                 m.Estado!,
                 m.FechaEnvio!.Value,
                 m.EmisorId!.Value,
-                m.ReceptorId
-              
+                m.ReceptorId,
+                m.Tipo ?? string.Empty
             ))
             .ToListAsync(cancellationToken);
 
         return new ResultadoPaginado<MensajeDto>(mensajes, total, pagina, tamano);
     }
 
-
-
-
+    public async Task<Mensaje?> ObtenerUsuarioQuePerteneceElMensajeAsync(Guid mensajeId, CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Mensaje>()
+            .AsNoTracking()
+            .Include(m => m.Receptor)
+            .Include(m => m.Emisor)
+            .Where(m => m.MensajeId == mensajeId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

@@ -1,0 +1,154 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Trivo.Aplicacion.DTOs.Notificacion;
+using Trivo.Aplicacion.Interfaces.Servicios;
+using Trivo.Aplicacion.Interfaces.Servicios.SignaIR;
+
+namespace Trivo.Infraestructura.Compartido.SignalR.Hubs;
+
+[Authorize]
+public class NotificacionHub(
+    ILogger<NotificacionHub> logger,
+    INotificacionServicio notificacionServicio
+    ) : Hub<INotificacionHub>
+{
+    public override async Task OnConnectedAsync()
+    {
+        // var userIdentifier = Context.UserIdentifier;
+        //
+        // var httpContext = Context.GetHttpContext();
+        // var query = httpContext?.Request.Query;
+        //
+        // var numeroPaginaString = query?["numeroPagina"];
+        // var tamanoPaginaString = query?["tamanoPagina"];
+        //     
+        // var numeroPagina = int.TryParse(numeroPaginaString, out var np) ? np : 1;
+        // var tamanoPagina = int.TryParse(tamanoPaginaString, out var tp) ? tp : 5;
+        //     
+        // logger.LogInformation("Usuario conectado:");
+        // logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", userIdentifier);
+        //
+        // if (!Guid.TryParse(userIdentifier, out var usuarioId))
+        // {
+        //     logger.LogError("UserIdentifier no es un GUID válido");
+        //     return;
+        // }
+        //
+        // logger.LogInformation("- UsuarioId: {UsuarioId}", usuarioId);
+        //
+        // var resultado = await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
+        // if (!resultado.EsExitoso)
+        // {
+        //     logger.LogWarning("No se encontraron emparejamientos para el usuario {UsuarioId}", usuarioId);
+        //     await Clients.User(usuarioId.ToString()).RecibirNotificacion(new List<NotificacionDto>());
+        //     await base.OnConnectedAsync();
+        //     return;
+        // }
+        //
+        // await Clients.User(usuarioId.ToString()).RecibirNotificacion(resultado.Valor.Elementos!);
+        //
+        // await base.OnConnectedAsync();
+    }
+
+    public async Task MarcarComoLeida(Guid notificacionId)
+    {
+        try
+        {
+            if ( !Guid.TryParse(Context.UserIdentifier, out var usuarioId) )
+            {
+                logger.LogWarning("Intento de marcar notificación con UserIdentifier inválido: {UserIdentifier}", Context.UserIdentifier);
+                return;
+            }
+
+            logger.LogInformation("Solicitud para marcar notificación {NotificacionId} como leída por usuario {UsuarioId}", 
+                notificacionId, usuarioId);
+
+            var resultado = await notificacionServicio.MarcarComoLeidaAsync(notificacionId, usuarioId, CancellationToken.None);
+
+            if ( !resultado.EsExitoso )
+            {
+                logger.LogWarning("Error al marcar notificación {NotificacionId}: {Error}", 
+                    notificacionId, resultado.Error);
+                
+                return;
+            }
+
+            await Clients.User(usuarioId.ToString()).NotificacionMarcadaComoLeida(notificacionId, resultado.Valor);
+            
+            logger.LogInformation("Notificación {NotificacionId} marcada como leída exitosamente", notificacionId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error inesperado al marcar notificación {NotificacionId} como leída", notificacionId);
+            // await Clients.Caller.RecibirError(Error.Fallo("500", "Error interno del servidor"));
+        }
+    }
+
+    public async Task EliminarNotificacion(Guid notificacionId)
+    {
+        try
+        {
+            if (!Guid.TryParse(Context.UserIdentifier, out var usuarioId))
+            {
+                logger.LogWarning("Intento de eliminar una notificación con UserIdentifier inválido: {UserIdentifier}", Context.UserIdentifier);
+                return;
+            }
+
+            logger.LogInformation("El usuario {UsuarioId} está intentando eliminar la notificación {NotificacionId}", usuarioId, notificacionId);
+    
+            var resultado = await notificacionServicio.EliminarNotificacionAsync(notificacionId, usuarioId, CancellationToken.None);
+            if (!resultado.EsExitoso)
+            {
+                logger.LogWarning("Falló la eliminación de la notificación {NotificacionId} por el usuario {UsuarioId}", 
+                    notificacionId, usuarioId);
+        
+                return;
+            }
+    
+            await Clients.Users(usuarioId.ToString()).NotificarNotificacionEliminada(notificacionId, resultado.Valor);
+    
+            logger.LogInformation("Notificación {NotificacionId} eliminada correctamente por el usuario {UsuarioId}", notificacionId, usuarioId);
+        }
+        catch (Exception ex)
+        {
+           logger.LogError(ex, "Error inesperado al elimnar la notificacion {NotificacionId}", notificacionId);
+        }
+    }
+    
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        logger.LogInformation("Usuario desconectado: {ContextUserIdentifier}", Context.UserIdentifier);
+        
+        return base.OnDisconnectedAsync(exception);
+    }
+    public async Task ObtenerNotificaciones(int numeroPagina = 1, int tamanoPagina = 20)
+    {
+        var usuarioIdString = Context.UserIdentifier;
+        
+        if (!Guid.TryParse(usuarioIdString, out var usuarioId))
+        {
+            logger.LogError("UserIdentifier no es un GUID válido");
+            
+            return;
+        }
+        
+        logger.LogInformation("Usuario conectado:");
+        logger.LogInformation("- UserIdentifier (SignalR): {UserIdentifier}", usuarioIdString);
+        
+        // await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
+        
+        var resultado = await notificacionServicio.ObtenerNotificacionesAsync(usuarioId, numeroPagina, tamanoPagina, CancellationToken.None);
+        if (!resultado.EsExitoso)
+        {
+            logger.LogWarning("Error al obtener notificaciones para usuario {UsuarioId}: {Error}", 
+                usuarioId, resultado.Error);
+            
+            // await Clients.Caller.RecibirError(resultado.Error?.Mensaje ?? "Error al obtener notificaciones");
+            return;
+        }
+        // Envía las notificaciones al cliente que hizo la solicitud
+        await Clients.Caller.RecibirNotificacion(resultado.Valor.Elementos!);
+    }
+    
+}
