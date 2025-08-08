@@ -32,6 +32,17 @@ public class RepositorioAdministrador(TrivoContexto trivoContexto) :
         
         await _trivoContexto.SaveChangesAsync(cancellationToken);
     }
+    public async Task<int> ObtenerConteoUsuariosReportados(CancellationToken cancellationToken)
+    {
+        return await _trivoContexto.Set<Reporte>()
+            .AsNoTracking()
+            .Where(r => r.Usuario != null) // Verificar que haya usuarios reportados
+            // .Where(r => r.EstadoReporte == EstadoReporte.Resuelto.ToString())
+            .Select(r => r.Usuario!)       
+            .Select(u => u.Id)           
+            .Distinct()                    // Quitar duplicados
+            .CountAsync(cancellationToken);
+    }
     
     public async Task<bool> NombreUsuarioEnUso(string nombreUsuario, Guid usuarioId, CancellationToken cancellationToken) =>
         await ValidarAsync(usuario => usuario.Nombre == nombreUsuario && usuario.Id != usuarioId, cancellationToken);

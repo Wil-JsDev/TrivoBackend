@@ -8,6 +8,7 @@ using Trivo.Aplicacion.Modulos.Administrador.Commands.DesbanearUsuario;
 using Trivo.Aplicacion.Modulos.Administrador.Commands.InicioSesion;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoDeUsuariosActivos;
+using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerConteoUsuariosReportados;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosEmparejamientos;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUltimosUsuarios;
 using Trivo.Aplicacion.Modulos.Administrador.Querys.ObtenerUsuariosBaneados;
@@ -129,5 +130,14 @@ public class AdministradorControlador(IMediator mediator) : ControllerBase
 
       return BadRequest(resultado.Error);
    }
-   
+
+   [HttpGet("count/users-report")]
+   public async Task<IActionResult> ObtenerCantidadDeUsuariosReportadosAsync(CancellationToken cancellationToken)
+   {
+      var resultado = await mediator.Send(new ObtenerConteoDeUsuariosReportadosQuery(),cancellationToken);
+      if (!resultado.EsExitoso)
+         return BadRequest(resultado.Error);
+      
+      return Ok(resultado.Valor);
+   }
 }

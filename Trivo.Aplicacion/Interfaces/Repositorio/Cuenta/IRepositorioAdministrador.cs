@@ -38,11 +38,9 @@ public interface IRepositorioAdministrador : IRepositorioGenerico<Administrador>
         int tamanoPagina,
         CancellationToken cancellationToken);
     
-    // Dto: id y nombre de ambos roles, junto del emparejamiento dto en la paginacion de ultimos emparejamientos
-    // Banear usuarios y desbanear 
-    // Eliminar notificaciones
-    
     Task<int> ContarEmparejamientosCompletadosAsync(CancellationToken cancellationToken);
 
     Task<int> ContarUsuariosActivosAsync(CancellationToken cancellationToken);
+
+    Task<int> ObtenerConteoUsuariosReportados(CancellationToken cancellationToken);
 }
