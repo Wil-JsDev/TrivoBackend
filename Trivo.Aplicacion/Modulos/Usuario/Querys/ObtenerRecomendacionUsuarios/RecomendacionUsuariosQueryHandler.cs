@@ -51,10 +51,13 @@ internal sealed class RecomendacionUsuariosQueryHandler(
         
         logger.LogInformation("Prompt construido correctamente para el usuario {UsuarioId}. Enviando solicitud a la IA...", usuarioActual.Id);
         
-        var respuestaIa = await cache.ObtenerOCrearAsync($"respuesta-ia-{usuarioActual.Id}",
-            async () => await ollamaServicio.EnviarPeticionIaAsync("tinyllama:1.1b", prompt),
-            cancellationToken: cancellationToken
-        );
+        // var respuestaIa = await cache.ObtenerOCrearAsync($"respuesta-ia-{usuarioActual.Id}",
+        //     async () => await ollamaServicio.EnviarPeticionIaAsync("tinyllama:1.1b", prompt),
+        //     cancellationToken: cancellationToken
+        // );
+        //
+
+        var respuestaIa = await ollamaServicio.EnviarPeticionIaAsync("tinyllama:1.1b", prompt);
         
         if (string.IsNullOrWhiteSpace(respuestaIa))
         {
@@ -83,6 +86,11 @@ internal sealed class RecomendacionUsuariosQueryHandler(
             logger.LogWarning("La IA no devolvió IDs válidos. Aplicando lógica de respaldo basada en similitud de intereses/habilidades.");
             
             usuariosRecomendados = ObtenerUsuariosSimilares(usuarioActual, paraComparar.ToList());
+            if ( !usuariosRecomendados.Any())
+            {
+                logger.LogInformation("logica de respaldo aplicada");
+                 usuariosRecomendados = paraComparar.ToList();
+            }
         }
 
         // if ( await repositorioExperto.EsUsuarioExpertoAsync(request.UsuarioId, cancellationToken) )
